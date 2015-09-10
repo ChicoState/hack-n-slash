@@ -19,7 +19,7 @@ private:
 
 	ALLEGRO_DISPLAY		*m_Display;
 	ALLEGRO_EVENT_QUEUE *m_EventQueue;
-
+	
 public:
 	
 	Display(ALLEGRO_EVENT_QUEUE* EventQueue) :
@@ -36,8 +36,9 @@ public:
 	}
 
 	int Event_Handler();
-
+	ALLEGRO_DISPLAY *Get_Display();
 	bool TestDisplay();
+	void Draw();
 };
 
 #endif

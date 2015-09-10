@@ -1,5 +1,5 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/3/15
+//Date updated:		9/9/15
 //Last update by:	N/A
 //Reason for update:N/A
 
@@ -27,23 +27,28 @@ int main(void)
 	const int FPS = 60;
 
 	//Allegro variables---------------------------------
-	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-	ALLEGRO_TIMER *timer = NULL;
-		
-	event_queue = al_create_event_queue();				
-	timer = al_create_timer(1.0 / FPS);
+	ALLEGRO_EVENT_QUEUE *Event_Queue = NULL;
+	ALLEGRO_TIMER *Timer = NULL;
 
-	Display MainDisplay(event_queue);
+	Event_Queue = al_create_event_queue();				
+	Timer = al_create_timer(1.0 / FPS);
+
+	Display MainDisplay(Event_Queue);
 	
 	if (!MainDisplay.TestDisplay())
 	{
 		return -1;
 	}
 
+	al_register_event_source(Event_Queue, al_get_timer_event_source(Timer));
+
+	al_start_timer(Timer);
 	//Main game loop------------------------------------
 	while (!MainUtility.Get_GameOver())
 	{
 		MainDisplay.Event_Handler();
+
+		MainDisplay.Draw();
 	}
 
 
