@@ -46,9 +46,14 @@ int main(void)
 	//Main game loop------------------------------------
 	while (!MainUtility.Get_GameOver())
 	{
-		MainDisplay.Event_Handler();
-
-		MainDisplay.Draw();
+		MainDisplay.Event_Handler(); 
+		
+		
+		//Code Dealing with drawing to the screen goes within this if statement
+		if (al_is_event_queue_empty(Event_Queue))
+		{
+			MainDisplay.Draw();
+		}
 	}
 
 
