@@ -44,10 +44,10 @@ Player::~Player()
 }
 
 //!Handles all the functions for the player that need to be called every update
-void Player::EventHandler()
+void Player::EventHandler(ALLEGRO_EVENT& m_InputAlEvent)
 {
-	//start the wait for event sequence
-	al_wait_for_event(m_EventQueue, &m_AlEvent);
+	//make member event the same as the input event
+	m_AlEvent = m_InputAlEvent;
 
 	//check player movement
 	CheckMovement();

@@ -19,7 +19,7 @@ public:
 
 	~Player(); //Deconstructor for the player class
 
-	void EventHandler(); //Handles all the functions for the player that need to be called every update
+	void EventHandler(ALLEGRO_EVENT& m_AlEvent); //Handles all the functions for the player that need to be called every update
 	
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
