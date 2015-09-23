@@ -29,6 +29,9 @@ Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE*
 	m_KeyboardMap["A"] = false; //A used to move player left
 	m_KeyboardMap["D"] = false; //D used to move player right
 	m_MovementSpeed = 7;
+	m_MouseMoving = false;
+	m_CurrentMouseMoveXPosition = 0;
+	m_CurrentMouseMoveYPosition = 0;
 	m_CanMoveUp = true;
 	m_CanMoveDown = true;
 	m_CanMoveLeft = true;
@@ -78,6 +81,22 @@ void Player::DrawPlayer()
 //!Handles movement for the player character each update
 void Player::CheckMovement()
 {
+	//reset the keyboard moving bool so that the mouse movement can occur on this frame if called on
+	m_KeyboardMoving = false;
+
+	//if a mouse button was pressed
+	if(m_AlEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+	{
+		//if the left mous ebutton was clicked
+		if(m_AlEvent.mouse.button & 1)
+		{
+			//grab the current mouse x and y position and set mouse moving to true
+			m_CurrentMouseMoveXPosition = m_AlEvent.mouse.x;
+			m_CurrentMouseMoveYPosition = m_AlEvent.mouse.y;
+			m_MouseMoving = true;
+		}
+	}
+
 	/*
 	if(MainUtility.W_KEY_TRUE)
 	{
@@ -101,10 +120,13 @@ void Player::CheckMovement()
 	*/
 
 	//if the right time call functions
-	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
+	else if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
+		//Depending on the keyboard move direction pressed call its function
+
 		if(m_KeyboardMap["W"])
 		{
+			m_KeyboardMoving = true;
 			if(m_CanMoveUp)
 			{
 				MoveUp();
@@ -113,6 +135,7 @@ void Player::CheckMovement()
 
 		if(m_KeyboardMap["S"])
 		{
+			m_KeyboardMoving = true;
 			if(m_CanMoveDown)
 			{
 				MoveDown();
@@ -121,6 +144,7 @@ void Player::CheckMovement()
 
 		if(m_KeyboardMap["A"])
 		{
+			m_KeyboardMoving = true;
 			if(m_CanMoveLeft)
 			{
 				MoveLeft();
@@ -129,16 +153,26 @@ void Player::CheckMovement()
 
 		if(m_KeyboardMap["D"])
 		{
+			m_KeyboardMoving = true;
 			if(m_CanMoveRight)
 			{
 				MoveRight();
 			}
 		}
+
+		//check to see if there was keyboard movement this frame before calling mouse movement
+		if(m_KeyboardMoving)
+		{
+			m_MouseMoving = false;
+		}
+
+		CheckMouseMovement();
 	}
 
 	//if there is a key pressed down
 	else if(m_AlEvent.type == ALLEGRO_EVENT_KEY_DOWN)
 	{	
+		//Depending on the keyboard move direction pressed call its function
 		switch(m_AlEvent.keyboard.keycode)
 		{
 		case ALLEGRO_KEY_W:
@@ -162,9 +196,7 @@ void Player::CheckMovement()
 	//if there is a key unpressed
 	else if(m_AlEvent.type == ALLEGRO_EVENT_KEY_UP)
 	{
-		//test
-		printf("W Pressed = %i", m_KeyboardMap["W"]);
-		
+		//Depending on the keyboard move direction pressed call its function
 		switch(m_AlEvent.keyboard.keycode)
 		{
 		case ALLEGRO_KEY_W:
@@ -186,15 +218,63 @@ void Player::CheckMovement()
 	}
 }
 
+//!Checks each frame to see if the player needs to move from a mouse click and update sthe position
+void Player::CheckMouseMovement()
+{
+	//if there is movement that needs to occur because of a mouse click
+	if(m_MouseMoving)
+	{
+		//if the player position has not reached the correct x position
+		if(m_XPosition != m_CurrentMouseMoveXPosition)
+		{
+			//depending on the direction that player needs to move call its function
+
+			if(m_XPosition > m_CurrentMouseMoveXPosition)
+			{
+				MoveLeft();
+			}
+
+			if(m_XPosition < m_CurrentMouseMoveXPosition)
+			{
+				MoveRight();
+			}
+		}
+
+		//if the player position has not reached the correct y position
+		if(m_YPosition != m_CurrentMouseMoveYPosition)
+		{
+			//depending on the direction that player needs to move call its function
+
+			if(m_YPosition > m_CurrentMouseMoveYPosition)
+			{
+				MoveUp();
+			}
+
+			if(m_YPosition < m_CurrentMouseMoveYPosition)
+			{
+				MoveDown();
+			}
+		}
+
+		//if the player has reached its destination stop th emouse movement
+		else
+		{
+			m_MouseMoving = false;
+		}
+	}
+}
+
 //!Moves the player negative in the y axis
 void Player::MoveUp()
 {
+	//if the player is about to go off screen lock its position
 	if(GetYNorthBoundPoint() < 0)
 	{
 		m_LockedYPosition = m_YPosition;
 		m_YPosition = m_LockedYPosition;
 	}
 
+	//else move the player in its specified direction
 	else
 	{
 		m_YPosition -= m_MovementSpeed;
@@ -204,12 +284,14 @@ void Player::MoveUp()
 //!Moves the player positive in the y axis
 void Player::MoveDown()
 {
+	//if the player is about to go off screen lock its position
 	if(GetYSouthBoundPoint() > m_ScreenHeight)
 	{
 		m_LockedYPosition = m_YPosition;
 		m_YPosition = m_LockedYPosition;
 	}
 
+	//else move the player in its specified direction
 	else
 	{
 		m_YPosition += m_MovementSpeed;
@@ -219,12 +301,14 @@ void Player::MoveDown()
 //!Move sthe player negative in the x axis
 void Player::MoveLeft()
 {
+	//if the player is about to go off screen lock its position
 	if(GetXWestBoundPoint() < 0)
 	{
 		m_LockedXPosition = m_XPosition;
 		m_XPosition = m_LockedXPosition;
 	}
 
+	//else move the player in its specified direction
 	else
 	{
 		m_XPosition -= m_MovementSpeed;
@@ -234,12 +318,14 @@ void Player::MoveLeft()
 //!Moves the player positive in the x axis
 void Player::MoveRight()
 {
+	//if the player is about to go off screen lock its position
 	if(GetXEastBoundPoint() > m_ScreenWidth)
 	{
 		m_LockedXPosition = m_XPosition;
 		m_XPosition = m_LockedXPosition;
 	}
 
+	//else move the player in its specified direction
 	else
 	{
 		m_XPosition += m_MovementSpeed;

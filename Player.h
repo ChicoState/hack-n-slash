@@ -41,6 +41,7 @@ public:
 private:
 
 	void DrawPlayer(); //Draws the player character to the screen
+	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
 	void CheckMovement(); //Handles movement for the player character each update
 	void MoveUp(); //Moves the player negative in the y axis
 	void MoveDown(); //Moves the player positive in the y axis
@@ -58,8 +59,12 @@ private:
 	int m_YBound; //the y bound for the player
 	int m_XPosition; //the current x position of the player
 	int m_YPosition; //the current y position of the player
-	std::map <std::string, bool> m_KeyboardMap; //map of the keyboard keys and their bools for the player
 	int m_MovementSpeed; //the speed at which the player moves
+	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
+	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to
+	int m_CurrentMouseMoveYPosition; //the last y position the player clicked to move to
+	bool m_KeyboardMoving; //true if the player is moving by the keyboard else false
+	std::map <std::string, bool> m_KeyboardMap; //map of the keyboard keys and their bools for the player
 	bool m_CanMoveUp; //true if the player can move up else false
 	bool m_CanMoveDown; //true if the player can move down else false
 	bool m_CanMoveLeft; //true if the player can move left else false
