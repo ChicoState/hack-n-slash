@@ -3,7 +3,6 @@
 //Player Class H: Player class will handle all systems having to do with the character that the player controls. 
 
 #include <allegro5\allegro.h>
-#include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 
 #include <string>
@@ -19,21 +18,21 @@ public:
 
 	~Player(); //Deconstructor for the player class
 
-	void EventHandler(ALLEGRO_EVENT& m_AlEvent); //Handles all the functions for the player that need to be called every update
+	void EventHandler(ALLEGRO_EVENT& InputAlEvent); //Handles all the functions for the player that need to be called every update
 	
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
 	int GetYBound(); //Gets and returns the Y Bound of the player
-	int GetXNorthBoundPoint(); //!Gets and returns the North Bound Point x position
-	int GetYNorthBoundPoint(); //!Gets and returns the North Bound Point y position
-	int GetXSouthBoundPoint(); //!Gets and returns the South Bound Point x position
-	int GetYSouthBoundPoint(); //!Gets and returns the South Bound Point y position
-	int GetXEastBoundPoint(); //!Gets and returns the East Bound Point x position
-	int GetYEastBoundPoint(); //!Gets and returns the East Bound Point y position
-	int GetXWestBoundPoint(); //!Gets and returns the West Bound Point x position
-	int GetYWestBoundPoint(); //!Gets and returns the West Bound Point y position
-	int GetXPosition(); //Gets and returns the X position of the player
-	int GetYPosition(); //Gets and returns the Y position of the player
+	int GetXNorthBoundPoint(); //Gets and returns the North Bound Point x position
+	int GetYNorthBoundPoint(); //Gets and returns the North Bound Point y position
+	int GetXSouthBoundPoint(); //Gets and returns the South Bound Point x position
+	int GetYSouthBoundPoint(); //Gets and returns the South Bound Point y position
+	int GetXEastBoundPoint(); //Gets and returns the East Bound Point x position
+	int GetYEastBoundPoint(); //Gets and returns the East Bound Point y position
+	int GetXWestBoundPoint(); //Gets and returns the West Bound Point x position
+	int GetYWestBoundPoint(); //Gets and returns the West Bound Point y position
+	float GetXPosition(); //Gets and returns the X position of the player
+	float GetYPosition(); //Gets and returns the Y position of the player
 
 	void SetXPosition(int NewXPosition); //Sets the x position of the player
 	void SetYPosition(int NewYPosition); //Sets the y position of the player
@@ -57,8 +56,8 @@ private:
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
 	int m_YBound; //the y bound for the player
-	int m_XPosition; //the current x position of the player
-	int m_YPosition; //the current y position of the player
+	float m_XPosition; //the current x position of the player
+	float m_YPosition; //the current y position of the player
 	int m_MovementSpeed; //the speed at which the player moves
 	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
 	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to

@@ -47,17 +47,19 @@ Player::~Player()
 }
 
 //!Handles all the functions for the player that need to be called every update
-void Player::EventHandler(ALLEGRO_EVENT& m_InputAlEvent)
+//In - 
+//		ALLEGRO_EVENT& InputAlEvent - The global event handler for the game
+void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent)
 {
 	//make member event the same as the input event
-	m_AlEvent = m_InputAlEvent;
+	m_AlEvent = InputAlEvent;
 
 	//check player movement
 	CheckMovement();
 
-	//draw the player if the right time
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
+		//draw the player sprite
 		DrawPlayer();
 	}
 }
@@ -256,7 +258,7 @@ void Player::CheckMouseMovement()
 			}
 		}
 
-		//if the player has reached its destination stop th emouse movement
+		//if the player has reached its destination stop the mouse movement
 		else
 		{
 			m_MouseMoving = false;
@@ -267,6 +269,9 @@ void Player::CheckMouseMovement()
 //!Moves the player negative in the y axis
 void Player::MoveUp()
 {
+	//move the player in its specified direction
+	//m_YPosition -= m_MovementSpeed;
+
 	//if the player is about to go off screen lock its position
 	if(GetYNorthBoundPoint() < 0)
 	{
@@ -284,6 +289,10 @@ void Player::MoveUp()
 //!Moves the player positive in the y axis
 void Player::MoveDown()
 {
+	//move the player in its specified direction
+	m_YPosition += m_MovementSpeed;
+
+	/*
 	//if the player is about to go off screen lock its position
 	if(GetYSouthBoundPoint() > m_ScreenHeight)
 	{
@@ -296,11 +305,15 @@ void Player::MoveDown()
 	{
 		m_YPosition += m_MovementSpeed;
 	}
+	*/
 }
 
 //!Move sthe player negative in the x axis
 void Player::MoveLeft()
 {
+	//move the player in its specified direction
+	//m_XPosition -= m_MovementSpeed;
+
 	//if the player is about to go off screen lock its position
 	if(GetXWestBoundPoint() < 0)
 	{
@@ -318,6 +331,10 @@ void Player::MoveLeft()
 //!Moves the player positive in the x axis
 void Player::MoveRight()
 {
+	//move the player in its specified direction
+	m_XPosition += m_MovementSpeed;
+
+	/*
 	//if the player is about to go off screen lock its position
 	if(GetXEastBoundPoint() > m_ScreenWidth)
 	{
@@ -330,6 +347,7 @@ void Player::MoveRight()
 	{
 		m_XPosition += m_MovementSpeed;
 	}
+	*/
 }
 
 //!Gets and returns the player class tag
@@ -423,7 +441,7 @@ int Player::GetYWestBoundPoint()
 //!Gets and returns the X position of the player
 //Out - 
 //		int - the current x position of the player
-int Player::GetXPosition()
+float Player::GetXPosition()
 {
 	return m_XPosition;
 }
@@ -431,7 +449,7 @@ int Player::GetXPosition()
 //!Gets and returns the Y position of the player
 //Out - 
 //		int - the current y position of the player
-int Player::GetYPosition()
+float Player::GetYPosition()
 {
 	return m_YPosition;
 }
