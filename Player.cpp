@@ -49,13 +49,13 @@ Player::~Player()
 //!Handles all the functions for the player that need to be called every update
 //In - 
 //		ALLEGRO_EVENT& InputAlEvent - The global event handler for the game
-void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent)
+void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
 	//make member event the same as the input event
 	m_AlEvent = InputAlEvent;
 
 	//check player movement
-	CheckMovement();
+	CheckMovement(InputMouseXWorldPosition, InputMouseYWorldPosition);
 
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
@@ -81,7 +81,7 @@ void Player::DrawPlayer()
 }
 
 //!Handles movement for the player character each update
-void Player::CheckMovement()
+void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
 	//reset the keyboard moving bool so that the mouse movement can occur on this frame if called on
 	m_KeyboardMoving = false;
@@ -93,8 +93,11 @@ void Player::CheckMovement()
 		if(m_AlEvent.mouse.button & 1)
 		{
 			//grab the current mouse x and y position and set mouse moving to true
-			m_CurrentMouseMoveXPosition = m_AlEvent.mouse.x;
-			m_CurrentMouseMoveYPosition = m_AlEvent.mouse.y;
+			//m_CurrentMouseMoveXPosition = m_AlEvent.mouse.x;
+			//m_CurrentMouseMoveYPosition = m_AlEvent.mouse.y;
+			m_CurrentMouseMoveXPosition = InputMouseXWorldPosition;
+			m_CurrentMouseMoveYPosition = InputMouseYWorldPosition;
+
 			m_MouseMoving = true;
 		}
 	}

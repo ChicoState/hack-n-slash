@@ -10,6 +10,12 @@
 Camera::Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue)
 {
 	//Set input variables to member variables
+
+	m_MouseXCoordinate = 0;
+	m_MouseYCoordinate = 0;
+
+	m_XPosition = 0;
+	m_YPosition = 0;
 }
 
 //!Handles all the functions for the camera that need to be called every update
@@ -28,6 +34,13 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 	{
 		//Update the position of the camera
 		UpdatePosition(PlayerXPosition, PlayerYPosition, PlayerWidth, PlayerHeight);
+
+		//Keep track of mouse coordinates
+		m_MouseXCoordinate = m_AlEvent.mouse.x;
+		m_MouseYCoordinate = m_AlEvent.mouse.y;
+
+				printf("%i", m_MouseXCoordinate);
+				printf("%i", m_MouseYCoordinate);
 	}
 }
 
@@ -67,4 +80,24 @@ void Camera::UpdateTransform()
 	al_identity_transform(&CameraTransform);
 	al_translate_transform(&CameraTransform, -(m_XPosition), -(m_YPosition));
 	al_use_transform(&CameraTransform);
+}
+
+float Camera::GetMouseXWorldCoordinate()
+{
+	float TempMouseXCoordinate = m_MouseXCoordinate;
+	float TempMouseYCoordinate = m_MouseYCoordinate;
+
+	al_transform_coordinates(&CameraTransform, &TempMouseXCoordinate, &TempMouseYCoordinate);
+
+	return TempMouseXCoordinate;
+}
+
+float Camera::GetMouseYWorldCoordinate()
+{
+	float TempMouseXCoordinate = m_AlEvent.mouse.x;
+	float TempMouseYCoordinate = m_AlEvent.mouse.y;
+
+	al_transform_coordinates(&CameraTransform, &TempMouseXCoordinate, &TempMouseYCoordinate);
+
+	return TempMouseYCoordinate;
 }

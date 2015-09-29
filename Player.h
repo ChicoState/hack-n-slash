@@ -2,8 +2,13 @@
 
 //Player Class H: Player class will handle all systems having to do with the character that the player controls. 
 
+#ifndef PLAYER_H
+#define PLAYER_H
+
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
+
+#include "Camera.h"
 
 #include <string>
 #include <map>
@@ -18,7 +23,7 @@ public:
 
 	~Player(); //Deconstructor for the player class
 
-	void EventHandler(ALLEGRO_EVENT& InputAlEvent); //Handles all the functions for the player that need to be called every update
+	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
 	
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
@@ -40,8 +45,8 @@ public:
 private:
 
 	void DrawPlayer(); //Draws the player character to the screen
+	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
-	void CheckMovement(); //Handles movement for the player character each update
 	void MoveUp(); //Moves the player negative in the y axis
 	void MoveDown(); //Moves the player positive in the y axis
 	void MoveLeft(); //Move sthe player negative in the x axis
@@ -52,6 +57,7 @@ private:
 
 	int m_ScreenWidth; //the screen width dimension of the game
 	int m_ScreenHeight; //the screen height dimension of the game
+	Camera *m_Camera;
 
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
@@ -71,3 +77,5 @@ private:
 	int m_LockedXPosition; //x position to lock the player to when their bounds go off screen
 	int m_LockedYPosition; //y position to lock the player to when their bounds go off screen
 };
+
+#endif
