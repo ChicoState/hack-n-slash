@@ -4,12 +4,17 @@
 //Reason for update:N/A
 
 #include <iostream>
+#include <time.h>
 
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_native_dialog.h>
 
 #include "Utility.h"
 #include "Display.h"
+#include "TerrainGenerator.h"
+#include "DungeonGenerator.h"
+
+
 
 //Globals-----------------------------------------------
 Utility MainUtility;
@@ -23,12 +28,24 @@ int main(void)
 		return -1;
 	}
 
+	srand(time(NULL));
+
 	//variables-----------------------------------------
 	const int FPS = 60;
+	TerrainGenerator terrain(1);
+	terrain.generateTerrain();
+
+	//DungeonGenerator Dungeon(Event_Queue);
+	//Dungeon.GenerateDungeon();
 
 	//Allegro variables---------------------------------
 	ALLEGRO_EVENT_QUEUE *Event_Queue = NULL;
 	ALLEGRO_TIMER *Timer = NULL;
+
+	//TERRAIN RELATED CODE-------------------------------
+	//ALLEGRO_BITMAP *image = al_load_bitmap("TestRender.jpg");
+
+	//----------------------------------------------------
 
 	Event_Queue = al_create_event_queue();				
 	Timer = al_create_timer(1.0 / FPS);
@@ -46,17 +63,21 @@ int main(void)
 	//Main game loop------------------------------------
 	while (!MainUtility.Get_GameOver())
 	{
-		MainDisplay.Event_Handler(); 
+		ALLEGRO_EVENT ev;
+		al_wait_for_event(Event_Queue, &ev);
+		
+		MainDisplay.Event_Handler(ev); 
 		
 		
 		//Code Dealing with drawing to the screen goes within this if statement
 		if (al_is_event_queue_empty(Event_Queue))
 		{
+			//al_draw_bitmap(image, 0, 0, 0);
 			MainDisplay.Draw();
 		}
 	}
 
-
+	
 	//Game Ending--------------------------------------
 
 	return 0;

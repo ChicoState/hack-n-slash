@@ -1,5 +1,5 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/3/15
+//Date updated:		9/16/15
 //Last update by:	N/A
 //Reason for update:N/A
 
@@ -21,11 +21,12 @@
 class Utility
 {
 private:
-	std::map<std::string, bool> m_Keys;
 	bool m_GameOver;
 
 
 public:
+	std::map<std::string, bool> m_Keys;
+
 	Utility()
 	{
 		m_GameOver = false;

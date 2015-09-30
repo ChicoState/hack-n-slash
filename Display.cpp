@@ -8,16 +8,9 @@
 #include "Display.h"
 #include "Utility.h"
 
-int Display::Event_Handler()
+int Display::Event_Handler(ALLEGRO_EVENT &ev)
 {
-	ALLEGRO_EVENT ev;
-	al_wait_for_event(m_EventQueue, &ev);
-
-	if (ev.type == ALLEGRO_EVENT_TIMER)
-	{
-		return 0;
-	}
-	else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) //Main program window closed...exit game.
+	if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) //Main program window closed...exit game.
 	{
 		MainUtility.Set_GameOver(1);
 	}
