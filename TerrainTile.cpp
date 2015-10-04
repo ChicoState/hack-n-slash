@@ -17,15 +17,15 @@ void TerrainTile::Draw()
 	{
 		if (m_TileType == Wall)
 		{
-			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(255, 0, 0));
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(255, 0, 0));
 		}
 		else if (m_TileType == Floor)
 		{
-			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 255, 0));
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(0, 255, 0));
 		}
 		else if (m_TileType == Door)
 		{
-			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 0, 255));
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(0, 0, 255));
 		}
 	}
 }
