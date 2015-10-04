@@ -17,6 +17,7 @@
 #include "allegro5\allegro.h"
 #include "allegro5\allegro_primitives.h"
 
+#include "TerrainLayer.h"
 #include "TerrainTile.h"
 
 /********************************************************************
@@ -25,23 +26,6 @@ Unit testing: GoogleTest, cxxUnit
 /*********************************************************************
 Terrain Planning
 **********************************************************************
-
-TerrainTile Class:
-Tile of type Sprite
-Position in the world
-Collide?
-Trigger Tile? (traps, interactables like chests)
-Tile Type(Wall, Floor, Door, Object)
-______________________________________________________________________
-Layer Class:
-Map of TerrainTiles;
-List of animatedTiles;
-one bitmap for the entire layer;
-
-Functions:
-Take the entire layer convert it to one large bitmap, DO NOT include
-animated tiles in this though. Those will remain individual tiles
-______________________________________________________________________
 Map Class:
 Array of Layers (1 condition: Last layer = Information layer)
 Information layer is a layer containing all the information pertaining
@@ -84,7 +68,9 @@ class DungeonGenerator
 private:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //Allegro Event Queue
 
-	std::vector<std::vector<TerrainTile>> m_Map; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
+	std::vector<TerrainTile> m_TileTypes; //Templates for all of the tiles in my dungeon (i.e walls, floors, etc..)
+
+	TerrainLayer m_BaseLayer; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
 
 	std::vector<std::vector<TILE>> m_Dungeon; //This is another 2D Array containing a simple version of all the Tile types the dungeon is made (i.e. Wall, Floor, Door, etc...)
 	std::vector<std::vector<int>> m_Regions; //Utility for creating the dungeon
@@ -113,7 +99,7 @@ public:
 
 	Vec2f GetStartPosition() { return m_StartPosition; }
 
-	void GenerateDungeon();
+	void GenerateDungeon(Display&);
 
 	void Draw(); //This draw function will be changed quite a bit later once all of the Base classes needed have been created and once I get some actual graphics to use
 
@@ -134,7 +120,7 @@ private:
 	bool EraserFunc(std::vector<int>&, std::map<std::vector<int>, std::unordered_set<int>>&, std::map<int, int>&);
 
 	void SetStartPosition();
-	void InitMap();
+	void InitMap(Display&);
 
 	void PrintCurrentMap(); //Used for printing a command console version of the dungeon. Used for debugging.
 };
