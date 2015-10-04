@@ -8,6 +8,7 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 
+#include "PlayerTile.h"
 #include "Camera.h"
 
 #include <string>
@@ -39,8 +40,8 @@ public:
 	float GetXPosition(); //Gets and returns the X position of the player
 	float GetYPosition(); //Gets and returns the Y position of the player
 
-	void SetXPosition(int NewXPosition); //Sets the x position of the player
-	void SetYPosition(int NewYPosition); //Sets the y position of the player
+	void SetXPosition(float NewXPosition); //Sets the x position of the player
+	void SetYPosition(float NewYPosition); //Sets the y position of the player
 
 private:
 
@@ -57,6 +58,7 @@ private:
 
 	int m_ScreenWidth; //the screen width dimension of the game
 	int m_ScreenHeight; //the screen height dimension of the game
+	PlayerTile m_PlayerTile;
 	Camera *m_Camera;
 
 	std::string ClassTag; //tag for the player class
@@ -74,8 +76,8 @@ private:
 	bool m_CanMoveDown; //true if the player can move down else false
 	bool m_CanMoveLeft; //true if the player can move left else false
 	bool m_CanMoveRight; //true if the player can move right else false
-	int m_LockedXPosition; //x position to lock the player to when their bounds go off screen
-	int m_LockedYPosition; //y position to lock the player to when their bounds go off screen
+	float m_LockedXPosition; //x position to lock the player to when their bounds go off screen
+	float m_LockedYPosition; //y position to lock the player to when their bounds go off screen
 };
 
 #endif

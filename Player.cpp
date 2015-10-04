@@ -9,7 +9,8 @@
 //		int InputScreenWidth - the input screen width dimension of the game
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue)
+Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
+		m_PlayerTile(0, 0, 144, 256, true, false, true, false, 0)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -60,6 +61,7 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
 		//draw the player sprite
+		m_PlayerTile.Draw(m_XPosition, m_YPosition);
 		DrawPlayer();
 	}
 }
@@ -72,12 +74,6 @@ void Player::DrawPlayer()
 	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
 	al_draw_pixel(GetXSouthBoundPoint(), GetYSouthBoundPoint(), al_map_rgb(0, 0, 255));
 	al_draw_pixel(GetXWestBoundPoint(), GetYWestBoundPoint(), al_map_rgb(0, 255, 0));
-	
-	//draw the character
-	al_draw_filled_rectangle(m_XPosition, m_YPosition - 9, m_XPosition + 10, m_YPosition - 7, al_map_rgb(255, 0, 0));
-	al_draw_filled_rectangle(m_XPosition, m_YPosition + 9, m_XPosition + 10, m_YPosition + 7, al_map_rgb(255, 0, 0));
-	al_draw_filled_triangle(m_XPosition - 12, m_YPosition - 17, m_XPosition + 12, m_YPosition, m_XPosition - 12, m_YPosition + 17, al_map_rgb(0, 255, 0));
-	al_draw_filled_rectangle(m_XPosition - 12, m_YPosition - 2, m_XPosition + 15, m_YPosition + 2, al_map_rgb(0, 0, 255));
 }
 
 //!Handles movement for the player character each update
@@ -460,7 +456,7 @@ float Player::GetYPosition()
 //!Sets the x position of the player
 //In - 
 //		int NewXPosition - the new x position for the player
-void Player::SetXPosition(int NewXPosition)
+void Player::SetXPosition(float NewXPosition)
 {
 	m_XPosition = NewXPosition;
 }
@@ -468,7 +464,7 @@ void Player::SetXPosition(int NewXPosition)
 //!Sets the y position of the player
 //In - 
 //		int NewYPosition - the new y position for the player
-void Player::SetYPosition(int NewYPosition)
+void Player::SetYPosition(float NewYPosition)
 {
 	m_YPosition = NewYPosition;
 }
