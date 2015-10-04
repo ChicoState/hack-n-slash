@@ -30,7 +30,7 @@ int Random(int RandomAmount1, int RandomAmount2)
 	return Number;
 }
 
-void DungeonGenerator::GenerateDungeon()
+void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 {
 	currentRegion = -1;
 
@@ -60,7 +60,7 @@ void DungeonGenerator::GenerateDungeon()
 
 	SetStartPosition();
 
-	InitMap();
+	InitMap(MainDisplay);
 	
 	//MultiplyDungeon(2);
 }
@@ -146,8 +146,6 @@ void DungeonGenerator::connectRegions()
 
 		AddJunction(connector);
 
-		
-		
 		std::vector<int> Regions;
 		
 		for (std::unordered_set<int>::iterator it = connectorRegions[Temp].begin(); it != connectorRegions[Temp].end(); ++it)
@@ -504,9 +502,11 @@ void DungeonGenerator::MultiplyDungeon(int Factor)
 	m_Regions = NewRegions;
 }
 
-void DungeonGenerator::InitMap()
+void DungeonGenerator::InitMap(Display &MainDisplay)
 {
-	m_Map.resize(cm_DungeonWidth, std::vector<TerrainTile>(cm_DungeonHeight, TerrainTile(0,0,Floor,0,0)));
+	
+	std::vector<std::vector<TerrainTile>> Layer;
+	Layer.resize(cm_DungeonWidth, std::vector<TerrainTile>(cm_DungeonHeight, TerrainTile(NULL,0,0,Floor,0,0)));
 
 	for (int x = 0; x < m_Dungeon.size(); x++)
 	{
@@ -516,30 +516,28 @@ void DungeonGenerator::InitMap()
 			
 			if (CurTileType == Wall)
 			{
-				m_Map[x][y] = TerrainTile(x * TileSize, y * TileSize, Wall, TileSize, TileSize, true);
+				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Wall, TileSize, TileSize, true);
 			}
 			else if (CurTileType == Floor)
 			{
-				m_Map[x][y] = TerrainTile(x * TileSize, y * TileSize, Floor, TileSize, TileSize, false);
+				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Floor, TileSize, TileSize, false);
 			}
 			else if (CurTileType == Door)
 			{
-				m_Map[x][y] = TerrainTile(x * TileSize, y * TileSize, Door, TileSize, TileSize, false);
+				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Door, TileSize, TileSize, false);
 			}
 		}
 	}
+
+	m_BaseLayer = TerrainLayer(Layer);
+	m_BaseLayer.CreateBitmap(MainDisplay);
+	
 }
 
 void DungeonGenerator::Draw()
 {
-	for (int x = 0; x < cm_DungeonWidth; x++)
-	{
-		for (int y = 0; y < cm_DungeonHeight; y++)
-		{
-			m_Map[x][y].Draw();
-		}
-	}
-
+	m_BaseLayer.Draw();
+	
 	al_draw_filled_circle(m_StartPosition.x() * TileSize, m_StartPosition.y() * TileSize, 5, al_map_rgb(255, 255, 255));
 }
 
@@ -595,3 +593,4 @@ void DungeonGenerator::SetStartPosition()
 	
 	m_StartPosition = Vec2f(Random(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1), Random(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1));
 }
+

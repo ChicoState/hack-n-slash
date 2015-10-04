@@ -9,17 +9,28 @@
 
 void TerrainTile::Draw()
 {
-	/*Once I get some graphics to use this will all obviously change was we will not be drawing primitive rectangles*/
-	if (m_TileType == Wall)
+	if (m_Image != NULL)
 	{
-		al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(255, 0, 0));
+		Sprite::Draw();
 	}
-	else if (m_TileType == Floor)
+	else
 	{
-		al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 255, 0));
+		if (m_TileType == Wall)
+		{
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(255, 0, 0));
+		}
+		else if (m_TileType == Floor)
+		{
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 255, 0));
+		}
+		else if (m_TileType == Door)
+		{
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 0, 255));
+		}
 	}
-	else if (m_TileType == Door)
-	{
-		al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(0, 0, 255));
-	}
+}
+
+int TerrainTile::Event_Handler(ALLEGRO_EVENT &EV)
+{
+	return Sprite::Event_Handler(EV);
 }
