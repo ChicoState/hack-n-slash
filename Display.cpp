@@ -40,3 +40,8 @@ void Display::Draw()
 	al_flip_display();
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 }
+
+void Display::SetDisplayAsTarget()
+{
+	al_set_target_bitmap(al_get_backbuffer(m_Display));
+}
