@@ -21,7 +21,7 @@ void Sprite::Set_CurRow(int Row, bool ResetCurColumn = true)
 
 void Sprite::Draw()
 {
-	al_draw_bitmap_region(m_Image, m_CurColumn * m_Tile_Width, m_CurRow * m_Tile_Height, m_Tile_Width, m_Tile_Height, m_PosX, m_PosY, 0);
+	al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, m_PosX, m_PosY, 0);
 }
 
 
