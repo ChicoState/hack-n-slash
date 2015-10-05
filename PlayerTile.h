@@ -12,16 +12,12 @@
 class PlayerTile : Sprite
 {
 public:
-	PlayerTile(int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
+	PlayerTile(ALLEGRO_BITMAP *Image, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable, bool TriggerTile, bool Animated, bool Looped, int AnimFPS);
 	void Draw(float InputPlayerXPosition, float InputPlayerYPosition);
-	void SetXPosition(int InputPlayerXPosition);
-	void SetYPosition(int InputPlayerYPosition);
 
 private:
 
-	float m_XPosition;
-	float m_YPosition;
 };
 
 #endif

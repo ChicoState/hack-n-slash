@@ -9,8 +9,8 @@
 //		int InputScreenWidth - the input screen width dimension of the game
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(0, 0, 144, 256, true, false, true, false, 0)
+Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
+		m_PlayerTile(Image, 0, 0, 48, 64, true, false, true, false, 30)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;

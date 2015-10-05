@@ -13,41 +13,61 @@
 class Sprite
 {
 private:
+	
 
 protected:
-	ALLEGRO_BITMAP *m_Image;
-	
-	int m_MaxFramesX;   //The number of Tiles wide the sprite sheet is
+	ALLEGRO_BITMAP *m_Image; //The image should be created/generated elsewhere. This class will handle the deletion of said bitmap
 
-	int m_Tile_Width;	//Width of the Sprite image to be used
-	int m_Tile_Height;	//Height of the Sprite image to be used
+	int m_PosX; //world location in X where the tile is located
+	int m_PosY; //world location in Y where the tile is located
+
+	int m_MaxFramesX;   //The number of Tiles wide the sprite sheet is
+	int m_MaxFramesY;   //The number of Tiles tall the sprite sheet is
+
+	int m_FrameWidth;	//Width of one frame
+	int m_FrameHeight;	//Height of one frame
 
 	int m_CurColumn; //X location of where the image is located on a sprite sheet
-	
+	int m_CurRow; //The current row in the Sprite sheet
+
 	bool m_Animated; //If the image is animated or not
 	bool m_LoopedAnim; //should we continously loop this anim?
+	bool m_Continuous; //should we continue to animate onto the next row of the sprite sheet? 
 	int m_AnimFPS; //how quickly does the anim update?
+	int m_FrameCount; //used for animated sprites.
 
 	bool m_Collidable; //Should this sprite by accounted for in collisions?
 
 public:
-	Sprite(int FrameWidth, int FrameHeight, 
-		bool Collidable = false, bool Animated = false, bool Looped = false, int AnimFPS = 0)
-		: m_Tile_Width(FrameWidth), m_Tile_Height(FrameHeight), m_Collidable(Collidable), m_Animated(Animated), 
-		m_LoopedAnim(Looped), m_AnimFPS(AnimFPS)
+	Sprite(ALLEGRO_BITMAP *Image, int PosX, int PosY, int FrameWidth, int FrameHeight,
+		bool Collidable = false, bool Animated = false, bool Continuous = false, bool Looped = false, int AnimFPS = 0)
+		: m_Image(Image), m_PosX(PosX), m_PosY(PosY), m_FrameWidth(FrameWidth), m_FrameHeight(FrameHeight),
+		m_Collidable(Collidable), m_Animated(Animated), m_Continuous(Continuous), m_LoopedAnim(Looped), m_AnimFPS(AnimFPS)
 	{
-		//m_Image = al_load_bitmap("); //Since I'm not currently using Images for my Dungeon Generator this commented out. This should not be commented though!
 		m_CurColumn = 0;
-		m_MaxFramesX = 0;// al_get_bitmap_width(m_Image) / m_Tile_Width; //Same thing goes for here as well
+		m_CurRow = 0;
+		m_FrameCount = 0;
+		m_MaxFramesX = (al_get_bitmap_width(m_Image) / m_FrameWidth) - 1;
+		m_MaxFramesY = (al_get_bitmap_height(m_Image) / m_FrameHeight) - 1;
+
+		if ((!m_Animated) || (m_MaxFramesY == 0))
+			m_Continuous = false;
 	}
 
 	~Sprite()
 	{
-		//al_destroy_bitmap(m_Image); //And here
+		al_destroy_bitmap(m_Image);
 	}
 
-	//Pos = World Coordinates
-	virtual void Draw(Vec2f Pos);
+	bool Get_IsAnimated(){ return m_Animated; }
+	int Get_TileWidth(){ return m_FrameWidth; }
+	int Get_TileHeight(){ return m_FrameHeight; }
+
+	void Set_CurRow(int, bool);
+
+	virtual void Draw();
+
+	virtual void Update();
 
 	virtual int Event_Handler(ALLEGRO_EVENT&);
 };

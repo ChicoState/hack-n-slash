@@ -14,24 +14,27 @@ enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor };
 class TerrainTile : public Sprite
 {
 private:
-	int m_PosX;
-	int m_PosY;
-
-	bool m_TriggerTile;
+	
+	bool m_TriggerTile; //Does this tile trigger an event when the player walks over it?
 	//m_TriggerType //A trigger Enum will be created at some point for triggerable tiles.
 
-	TILE m_TileType;
+	TILE m_TileType; //Type of tile
+
+	bool m_debugDraw;
 
 public:
 
-	TerrainTile(int PosX, int PosY, TILE TileType, int FrameWidth, int FrameHeight,
-		bool Collidable = false, bool TriggerTile = false, bool Animated = false, bool Looped = false, int AnimFPS = 0)
-		: Sprite(FrameWidth, FrameHeight, Collidable, Animated, Looped, AnimFPS), m_PosX(PosX), m_PosY(PosY),
+	TerrainTile(ALLEGRO_BITMAP *Image, int PosX, int PosY, TILE TileType, int FrameWidth, int FrameHeight,
+		bool Collidable = false, bool TriggerTile = false, bool Animated = false, bool Continuious = false, bool Looped = false, int AnimFPS = 0)
+		: Sprite(Image, PosX, PosY, FrameWidth, FrameHeight, Collidable, Animated, Continuious, Looped, AnimFPS),
 		m_TriggerTile(m_TriggerTile), m_TileType(TileType)
 	{
 	}
 
 	virtual void Draw();
+	virtual int Event_Handler(ALLEGRO_EVENT&);
 };
+
+
 
 #endif

@@ -20,7 +20,7 @@ class Player
 {
 public:
 
-	Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
+	Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
 
 	~Player(); //Deconstructor for the player class
 

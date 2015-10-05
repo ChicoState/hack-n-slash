@@ -1,5 +1,5 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/3/15
+//Date updated:		9/30/15
 //Last update by:	N/A
 //Reason for update:N/A
 #ifndef __DISPLAY__
@@ -35,9 +35,13 @@ public:
 		al_destroy_display(m_Display);
 	}
 
+	int Get_ScreenWidth(){ return m_ScreenWidth; }
+	int Get_ScreenHeight(){ return m_ScreenHeight; }
+
 	int Event_Handler(ALLEGRO_EVENT&);
 	ALLEGRO_DISPLAY *Get_Display();
 	bool TestDisplay();
+	void SetDisplayAsTarget();
 	void Draw();
 };
 
