@@ -28,11 +28,11 @@ void TerrainGenerator::interpretMap(float *heightMap[]){
 	mapFile.open("terrainMap.txt");
 	for (int i = 0; i < 129; i++){
 		for (int j = 0; j < 129; j++){
-			if (heightMap[i][j] >= 18.0f){
+			if (heightMap[i][j] >= 40.0f){
 				interpretedData[i][j] = 3;
 				m_curMap[i][j] = TerrainTile(i * TileSize, j * TileSize, Grass, TileSize, TileSize, true);
 			}
-			else if (heightMap[i][j] <= 15.0f){
+			else if (heightMap[i][j] <= 34.0f){
 				interpretedData[i][j] = 1;
 				m_curMap[i][j] = TerrainTile(i * TileSize, j * TileSize, Water, TileSize, TileSize, true);
 			}
@@ -59,6 +59,7 @@ float** Fractal::generateFractal(Biome *curBiome){
 }
 
 void Fractal::setInitialConditions(Biome *curBiome){
+	//this will contain the initial conditions for each of the primary biomes
 	m_heightMap[0][0] = 20.0f;
 	m_heightMap[0][m_size - 1] = 20.0f;
 	m_heightMap[m_size - 1][0] = 20.0f;

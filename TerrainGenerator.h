@@ -54,7 +54,7 @@ private:
 class Fractal{
 public:
 	Fractal(){
-		roughness = 3.0f; //default value of roughness for testing
+		roughness = 1.8f; //default value of roughness for testing
 	};
 	//~Fractal();
 	float** generateFractal(Biome*); //generate fractal calls setheightconstants and then runs the diamond square algorithm to produce the height map
