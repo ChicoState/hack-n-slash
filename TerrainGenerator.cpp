@@ -1,3 +1,8 @@
+//Created by:		Jesse Herzenach
+//Date updated:		10/05/15
+//Last update by:	N/A
+//Reason for update:N/A
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -51,15 +56,14 @@ void TerrainGenerator::interpretMap(float *heightMap[]){
 float** Fractal::generateFractal(Biome *curBiome){
 	initializeHeightmap();
 	setInitialConditions(curBiome);
-	diamond(m_size - 1, 0, 0, 200);
-	std::cout << "return from diamond square" << std::endl;
-	print();
+	diamond(m_size - 1, 0, 0, 200);	//calling diamond will then recursively call square->diamond until the entire height map is generated
+	print(); //prints raw height map to text file
 	return m_heightMap;
-
 }
 
 void Fractal::setInitialConditions(Biome *curBiome){
 	//this will contain the initial conditions for each of the primary biomes
+	//I will add a conditional to declare additional constants other than the four corner points
 	m_heightMap[0][0] = 20.0f;
 	m_heightMap[0][m_size - 1] = 20.0f;
 	m_heightMap[m_size - 1][0] = 20.0f;
