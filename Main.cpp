@@ -74,6 +74,7 @@ int main(void)
 		{
 			//al_draw_bitmap(image, 0, 0, 0);
 			MainDisplay.Draw();
+			terrain.draw();
 		}
 	}
 

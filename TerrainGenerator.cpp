@@ -10,34 +10,35 @@ void TerrainGenerator::generateTerrain(){
 }
 
 void TerrainGenerator::draw(){
-
-
+	for (int i = 0; i < 129; i++){
+		for (int j = 0; j < 129; j++){
+			m_curMap[i][j].Draw();
+		}
+	}
 }
 
 void TerrainGenerator::interpretMap(float *heightMap[]){
-	//make equal size heightmap to that passed in
-	//have the 5 basic tile types assigned
-	//output this to a text file to save on memory
-	//return and render rectangles from the display call reading in from the text file
+	int TileSize = 4;
 	int *interpretedData[129];
-	TerrainTile *terrainMap[129];
+	m_curMap.resize(129, std::vector<TerrainTile>(129, TerrainTile(0, 0, Grass, 0, 0)));
 	for (int i = 0; i < 129; i++){
 		interpretedData[i] = new int[129];
-		terrainMap[i] = new TerrainTile[129];
 	}
 	std::ofstream mapFile;
 	mapFile.open("terrainMap.txt");
 	for (int i = 0; i < 129; i++){
 		for (int j = 0; j < 129; j++){
-			if (heightMap[i][j] >= 50.0f){
+			if (heightMap[i][j] >= 18.0f){
 				interpretedData[i][j] = 3;
-				terrainMap[i][j]
+				m_curMap[i][j] = TerrainTile(i * TileSize, j * TileSize, Grass, TileSize, TileSize, true);
 			}
-			else if (heightMap[i][j] <= 40.0f){
+			else if (heightMap[i][j] <= 15.0f){
 				interpretedData[i][j] = 1;
+				m_curMap[i][j] = TerrainTile(i * TileSize, j * TileSize, Water, TileSize, TileSize, true);
 			}
 			else{
 				interpretedData[i][j] = 2;
+				m_curMap[i][j] = TerrainTile(i * TileSize, j * TileSize, Dirt, TileSize, TileSize, true);
 			}
 			mapFile << interpretedData[i][j];
 		}
@@ -52,7 +53,7 @@ float** Fractal::generateFractal(Biome *curBiome){
 	setInitialConditions(curBiome);
 	diamond(m_size - 1, 0, 0, 200);
 	std::cout << "return from diamond square" << std::endl;
-	//print();
+	print();
 	return m_heightMap;
 
 }
@@ -61,7 +62,7 @@ void Fractal::setInitialConditions(Biome *curBiome){
 	m_heightMap[0][0] = 20.0f;
 	m_heightMap[0][m_size - 1] = 20.0f;
 	m_heightMap[m_size - 1][0] = 20.0f;
-	m_heightMap[m_size - 1][m_size - 1] = 40.0f;
+	m_heightMap[m_size - 1][m_size - 1] = 20.0f;
 	int X = 0;
 	int Y = 0;
 	
@@ -135,10 +136,12 @@ void Fractal::square(int size, int X, int Y, float range){
 }
 
 void Fractal::print(){
+	std::ofstream mapFile;
+	mapFile.open("rawHeight.txt");
 	for (int i = 0; i < m_size; i++){
 		for (int j = 0; j < m_size; j++){
-			std::cout << std::setprecision(2) << std::fixed << m_heightMap[i][j] << " ";
+			mapFile << std::setprecision(2) << std::fixed << m_heightMap[i][j] << " ";
 		}
-		std::cout << std::endl;
+		mapFile << std::endl;
 	}
 }

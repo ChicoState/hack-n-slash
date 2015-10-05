@@ -7,7 +7,7 @@
 #define __TERRAIN_GENERATOR__
 
 #include "Vec2.h"
-
+#include <vector>
 
 #include "allegro5\allegro.h"
 #include "allegro5\allegro_primitives.h"
@@ -16,6 +16,7 @@
 
 //Biome class only contains information needed for the generation of the fractal height map
 //as well as information for how to place "noise" within the environment
+
 class Biome{
 public:
 	enum biomeType{
@@ -53,7 +54,7 @@ private:
 class Fractal{
 public:
 	Fractal(){
-		roughness = 1.0f; //default value of roughness for testing
+		roughness = 3.0f; //default value of roughness for testing
 	};
 	//~Fractal();
 	float** generateFractal(Biome*); //generate fractal calls setheightconstants and then runs the diamond square algorithm to produce the height map
@@ -80,6 +81,7 @@ public:
 	void interpretMap(float*[]);
 	void draw();
 private:
+	std::vector<std::vector<TerrainTile>> m_curMap;
 	Biome *m_curBiome;
 	Fractal *m_curFractal;
 };

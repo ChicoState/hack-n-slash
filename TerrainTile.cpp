@@ -6,7 +6,7 @@
 #include "TerrainTile.h"
 
 #include <allegro5\allegro_primitives.h>
-
+#include <iostream>
 void TerrainTile::Draw()
 {
 	/*Once I get some graphics to use this will all obviously change was we will not be drawing primitive rectangles*/
@@ -33,5 +33,8 @@ void TerrainTile::Draw()
 	else if (m_TileType == Dirt)
 	{
 		al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_Tile_Width, m_PosY + m_Tile_Height, al_map_rgb(165, 42, 42));
+	}
+	else{
+		std::cout << "failure" << std::endl;
 	}
 }

@@ -30,7 +30,7 @@ public:
 		m_TriggerTile(m_TriggerTile), m_TileType(TileType)
 	{
 	}
-
+	TILE getTileType(){ return m_TileType; }
 	virtual void Draw();
 };
 
