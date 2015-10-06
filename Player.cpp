@@ -10,7 +10,7 @@
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(Image, 0, 0, 48, 64, true, false, true, false, 30)
+		m_PlayerTile(Image, 0, 0, 48, 64, true, false, true, false, 30), m_Sword(m_AlEvent)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -39,12 +39,15 @@ Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeigh
 	m_CanMoveRight = true;
 	m_LockedXPosition = 0;
 	m_LockedYPosition = 0;
+
+	//Initiate weapons
+
 }
 
 //!The deconstructor for the player class
 Player::~Player()
 {
-
+	
 }
 
 //!Handles all the functions for the player that need to be called every update
@@ -57,6 +60,27 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 
 	//check player movement
 	CheckMovement(InputMouseXWorldPosition, InputMouseYWorldPosition);
+
+	//check weapon
+	if(m_CurrentDirection == Direction(North))
+	{
+		m_Sword.EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, 1);
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		m_Sword.EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, -1);
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		m_Sword.EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+	}
 
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
@@ -130,6 +154,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveUp)
 			{
+				m_CurrentDirection = Direction(North);
 				MoveUp();
 			}
 		}
@@ -139,6 +164,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveDown)
 			{
+				m_CurrentDirection = Direction(South);
 				MoveDown();
 			}
 		}
@@ -148,6 +174,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveLeft)
 			{
+				m_CurrentDirection = Direction(West);
 				MoveLeft();
 			}
 		}
@@ -157,6 +184,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveRight)
 			{
+				m_CurrentDirection = Direction(East);
 				MoveRight();
 			}
 		}
@@ -190,6 +218,10 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 
 		case ALLEGRO_KEY_D:
 			m_KeyboardMap["D"] = true;
+			break;
+
+		case ALLEGRO_KEY_SPACE:
+			m_Sword.Attack();
 			break;
 		}
 	}

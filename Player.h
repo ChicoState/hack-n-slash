@@ -10,6 +10,7 @@
 
 #include "PlayerTile.h"
 #include "Camera.h"
+#include "SwordWeapon.h"
 
 #include <string>
 #include <map>
@@ -45,6 +46,14 @@ public:
 
 private:
 
+	enum Direction
+	{
+		North,
+		South,
+		East,
+		West
+	};
+
 	void DrawPlayer(); //Draws the player character to the screen
 	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
@@ -60,12 +69,14 @@ private:
 	int m_ScreenHeight; //the screen height dimension of the game
 	PlayerTile m_PlayerTile;
 	Camera *m_Camera;
+	SwordWeapon m_Sword;
 
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
 	int m_YBound; //the y bound for the player
 	float m_XPosition; //the current x position of the player
 	float m_YPosition; //the current y position of the player
+	Direction m_CurrentDirection;
 	int m_MovementSpeed; //the speed at which the player moves
 	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
 	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to
