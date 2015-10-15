@@ -13,6 +13,7 @@ class SwordWeapon : public Weapon
 {
 public:
 	SwordWeapon(ALLEGRO_EVENT& InputAlEvent);
+	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection);
 
 private:
 

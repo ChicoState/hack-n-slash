@@ -10,7 +10,11 @@
 
 #include "PlayerTile.h"
 #include "Camera.h"
+#include "Inventory.h"
+#include "Weapon.h"
+
 #include "SwordWeapon.h"
+#include "LongSwordWeapon.h"
 
 #include <string>
 #include <map>
@@ -69,7 +73,8 @@ private:
 	int m_ScreenHeight; //the screen height dimension of the game
 	PlayerTile m_PlayerTile;
 	Camera *m_Camera;
-	SwordWeapon m_Sword;
+	Inventory m_Inventory;
+	Weapon* m_ActiveWeapon;
 
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player

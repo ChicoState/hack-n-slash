@@ -39,8 +39,8 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 		m_MouseXCoordinate = m_AlEvent.mouse.x;
 		m_MouseYCoordinate = m_AlEvent.mouse.y;
 
-				printf("%i", m_MouseXCoordinate);
-				printf("%i", m_MouseYCoordinate);
+				//printf("%i", m_MouseXCoordinate);
+				//printf("%i", m_MouseYCoordinate);
 	}
 }
 

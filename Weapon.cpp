@@ -15,7 +15,7 @@ Weapon::Weapon(ALLEGRO_EVENT& InputAlEvent, /*InputWeaponSprite, */int InputXBou
 	m_AttackTime = (InputAttackTime * 60);
 	m_CurrentAttackCount = 0;
 	m_Damage = InputDamage;
-	m_DamageModifier = 0;
+	m_DamageModifier = 1;
 }
 
 void Weapon::EventHandler(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
@@ -41,20 +41,7 @@ void Weapon::EventHandler(int DrawXCoordinate, int DrawYCoordinate, int XDirecti
 
 void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
-	//al_draw_filled_rectangle(DrawXCoordinate, DrawYCoordinate - 9, DrawXCoordinate + 10, DrawYCoordinate - 7, al_map_rgb(255, 0, 0));
-	//al_draw_filled_rectangle(DrawXCoordinate, DrawYCoordinate + 9, DrawXCoordinate + 10, DrawYCoordinate + 7, al_map_rgb(255, 0, 0));
-	//al_draw_filled_triangle(DrawXCoordinate - 12, DrawYCoordinate - 17, DrawXCoordinate + 12, DrawYCoordinate, DrawXCoordinate - 12, DrawYCoordinate + 17, al_map_rgb(0, 255, 0));
-	//al_draw_filled_rectangle(DrawXCoordinate - 12, DrawYCoordinate - 2, DrawXCoordinate + 15, DrawYCoordinate + 2, al_map_rgb(0, 0, 255));
-
-	if(m_IsActive)
-	{
-		al_draw_line(DrawXCoordinate, DrawYCoordinate, DrawXCoordinate + (30 * XDirection), DrawYCoordinate + (5 * YDirection), al_map_rgb(255, 0, 0), 10);
-	}
-
-	else
-	{
-		al_draw_line(DrawXCoordinate, DrawYCoordinate, DrawXCoordinate + (30 * XDirection), DrawYCoordinate + (5 * YDirection), al_map_rgb(0, 0, 255), 10);
-	}
+	
 }
 
 void Weapon::Attack()

@@ -1,22 +1,25 @@
 //Scott Backer
 
-//PlayerTile Class H: Handles the sprite control for the player character
+//PlayerTile Class CPP: Handles the sprite control for the player character
 
 #include "PlayerTile.h"
 
 #include <allegro5\allegro_primitives.h>
 
 PlayerTile::PlayerTile(ALLEGRO_BITMAP *Image, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
-		bool Collidable = true, bool TriggerTile = false, bool Animated = true, bool Looped = false, int AnimFPS = 0)
-		: Sprite(Image, FrameWidth, FrameHeight, Collidable, Animated, Looped, AnimFPS), m_XPosition(InputPlayerXPosition), m_YPosition(InputPlayerYPosition)
+		bool Collidable = true, bool TriggerTile = false, bool Animated = true, bool Looped = false, int AnimFPS = 30)
+		: Sprite(Image, FrameWidth, FrameHeight, Collidable, Animated, Looped, AnimFPS)
 {
-
+	
 }
 
 void PlayerTile::Draw(float InputPlayerXPosition, float InputPlayerYPosition)
 {
+
 	if (m_Image != NULL)
 	{
+		Sprite::Set_CurRow(2, false);
+		//al_draw_bitmap_region(m_Image, 100, 100, 100.100, 100, InputPlayerXPosition, InputPlayerYPosition, 0);
 		al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, InputPlayerXPosition, InputPlayerYPosition, 0);
 	}
 

@@ -10,7 +10,7 @@
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(Image, 0, 0, 48, 64, true, false, true, false, 30), m_Sword(m_AlEvent)
+		m_PlayerTile(Image, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, false, true, false, 30)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -41,13 +41,17 @@ Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeigh
 	m_LockedYPosition = 0;
 
 	//Initiate weapons
-
+	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_AlEvent);
+	LongSwordWeapon* TempLongSwordWeapon = new LongSwordWeapon(m_AlEvent);
+	m_Inventory.AddWeapon(TempSwordWeapon);
+	m_Inventory.AddWeapon(TempLongSwordWeapon);
+	m_ActiveWeapon = m_Inventory.GetWeaponFromSlot(1);
 }
 
 //!The deconstructor for the player class
 Player::~Player()
 {
-	
+	delete m_ActiveWeapon;
 }
 
 //!Handles all the functions for the player that need to be called every update
@@ -64,22 +68,26 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 	//check weapon
 	if(m_CurrentDirection == Direction(North))
 	{
-		m_Sword.EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, 1);
+		//m_Sword.EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
+		m_ActiveWeapon->EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
 	}
 
 	if(m_CurrentDirection == Direction(South))
 	{
-		m_Sword.EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, -1);
+		//m_Sword.EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
+		m_ActiveWeapon->EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
 	}
 
 	if(m_CurrentDirection == Direction(East))
 	{
-		m_Sword.EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+		//m_Sword.EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+		m_ActiveWeapon->EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
 	}
 
 	if(m_CurrentDirection == Direction(West))
 	{
-		m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+		//m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+		m_ActiveWeapon->EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 	}
 
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
@@ -103,6 +111,8 @@ void Player::DrawPlayer()
 //!Handles movement for the player character each update
 void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
+	Weapon* TempReturnedWeapon = NULL; //used when retrieving a new weapon from the inventory
+
 	//reset the keyboard moving bool so that the mouse movement can occur on this frame if called on
 	m_KeyboardMoving = false;
 
@@ -221,7 +231,39 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			break;
 
 		case ALLEGRO_KEY_SPACE:
-			m_Sword.Attack();
+			m_ActiveWeapon->Attack();
+			break;
+
+		case ALLEGRO_KEY_E:
+			TempReturnedWeapon = m_Inventory.GetNextCycledWeapon();
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_1:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(1);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_2:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(2);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_3:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(3);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
 			break;
 		}
 	}

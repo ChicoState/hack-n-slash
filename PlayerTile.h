@@ -9,7 +9,7 @@
 
 #include "Sprite.h"
 
-class PlayerTile : Sprite
+class PlayerTile : public Sprite
 {
 public:
 	PlayerTile(ALLEGRO_BITMAP *Image, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,

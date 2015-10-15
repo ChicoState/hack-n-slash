@@ -15,8 +15,8 @@ class Weapon
 public:
 	Weapon(ALLEGRO_EVENT& InputAlEvent, /*InputWeaponSprite, */int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage);
 	void EventHandler(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection);
-	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection);
-	void virtual Attack();
+	virtual void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection);
+	virtual void Attack();
 	int GetXBound();
 	int GetYBound();
 	bool IsActive();
