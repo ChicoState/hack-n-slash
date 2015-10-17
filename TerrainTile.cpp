@@ -4,6 +4,7 @@
 //Reason for update:N/A
 
 #include "TerrainTile.h"
+#include "Utility.h"
 
 #include <allegro5\allegro_primitives.h>
 

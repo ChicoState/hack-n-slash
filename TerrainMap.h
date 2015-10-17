@@ -32,6 +32,7 @@ public:
 		for (int i = 0; i < m_Map.size(); i++)
 		{
 			m_Map[i]->~TerrainLayer();
+			delete m_Map[i];
 		}
 	}
 
