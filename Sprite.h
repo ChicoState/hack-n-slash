@@ -59,7 +59,10 @@ public:
 
 	~Sprite()
 	{
-		al_destroy_bitmap(m_Image);
+		if (m_Image)
+		{
+			al_destroy_bitmap(m_Image);
+		}
 	}
 
 	bool Get_IsAnimated(){ return m_Animated; }

@@ -82,7 +82,6 @@ public:
 	}
 	~DungeonGenerator()
 	{
-		m_Map->~TerrainMap();
 		delete m_Map;
 	}
 	
