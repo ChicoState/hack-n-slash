@@ -19,18 +19,7 @@
 
 #include "TerrainLayer.h"
 #include "TerrainTile.h"
-
-/********************************************************************
-Unit testing: GoogleTest, cxxUnit   
-*********************************************************************/
-/*********************************************************************
-Terrain Planning
-**********************************************************************
-Map Class:
-Array of Layers (1 condition: Last layer = Information layer)
-Information layer is a layer containing all the information pertaining
-to collisions/portals/triggers/etc...
-*********************************************************************/
+#include "TerrainMap.h"
 
 
 //Definition of a simple rectangle class. 
@@ -70,7 +59,7 @@ private:
 
 	std::vector<TerrainTile> m_TileTypes; //Templates for all of the tiles in my dungeon (i.e walls, floors, etc..)
 
-	TerrainLayer m_BaseLayer; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
+	TerrainMap *m_Map; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
 
 	std::vector<std::vector<TILE>> m_Dungeon; //This is another 2D Array containing a simple version of all the Tile types the dungeon is made (i.e. Wall, Floor, Door, etc...)
 	std::vector<std::vector<int>> m_Regions; //Utility for creating the dungeon
@@ -91,11 +80,18 @@ public:
 		m_Cardinal.push_back(Vec2i(0, -1));
 		m_Cardinal.push_back(Vec2i(-1, 0));
 	}
+	~DungeonGenerator()
+	{
+		delete m_Map;
+	}
 	
 	std::vector<std::vector<TILE>> GetDungeon() { return m_Dungeon; }
 	std::vector<std::vector<int>> GetRegions() { return m_Regions;  }
 
-	TILE GetTile(Vec2i Pos) { return m_Dungeon[Pos.x()][Pos.y()]; }
+	TILE Get_Tile(Vec2i Pos) { return m_Dungeon[Pos.x()][Pos.y()]; }
+	void Set_Tile(Vec2i Pos, TILE tile) { m_Dungeon[Pos.x()][Pos.y()] = tile; }
+
+	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
 	Vec2f GetStartPosition() { return m_StartPosition; }
 
@@ -104,7 +100,7 @@ public:
 	void Draw(); //This draw function will be changed quite a bit later once all of the Base classes needed have been created and once I get some actual graphics to use
 
 private:
-	void SetTile(Vec2i Pos, TILE tile) { m_Dungeon[Pos.x()][Pos.y()] = tile; }
+	
 	
 	void Carve(Vec2i pos, TILE tile);
 	void AddRooms();

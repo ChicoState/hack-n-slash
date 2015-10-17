@@ -6,7 +6,7 @@
 #include "Sprite.h"
 
 
-void Sprite::Set_CurRow(int Row, bool ResetCurColumn = true)
+void Sprite::Set_CurRow(int Row, bool ResetCurColumn)
 {
 	if (!m_Continuous && Row >= 0 && Row <= m_MaxFramesY)
 	{

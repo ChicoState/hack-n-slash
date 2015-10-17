@@ -3,6 +3,7 @@
 
 #include <vector>
 
+
 #include "TerrainTile.h"
 #include "Display.h"
 
@@ -28,9 +29,21 @@ public:
 	}
 	~TerrainLayer()
 	{
-		al_destroy_bitmap(m_LayerImage);
+		if (m_LayerImage)
+		{
+			al_destroy_bitmap(m_LayerImage);
+		}
 	}
 	
+	int Get_LayerWidth(){ return m_LayerWidth; }
+	int Get_LayerHeight(){ return m_LayerHeight; }
+	int Get_TileSize(){ return m_Layer[0][0].Get_TileWidth(); }
+
+	TerrainTile Get_Tile(Vec2i Pos) { return m_Layer[Pos.x()][Pos.y()]; }
+	void Set_Tile(Vec2i Pos, TerrainTile Tile) { m_Layer[Pos.x()][Pos.y()] = Tile; }
+
+	std::vector<std::vector<TerrainTile>>& Get_VectorLayer() { return m_Layer; }
+
 	void Draw();
 	void CreateBitmap(Display&);
 };

@@ -47,8 +47,11 @@ public:
 		m_CurColumn = 0;
 		m_CurRow = 0;
 		m_FrameCount = 0;
-		m_MaxFramesX = (al_get_bitmap_width(m_Image) / m_FrameWidth) - 1;
-		m_MaxFramesY = (al_get_bitmap_height(m_Image) / m_FrameHeight) - 1;
+		if (Image)
+		{
+			m_MaxFramesX = (al_get_bitmap_width(m_Image) / m_FrameWidth) - 1;
+			m_MaxFramesY = (al_get_bitmap_height(m_Image) / m_FrameHeight) - 1;
+		}
 
 		if ((!m_Animated) || (m_MaxFramesY == 0))
 			m_Continuous = false;
@@ -56,14 +59,18 @@ public:
 
 	~Sprite()
 	{
-		al_destroy_bitmap(m_Image);
+		if (m_Image)
+		{
+			al_destroy_bitmap(m_Image);
+		}
 	}
 
 	bool Get_IsAnimated(){ return m_Animated; }
 	int Get_TileWidth(){ return m_FrameWidth; }
 	int Get_TileHeight(){ return m_FrameHeight; }
+	bool Get_Collidable() { return m_Collidable; }
 
-	void Set_CurRow(int, bool);
+	void Set_CurRow(int Row, bool ResetCurColumn = true);
 
 	virtual void Draw();
 

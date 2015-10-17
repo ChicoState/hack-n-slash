@@ -30,6 +30,9 @@ public:
 		m_TriggerTile(m_TriggerTile), m_TileType(TileType)
 	{
 	}
+	~TerrainTile()
+	{
+	}
 
 	virtual void Draw();
 	virtual int Event_Handler(ALLEGRO_EVENT&);
