@@ -43,7 +43,7 @@ void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 	{
 		for (int y = 1; y < cm_DungeonHeight; y += 2)
 		{
-			if (GetTile(Vec2i(x, y)) != Wall)
+			if (Get_Tile(Vec2i(x, y)) != Wall)
 			{
 				continue;
 			}
@@ -97,7 +97,7 @@ void DungeonGenerator::connectRegions()
 		for (int iy = 1; iy < cm_DungeonHeight - 1; iy++)
 		{
 			Vec2i Pos(ix, iy);
-			if (GetTile(Pos) != Wall)
+			if (Get_Tile(Pos) != Wall)
 				continue;
 			
 			std::unordered_set<int> Regions;
@@ -240,7 +240,7 @@ void DungeonGenerator::RemoveDeadEnds()
 			{
 				Vec2i Pos(ix, iy);
 
-				if (GetTile(Pos) == Wall)
+				if (Get_Tile(Pos) == Wall)
 				{
 					continue;
 				}
@@ -249,7 +249,7 @@ void DungeonGenerator::RemoveDeadEnds()
 
 				for (int i = 0; i < m_Cardinal.size(); i++)
 				{
-					if (GetTile(Pos + m_Cardinal[i]) != Wall)
+					if (Get_Tile(Pos + m_Cardinal[i]) != Wall)
 					{
 						exits++;
 					}
@@ -261,7 +261,7 @@ void DungeonGenerator::RemoveDeadEnds()
 				}
 
 				Done = false;
-				SetTile(Pos, Wall);
+				Set_Tile(Pos, Wall);
 				m_Regions[Pos.x()][Pos.y()] = -1;
 			}
 		}
@@ -313,7 +313,7 @@ int DungeonGenerator::BuildLineSegment(Vec2i Current, std::vector<Vec2i>& Source
 
 	for (int i = 0; i < m_Cardinal.size(); i++)
 	{
-		if (GetTile(Current + m_Cardinal[i]) != Wall)
+		if (Get_Tile(Current + m_Cardinal[i]) != Wall)
 		{
 			exits++;
 		}
@@ -327,7 +327,7 @@ int DungeonGenerator::BuildLineSegment(Vec2i Current, std::vector<Vec2i>& Source
 
 void DungeonGenerator::AddJunction(Vec2i Pos)
 {
-	SetTile(Pos, Door);
+	Set_Tile(Pos, Door);
 }
 
 void DungeonGenerator::GrowMaze(Vec2i Start)
@@ -458,12 +458,12 @@ bool DungeonGenerator::CanCarve(Vec2i Pos, Vec2i Direction)
 
 	if (!Bounds.ContainsPoint(iv2.x(), iv2.y())) return 0;
 
-	return (GetTile(Pos + Direction * 2) == Wall);
+	return (Get_Tile(Pos + Direction * 2) == Wall);
 }
 
 void DungeonGenerator::Carve(Vec2i pos, TILE tile)
 {
-	DungeonGenerator::SetTile(pos, tile);
+	DungeonGenerator::Set_Tile(pos, tile);
 	
 	m_Regions[pos.x()][pos.y()] = currentRegion;
 }
@@ -512,7 +512,7 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 	{
 		for (int y = 0; y < m_Dungeon[0].size(); y++)
 		{
-			TILE CurTileType = GetTile(Vec2i(x, y));
+			TILE CurTileType = Get_Tile(Vec2i(x, y));
 			
 			if (CurTileType == Wall)
 			{
@@ -528,15 +528,16 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 			}
 		}
 	}
-
-	m_BaseLayer = TerrainLayer(Layer);
-	m_BaseLayer.CreateBitmap(MainDisplay);
+	TerrainLayer *Temp = new TerrainLayer(Layer);
+	Temp->CreateBitmap(MainDisplay);
+	m_Map = new TerrainMap(Temp);
+	
 	
 }
 
 void DungeonGenerator::Draw()
 {
-	m_BaseLayer.Draw();
+	m_Map->Draw();
 	
 	al_draw_filled_circle(m_StartPosition.x() * TileSize, m_StartPosition.y() * TileSize, 5, al_map_rgb(255, 255, 255));
 }
