@@ -9,7 +9,8 @@
 //		int InputScreenWidth - the input screen width dimension of the game
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue)
+Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
+		m_PlayerTile(Image, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, false, true, false, 30)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -38,53 +39,136 @@ Player::Player(int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE*
 	m_CanMoveRight = true;
 	m_LockedXPosition = 0;
 	m_LockedYPosition = 0;
+
+	//Initiate weapons
+	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_AlEvent);
+	LongSwordWeapon* TempLongSwordWeapon = new LongSwordWeapon(m_AlEvent);
+	m_Inventory.AddWeapon(TempSwordWeapon);
+	m_Inventory.AddWeapon(TempLongSwordWeapon);
+	m_ActiveWeapon = m_Inventory.GetWeaponFromSlot(1);
 }
 
 //!The deconstructor for the player class
 Player::~Player()
 {
-
+	delete m_ActiveWeapon;
 }
 
 //!Handles all the functions for the player that need to be called every update
 //In - 
 //		ALLEGRO_EVENT& InputAlEvent - The global event handler for the game
-void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent)
+void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
 	//make member event the same as the input event
 	m_AlEvent = InputAlEvent;
 
 	//check player movement
-	CheckMovement();
+	CheckMovement(InputMouseXWorldPosition, InputMouseYWorldPosition);
 
+	/*
+	//check weapon
+	if(m_CurrentDirection == Direction(North))
+	{
+		//m_Sword.EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
+		m_ActiveWeapon->EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		//m_Sword.EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
+		m_ActiveWeapon->EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		//m_Sword.EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+		m_ActiveWeapon->EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		//m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+		m_ActiveWeapon->EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+	}
+	*/
+	
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
+		m_IsColliding = false;
+
+		/*
+		//update sprite
+		m_PlayerTile.Event_Handler(m_AlEvent);
+
 		//draw the player sprite
+		m_PlayerTile.Draw(m_XPosition, m_YPosition);
 		DrawPlayer();
+		*/
 	}
+	
 }
 
 //!Draws the player character to the screen
 void Player::DrawPlayer()
 {
+	//update sprite
+	m_PlayerTile.Event_Handler(m_AlEvent);
+
+	//draw the player sprite
+	m_PlayerTile.Draw(m_XPosition, m_YPosition);
+
+	//check weapon
+	if(m_CurrentDirection == Direction(North))
+	{
+		//m_Sword.EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
+		m_ActiveWeapon->EventHandler(GetXNorthBoundPoint(), GetYNorthBoundPoint(), 0, -1);
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		//m_Sword.EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
+		m_ActiveWeapon->EventHandler(GetXSouthBoundPoint(), GetYSouthBoundPoint(), 0, 1);
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		//m_Sword.EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+		m_ActiveWeapon->EventHandler(GetXEastBoundPoint(), GetYEastBoundPoint(), 1, 0);
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		//m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+		m_ActiveWeapon->EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
+	}
+
 	//draw the bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
 	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
 	al_draw_pixel(GetXSouthBoundPoint(), GetYSouthBoundPoint(), al_map_rgb(0, 0, 255));
 	al_draw_pixel(GetXWestBoundPoint(), GetYWestBoundPoint(), al_map_rgb(0, 255, 0));
-	
-	//draw the character
-	al_draw_filled_rectangle(m_XPosition, m_YPosition - 9, m_XPosition + 10, m_YPosition - 7, al_map_rgb(255, 0, 0));
-	al_draw_filled_rectangle(m_XPosition, m_YPosition + 9, m_XPosition + 10, m_YPosition + 7, al_map_rgb(255, 0, 0));
-	al_draw_filled_triangle(m_XPosition - 12, m_YPosition - 17, m_XPosition + 12, m_YPosition, m_XPosition - 12, m_YPosition + 17, al_map_rgb(0, 255, 0));
-	al_draw_filled_rectangle(m_XPosition - 12, m_YPosition - 2, m_XPosition + 15, m_YPosition + 2, al_map_rgb(0, 0, 255));
 }
 
 //!Handles movement for the player character each update
-void Player::CheckMovement()
+void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
+	Weapon* TempReturnedWeapon = NULL; //used when retrieving a new weapon from the inventory
+
 	//reset the keyboard moving bool so that the mouse movement can occur on this frame if called on
 	m_KeyboardMoving = false;
+
+	//check to see if the player can move a direction they were previously colliding
+	if(!m_IsColliding || m_YPosition != m_LockedYPosition)
+	{
+		m_CanMoveUp = true;
+		m_CanMoveDown = true;
+	}
+
+	if(!m_IsColliding || m_XPosition != m_LockedXPosition)
+	{
+		m_CanMoveLeft = true;
+		m_CanMoveRight = true;
+	}
 
 	//if a mouse button was pressed
 	if(m_AlEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
@@ -93,8 +177,11 @@ void Player::CheckMovement()
 		if(m_AlEvent.mouse.button & 1)
 		{
 			//grab the current mouse x and y position and set mouse moving to true
-			m_CurrentMouseMoveXPosition = m_AlEvent.mouse.x;
-			m_CurrentMouseMoveYPosition = m_AlEvent.mouse.y;
+			//m_CurrentMouseMoveXPosition = m_AlEvent.mouse.x;
+			//m_CurrentMouseMoveYPosition = m_AlEvent.mouse.y;
+			m_CurrentMouseMoveXPosition = InputMouseXWorldPosition;
+			m_CurrentMouseMoveYPosition = InputMouseYWorldPosition;
+
 			m_MouseMoving = true;
 		}
 	}
@@ -131,33 +218,37 @@ void Player::CheckMovement()
 			m_KeyboardMoving = true;
 			if(m_CanMoveUp)
 			{
+				m_CurrentDirection = Direction(North);
 				MoveUp();
 			}
 		}
 
-		if(m_KeyboardMap["S"])
+		else if(m_KeyboardMap["S"])
 		{
 			m_KeyboardMoving = true;
 			if(m_CanMoveDown)
 			{
+				m_CurrentDirection = Direction(South);
 				MoveDown();
 			}
 		}
 
-		if(m_KeyboardMap["A"])
+		else if(m_KeyboardMap["A"])
 		{
 			m_KeyboardMoving = true;
 			if(m_CanMoveLeft)
 			{
+				m_CurrentDirection = Direction(West);
 				MoveLeft();
 			}
 		}
 
-		if(m_KeyboardMap["D"])
+		else if(m_KeyboardMap["D"])
 		{
 			m_KeyboardMoving = true;
 			if(m_CanMoveRight)
 			{
+				m_CurrentDirection = Direction(East);
 				MoveRight();
 			}
 		}
@@ -191,6 +282,42 @@ void Player::CheckMovement()
 
 		case ALLEGRO_KEY_D:
 			m_KeyboardMap["D"] = true;
+			break;
+
+		case ALLEGRO_KEY_SPACE:
+			m_ActiveWeapon->Attack();
+			break;
+
+		case ALLEGRO_KEY_E:
+			TempReturnedWeapon = m_Inventory.GetNextCycledWeapon();
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_1:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(1);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_2:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(2);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
+			break;
+
+		case ALLEGRO_KEY_3:
+			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(3);
+			if(TempReturnedWeapon != NULL)
+			{
+				m_ActiveWeapon = TempReturnedWeapon;
+			}
 			break;
 		}
 	}
@@ -350,6 +477,38 @@ void Player::MoveRight()
 	*/
 }
 
+//!Tells the player that they have collided with something in thier current moving direction
+void Player::MovementColliding()
+{
+	//check moving direction and stop the current movement direction
+
+	m_IsColliding = true;
+
+	if(m_CurrentDirection == Direction(North))
+	{
+		m_LockedYPosition = m_YPosition;
+		m_CanMoveUp = false;
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		m_LockedYPosition = m_YPosition;
+		m_CanMoveDown = false;
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		m_LockedXPosition = m_XPosition;
+		m_CanMoveRight = false;
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		m_LockedXPosition = m_XPosition;
+		m_CanMoveLeft = false;
+	}
+}
+
 //!Gets and returns the player class tag
 //Out - 
 //		string - the player class tag
@@ -454,10 +613,66 @@ float Player::GetYPosition()
 	return m_YPosition;
 }
 
+//!Gets and returns the current X bound position of the player relative to the direction the player is moving
+//Out - 
+//		int - the current x bound of the player relative to their moving direction
+float Player::GetCurrentMovingXPosition()
+{
+	//check moving direction and return the bound for that specific direction
+
+	if(m_CurrentDirection == Direction(North))
+	{
+		return GetXNorthBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		return GetXSouthBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		return GetXEastBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		return GetXWestBoundPoint();
+	}
+}
+
+//!Gets and returns the current Y bound position of the player relative to the direction the player is moving
+//Out - 
+//		int - the current y bound of the player relative to their moving direction
+float Player::GetCurrentMovingYPosition()
+{
+	//check moving direction and return the bound for that specific direction
+
+	if(m_CurrentDirection == Direction(North))
+	{
+		return GetYNorthBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(South))
+	{
+		return GetYSouthBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(East))
+	{
+		return GetYEastBoundPoint();
+	}
+
+	if(m_CurrentDirection == Direction(West))
+	{
+		return GetYWestBoundPoint();
+	}
+}
+
 //!Sets the x position of the player
 //In - 
 //		int NewXPosition - the new x position for the player
-void Player::SetXPosition(int NewXPosition)
+void Player::SetXPosition(float NewXPosition)
 {
 	m_XPosition = NewXPosition;
 }
@@ -465,7 +680,7 @@ void Player::SetXPosition(int NewXPosition)
 //!Sets the y position of the player
 //In - 
 //		int NewYPosition - the new y position for the player
-void Player::SetYPosition(int NewYPosition)
+void Player::SetYPosition(float NewYPosition)
 {
 	m_YPosition = NewYPosition;
 }

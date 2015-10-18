@@ -18,7 +18,7 @@ int currentRegion = -1; //Don't change this. It's used internally. Should be a m
 
 //This is the size of the graphical tiles that being drawn. This is set low currently in order to see the entire map on the screen.
 //Normally this value should be set 64. 
-int TileSize = 16; 
+int TileSize = 128; 
 
 //used for generating a random number between two values. Should probably be moved to a different file but again, I'm lazy :P.
 int Random(int RandomAmount1, int RandomAmount2)
@@ -594,4 +594,3 @@ void DungeonGenerator::SetStartPosition()
 	
 	m_StartPosition = Vec2f(Random(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1), Random(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1));
 }
-
