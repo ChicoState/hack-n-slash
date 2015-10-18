@@ -15,7 +15,7 @@ class Camera
 public:
 	Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the camera class
 	//Handles all the functions for the camera that need to be called every update
-	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, float PlayerYPosition, int PlayerWidth, int PlayerHeight); 
+	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, float PlayerYPosition); 
 	float GetCameraXPosition(); //Gets and returns the cameras x position
 	float GetCameraYPosition(); //Gets and returns the cameras y position
 
@@ -23,7 +23,7 @@ public:
 	float GetMouseYWorldCoordinate();
 
 private:
-	void UpdatePosition(float playerXPosition, float playerYPosition, int playerWidth, int playerHeight); //Updates the position of the camera relative to the player position
+	void UpdatePosition(float playerXPosition, float playerYPosition); //Updates the position of the camera relative to the player position
 	void UpdateTransform(); //Updates the transform and translation of the camera
 
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class

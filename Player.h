@@ -30,7 +30,9 @@ public:
 	~Player(); //Deconstructor for the player class
 
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
-	
+	void DrawPlayer(); //Draws the player character to the screen
+	void MovementColliding(); //Tells the player that they have collided with something in thier current moving direction
+
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
 	int GetYBound(); //Gets and returns the Y Bound of the player
@@ -44,6 +46,9 @@ public:
 	int GetYWestBoundPoint(); //Gets and returns the West Bound Point y position
 	float GetXPosition(); //Gets and returns the X position of the player
 	float GetYPosition(); //Gets and returns the Y position of the player
+	float GetCurrentMovingXPosition(); //Gets and returns the current X bound position of the player relative to the direction the player is moving
+	float GetCurrentMovingYPosition(); //Gets and returns the current y bound position of the player relative to the direction the player is moving
+
 
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
 	void SetYPosition(float NewYPosition); //Sets the y position of the player
@@ -58,7 +63,7 @@ private:
 		West
 	};
 
-	void DrawPlayer(); //Draws the player character to the screen
+	
 	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
 	void MoveUp(); //Moves the player negative in the y axis
