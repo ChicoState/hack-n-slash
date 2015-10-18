@@ -90,18 +90,22 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 		//m_Sword.EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 		m_ActiveWeapon->EventHandler(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 	}
-
+	*/
 	
 	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
 	{
+		m_IsColliding = false;
+
+		/*
 		//update sprite
 		m_PlayerTile.Event_Handler(m_AlEvent);
 
 		//draw the player sprite
 		m_PlayerTile.Draw(m_XPosition, m_YPosition);
 		DrawPlayer();
+		*/
 	}
-	*/
+	
 }
 
 //!Draws the player character to the screen
@@ -154,13 +158,13 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 	m_KeyboardMoving = false;
 
 	//check to see if the player can move a direction they were previously colliding
-	if(m_YPosition != m_LockedYPosition)
+	if(!m_IsColliding || m_YPosition != m_LockedYPosition)
 	{
 		m_CanMoveUp = true;
 		m_CanMoveDown = true;
 	}
 
-	if(m_XPosition != m_LockedXPosition)
+	if(!m_IsColliding || m_XPosition != m_LockedXPosition)
 	{
 		m_CanMoveLeft = true;
 		m_CanMoveRight = true;
@@ -477,6 +481,8 @@ void Player::MoveRight()
 void Player::MovementColliding()
 {
 	//check moving direction and stop the current movement direction
+
+	m_IsColliding = true;
 
 	if(m_CurrentDirection == Direction(North))
 	{

@@ -97,6 +97,7 @@ private:
 	bool m_CanMoveDown; //true if the player can move down else false
 	bool m_CanMoveLeft; //true if the player can move left else false
 	bool m_CanMoveRight; //true if the player can move right else false
+	bool m_IsColliding; //true if the ploayer is colliding else false
 	float m_LockedXPosition; //x position to lock the player to when their bounds go off screen
 	float m_LockedYPosition; //y position to lock the player to when their bounds go off screen
 };
