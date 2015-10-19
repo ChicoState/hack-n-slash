@@ -7,8 +7,8 @@
 #include <allegro5\allegro_primitives.h>
 
 PlayerTile::PlayerTile(ALLEGRO_BITMAP *Image, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
-		bool Collidable = true, bool TriggerTile = false, bool Animated = true, bool Looped = false, int AnimFPS = 30)
-		: Sprite(Image, FrameWidth, FrameHeight, Collidable, Animated, Looped, AnimFPS)
+		bool Collidable = false, bool Animated = false, bool Continuous = false, bool Looped = false, int AnimFPS =  6)
+		: Sprite(Image, InputPlayerXPosition, InputPlayerYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
 	
 }
@@ -18,8 +18,8 @@ void PlayerTile::Draw(float InputPlayerXPosition, float InputPlayerYPosition)
 
 	if (m_Image != NULL)
 	{
-		Sprite::Set_CurRow(2, false);
-		//al_draw_bitmap_region(m_Image, 100, 100, 100.100, 100, InputPlayerXPosition, InputPlayerYPosition, 0);
+		//Sprite::Set_CurRow(2, false);
+		//al_draw_bitmap_region(m_Image, 0, 0, 48, 64, InputPlayerXPosition, InputPlayerYPosition, 0);
 		al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, InputPlayerXPosition, InputPlayerYPosition, 0);
 	}
 

@@ -10,7 +10,7 @@
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(Image, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, false, true, false, 30)
+		m_PlayerTile(Image, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, true, false, true, 6)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -21,10 +21,11 @@ Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeigh
 
 	//initialize the member variables
 	ClassTag = "Player";
-	m_XBound = 50;
-	m_YBound = 50;
+	m_XBound = 48;
+	m_YBound = 64;
 	m_XPosition = m_ScreenWidth / 2;
 	m_YPosition = m_ScreenHeight / 2;
+	m_CurrentDirection = Direction(North);
 	m_KeyboardMap["W"] = false; //W used to move player up
 	m_KeyboardMap["S"] = false; //S used to move player down
 	m_KeyboardMap["A"] = false; //A used to move player left
@@ -37,6 +38,7 @@ Player::Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeigh
 	m_CanMoveDown = true;
 	m_CanMoveLeft = true;
 	m_CanMoveRight = true;
+	m_IsColliding = false;
 	m_LockedXPosition = 0;
 	m_LockedYPosition = 0;
 
@@ -115,7 +117,7 @@ void Player::DrawPlayer()
 	m_PlayerTile.Event_Handler(m_AlEvent);
 
 	//draw the player sprite
-	m_PlayerTile.Draw(m_XPosition, m_YPosition);
+	m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2));
 
 	//check weapon
 	if(m_CurrentDirection == Direction(North))
@@ -186,28 +188,6 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		}
 	}
 
-	/*
-	if(MainUtility.W_KEY_TRUE)
-	{
-
-	}
-
-	if(MainUtility.S_KEY_TRUE)
-	{
-
-	}
-
-	if(MainUtility.A_KEY_TRUE)
-	{
-
-	}
-
-	if(MainUtility.D_KEY_TRUE)
-	{
-
-	}
-	*/
-
 	//if the right time call functions
 	else if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
@@ -218,6 +198,8 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveUp)
 			{
+				m_PlayerTile.Set_CurRow(3, false);
+
 				m_CurrentDirection = Direction(North);
 				MoveUp();
 			}
@@ -228,6 +210,8 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveDown)
 			{
+				m_PlayerTile.Set_CurRow(0, false);
+
 				m_CurrentDirection = Direction(South);
 				MoveDown();
 			}
@@ -238,6 +222,8 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveLeft)
 			{
+				m_PlayerTile.Set_CurRow(1, false);
+
 				m_CurrentDirection = Direction(West);
 				MoveLeft();
 			}
@@ -248,8 +234,33 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = true;
 			if(m_CanMoveRight)
 			{
+				m_PlayerTile.Set_CurRow(2, false);
+
 				m_CurrentDirection = Direction(East);
 				MoveRight();
+			}
+		}
+
+		else
+		{
+			if(m_CurrentDirection == Direction(North))
+			{
+				m_PlayerTile.Set_CurRow(3, true);
+			}
+
+			else if(m_CurrentDirection == Direction(South))
+			{
+				m_PlayerTile.Set_CurRow(0, true);
+			}
+
+			else if(m_CurrentDirection == Direction(East))
+			{
+				m_PlayerTile.Set_CurRow(2, true);
+			}
+
+			else if(m_CurrentDirection == Direction(West))
+			{
+				m_PlayerTile.Set_CurRow(1, true);
 			}
 		}
 
@@ -625,19 +636,24 @@ float Player::GetCurrentMovingXPosition()
 		return GetXNorthBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(South))
+	else if(m_CurrentDirection == Direction(South))
 	{
 		return GetXSouthBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(East))
+	else if(m_CurrentDirection == Direction(East))
 	{
 		return GetXEastBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(West))
+	else if(m_CurrentDirection == Direction(West))
 	{
 		return GetXWestBoundPoint();
+	}
+
+	else
+	{
+		return NULL;
 	}
 }
 
@@ -653,19 +669,24 @@ float Player::GetCurrentMovingYPosition()
 		return GetYNorthBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(South))
+	else if(m_CurrentDirection == Direction(South))
 	{
 		return GetYSouthBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(East))
+	else if(m_CurrentDirection == Direction(East))
 	{
 		return GetYEastBoundPoint();
 	}
 
-	if(m_CurrentDirection == Direction(West))
+	else if(m_CurrentDirection == Direction(West))
 	{
 		return GetYWestBoundPoint();
+	}
+
+	else
+	{
+		return NULL;
 	}
 }
 
