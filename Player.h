@@ -8,6 +8,7 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 
+#include "Vec2.h"
 #include "PlayerTile.h"
 #include "Camera.h"
 #include "Inventory.h"
@@ -25,13 +26,15 @@ class Player
 {
 public:
 
-	Player(ALLEGRO_BITMAP *Image, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
+	Player(ALLEGRO_BITMAP *SpriteImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
 
 	~Player(); //Deconstructor for the player class
 
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
 	void DrawPlayer(); //Draws the player character to the screen
 	void MovementColliding(); //Tells the player that they have collided with something in thier current moving direction
+	void MovementCollidingBoundOne(); //Tells the player that their bound one has collided with something in their current moving direction
+	void MovementCollidingBoundTwo(); //Tells the player that their bound two has collided with something in their current moving direction
 
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
@@ -44,10 +47,22 @@ public:
 	int GetYEastBoundPoint(); //Gets and returns the East Bound Point y position
 	int GetXWestBoundPoint(); //Gets and returns the West Bound Point x position
 	int GetYWestBoundPoint(); //Gets and returns the West Bound Point y position
+	int GetNorthEastXBoundPoint(); //Gtes and returns the north east bound point x position
+	int GetNorthEastYBoundPoint(); //Gtes and returns the north east bound point y position
+	int GetSouthEastXBoundPoint(); //Gtes and returns the south east bound point x position
+	int GetSouthEastYBoundPoint(); //Gtes and returns the south east bound point y position
+	int GetSouthWestXBoundPoint(); //Gtes and returns the south west bound point x position
+	int GetSouthWestYBoundPoint(); //Gtes and returns the south west bound point y position
+	int GetNorthWestXBoundPoint(); //Gtes and returns the north west bound point x position
+	int GetNorthWestYBoundPoint(); //Gtes and returns the north west bound point y position
 	float GetXPosition(); //Gets and returns the X position of the player
 	float GetYPosition(); //Gets and returns the Y position of the player
-	float GetCurrentMovingXPosition(); //Gets and returns the current X bound position of the player relative to the direction the player is moving
-	float GetCurrentMovingYPosition(); //Gets and returns the current y bound position of the player relative to the direction the player is moving
+	int GetCurrentMovingXPosition(); //Gets and returns the current X bound position of the player relative to the direction the player is moving
+	int GetCurrentMovingYPosition(); //Gets and returns the current y bound position of the player relative to the direction the player is moving
+	int GetCollisionXBoundOne(); //Gets and returns the first current X collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
+	int GetCollisionYBoundOne(); //Gets and returns the first current Y collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
+	int GetCollisionXBoundTwo(); //Gets and returns the second current X collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
+	int GetCollisionYBoundTwo(); //Gets and returns the second current Y collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
 
 
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
@@ -65,6 +80,7 @@ private:
 
 	
 	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
+	void CheckCollision(); //!Checks and updates the collision of the player to allow movement directions
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
 	void MoveUp(); //Moves the player negative in the y axis
 	void MoveDown(); //Moves the player positive in the y axis
@@ -98,6 +114,8 @@ private:
 	bool m_CanMoveLeft; //true if the player can move left else false
 	bool m_CanMoveRight; //true if the player can move right else false
 	bool m_IsColliding; //true if the ploayer is colliding else false
+	bool m_IsCollidingBoundOne; //true if the ploayer is colliding on movement bound one else false
+	bool m_IsCollidingBoundTwo; //true if the ploayer is colliding on movement bound two else false
 	float m_LockedXPosition; //x position to lock the player to when their bounds go off screen
 	float m_LockedYPosition; //y position to lock the player to when their bounds go off screen
 };

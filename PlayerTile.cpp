@@ -7,10 +7,17 @@
 #include <allegro5\allegro_primitives.h>
 
 PlayerTile::PlayerTile(ALLEGRO_BITMAP *Image, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
-		bool Collidable = false, bool Animated = false, bool Continuous = false, bool Looped = false, int AnimFPS =  6)
+		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
 		: Sprite(Image, InputPlayerXPosition, InputPlayerYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
 	
+}
+
+int PlayerTile::Event_Handler()
+{
+	Update();
+
+	return 0;
 }
 
 void PlayerTile::Draw(float InputPlayerXPosition, float InputPlayerYPosition)
