@@ -9,7 +9,8 @@
 #include "Sprite.h"
 
 //Terrain Tile types. More to be added later!
-enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor };
+enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water };
+
 
 class TerrainTile : public Sprite
 {

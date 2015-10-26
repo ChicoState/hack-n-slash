@@ -2,7 +2,6 @@
 
 void TerrainMap::InitInfoLayer()
 {
-	
 	m_InfoLayer.resize(m_MapSizeX, std::vector<TerrainTile*>(m_MapSizeY, NULL));
 
 	TerrainTile *Temp = NULL;
@@ -26,7 +25,7 @@ void TerrainMap::InitInfoLayer()
 
 bool TerrainMap::CheckMapCollision(Vec2f Pos)
 {
-	return	m_InfoLayer[int(Pos.x()) % m_TileSize][int(Pos.y()) % m_TileSize];
+	return	m_InfoLayer[int(Pos.x()) / m_TileSize][int(Pos.y()) / m_TileSize];
 }
 
 void TerrainMap::AddLayer(TerrainLayer* Layer, bool UpdateInfoLayerAfter = true)

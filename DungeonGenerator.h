@@ -91,9 +91,11 @@ public:
 	TILE Get_Tile(Vec2i Pos) { return m_Dungeon[Pos.x()][Pos.y()]; }
 	void Set_Tile(Vec2i Pos, TILE tile) { m_Dungeon[Pos.x()][Pos.y()] = tile; }
 
+	TerrainMap* Get_Map(){ return m_Map; }
+
 	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
-	Vec2f GetStartPosition() { return m_StartPosition; }
+	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * 128, m_StartPosition.y() * 128); }
 
 	void GenerateDungeon(Display&);
 
