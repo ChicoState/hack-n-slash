@@ -1,9 +1,9 @@
-/**
- * File: AI.h
- * Author: James Beller
- * Group: Hack-'n-Slash
- * Date: 10/17/2015
- */
+//
+// File: AI.h
+// Author: James Beller
+// Group: Hack-'n-Slash
+// Date: 10/25/2015
+//
 #ifndef __AI_H__
 #define __AI_H__
 
@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <map>
 #include <cstdlib>
 #include <ctime>
 #include "Player.h"
@@ -20,9 +21,9 @@
 enum AI_STATE{ IDLE, CHASE, SEEK };
 enum AI_TYPE{ MELEE };
 
-/**
- * This class is for pathfinding.
- */
+//
+// This class is for pathfinding.
+//
 class PathNode
 {
 private:
@@ -38,6 +39,9 @@ public:
 	PathNode* Pa() { return parent; }
 };
 
+//
+// The main AI class.
+//
 class AI
 {
 private:
@@ -61,7 +65,7 @@ public:
 	void SetXPosition(int x) { ai_x = x; }
 	void SetYPosition(int y) { ai_y = y; }
 	void Draw();                                   // Draw the AI to the screen
-	void SetSpawn(DungeonGenerator &);             // Set a random spawn point
+	void SetSpawn(DungeonGenerator &, int);        // Set a random spawn point
 	void MoveTowardTarget();                       // Move along a path, if it exists, created in AI::FindPath
 	void MoveRandom();                             // Move in a random direction
 	void FindPath(int, int, DungeonGenerator &);   // Find the shortest path to the given target coordinates
