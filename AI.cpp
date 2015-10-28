@@ -1,31 +1,31 @@
-/**
- * File: AI.cpp
- * Author: James Beller
- * Group: Hack-'n-Slash
- * Date: 10/17/2015
- */
+//
+// File: AI.cpp
+// Author: James Beller
+// Group: Hack-'n-Slash
+// Date: 10/25/2015
+//
 #include "AI.h"
 
 #define INF 999999999  // This is used for the pathfinding algorithm
 
-/**
- * Copied from DungeonGenerator.cpp. This will be useful for setting a random
- * spawn point for the AI.
- */
-int randomize(int RandomAmount1, int RandomAmount2)
+//
+// Copied from DungeonGenerator.cpp. This will be useful for setting a random
+// spawn point for the AI.
+//
+int randomize(int RandomAmount1, int RandomAmount2, int seed_modify)
 {
-	srand(time(NULL));
+	srand(time(NULL) + 8*seed_modify);
 	int Number = rand() % (RandomAmount2 - RandomAmount1) + RandomAmount1;
 	//int Number = rand() % RandomAmount2 + RandomAmount1;
 
 	return Number;
 }
-/**
- * Set a random spawn point in a given dungeon. Most of the code here is
- * based off of the code in DungeonGenerator::SetStartPosition that sets
- * the player's starting position in the dungeon.
- */
-void AI::SetSpawn(DungeonGenerator &dungeon)
+//
+// Set a random spawn point in a given dungeon. Most of the code here is
+// based off of the code in DungeonGenerator::SetStartPosition that sets
+// the player's starting position in the dungeon.
+//
+void AI::SetSpawn(DungeonGenerator &dungeon, int seed_modify)
 {
 	// NOTE: At the moment, the dungeon size (width and height) is constant.
 	// This will change later
@@ -73,15 +73,15 @@ void AI::SetSpawn(DungeonGenerator &dungeon)
 		}
 	}
 
-	TempRoom = TempRooms[randomize(0, TempRooms.size())];
+	TempRoom = TempRooms[randomize(0, TempRooms.size(), seed_modify)];
 
-	ai_x = randomize(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1);
-	ai_y = randomize(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1);
+	ai_x = randomize(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1, seed_modify);
+	ai_y = randomize(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1, seed_modify);
 }
-/**
- * Move one tile along the path to the target that has been found in AI::FindPath.
- * If there is no path, the AI will move in a random direction instead (calls AI::MoveRandom).
- */
+//
+// Move one tile along the path to the target that has been found in AI::FindPath.
+// If there is no path, the AI will move in a random direction instead (calls AI::MoveRandom).
+//
 void AI::MoveTowardTarget()
 {
 	PathNode* p_node;
@@ -96,10 +96,10 @@ void AI::MoveTowardTarget()
 		ai_y = p_node->Y();
 	}
 }
-/**
- * Move one tile in a random direction. A random number is picked between 0 and 7. The
- * number determines the direction (can be N, NE, E, SE, S, SW, W, or NW).
- */
+//
+// Move one tile in a random direction. A random number is picked between 0 and 7. The
+// number determines the direction (can be N, NE, E, SE, S, SW, W, or NW).
+//
 void AI::MoveRandom()
 {
 	srand(time(NULL));
@@ -137,9 +137,9 @@ void AI::MoveRandom()
 		break;
 	}
 }
-/**
- * Check to see if the AI can see the player. Returns true if it can, false otherwise.
- */
+//
+// Check to see if the AI can see the player. Returns true if it can, false otherwise.
+//
 bool AI::SeePlayer(Player &p, DungeonGenerator &d)
 {
 	int p_x = p.GetXPosition()/128;
@@ -191,10 +191,10 @@ bool AI::SeePlayer(Player &p, DungeonGenerator &d)
 	}
 	return false;
 }
-/**
- * Searches a given vector of pointers to see if any one of them point to
- * a PathNode with the specified coordinates.
- */
+//
+// Searches a given vector of pointers to see if any one of them point to
+// a PathNode with the specified coordinates.
+//
 bool AI::InVector(int x, int y, std::vector<PathNode*> vect)
 {
 	for (std::vector<PathNode*>::iterator it = vect.begin(); it != vect.end(); it++)
@@ -204,11 +204,11 @@ bool AI::InVector(int x, int y, std::vector<PathNode*> vect)
 	}
 	return false;
 }
-/**
- * Using the A* pathfinding algorithm, the AI will find the shortest path from its
- * current position to the specified coordinates. The said path will be stored in the AI's
- * path stack.
- */
+//
+// Using the A* pathfinding algorithm, the AI will find the shortest path from its
+// current position to the specified coordinates. The said path will be stored in the AI's
+// path stack.
+//
 void AI::FindPath(int t_x, int t_y, DungeonGenerator &d)
 {
 	int cur_x = ai_x;
@@ -319,9 +319,9 @@ void AI::FindPath(int t_x, int t_y, DungeonGenerator &d)
 		std::cout << "The AI has formed a path to target...\n";
 	}
 }
-/**
- * Deallocates all PathNodes created in AI::FindPath and clears all vectors. Gotta prevent memory leaks :P
- */
+//
+// Deallocates all PathNodes created in AI::FindPath and clears all vectors. Gotta prevent memory leaks :P
+//
 void AI::CleanPath()
 {
 	for (std::vector<PathNode*>::iterator it = garbage.begin(); it != garbage.end(); it++)
@@ -329,9 +329,9 @@ void AI::CleanPath()
 	garbage.clear();
 	path.clear();
 }
-/**
- * Draw the AI to the screen.
- */
+//
+// Draw the AI to the screen.
+//
 void AI::Draw()
 {
 	al_draw_filled_rectangle(ai_x * 128, ai_y * 128,
@@ -340,9 +340,9 @@ void AI::Draw()
 	for (std::vector<PathNode*>::reverse_iterator it = path.rbegin(); it != path.rend(); it++)
 		al_draw_filled_circle((*it)->X() * 128 + 64, (*it)->Y() * 128 + 64, 5, al_map_rgb(255, 0, 255));
 }
-/**
- * The AI in action.
- */
+//
+// The AI in action.
+//
 void AI::ProcessAI(Player &player, DungeonGenerator &dungeon)
 {
 	if (state == IDLE)
@@ -353,6 +353,9 @@ void AI::ProcessAI(Player &player, DungeonGenerator &dungeon)
 			std::cout << "The AI sees you...\n";
 		}
 	}
+	// NOTE: The AI will not chase the player when it sees the player for now.
+	// Still figuring out how to implement it without having to call AI::FindPath
+	// every time AI::ProessAI is called while the AI's state is CHASE.
 	else if (state == CHASE)
 	{
 		if (!SeePlayer(player, dungeon))
