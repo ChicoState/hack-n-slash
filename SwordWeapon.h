@@ -8,15 +8,17 @@
 #define SWORDWEAPON_H
 
 #include "Weapon.h"
+#include "SwordWeaponTile.h"
 
 class SwordWeapon : public Weapon
 {
 public:
-	SwordWeapon(ALLEGRO_EVENT& InputAlEvent);
-	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection);
+	SwordWeapon(ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage); //!The constructor for the sword weapon
+	void SwordWeapon::EventHandler(); //Handles events for the sword weapon class
+	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon to the screen
 
 private:
-
+	SwordWeaponTile m_SwordWeaponTile;
 };
 
 #endif

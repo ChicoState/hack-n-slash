@@ -19,8 +19,8 @@ public:
 	float GetCameraXPosition(); //Gets and returns the cameras x position
 	float GetCameraYPosition(); //Gets and returns the cameras y position
 
-	float GetMouseXWorldCoordinate();
-	float GetMouseYWorldCoordinate();
+	float GetMouseXWorldCoordinate(); //!Gets and returns the mouse x world coordinate translated from the screen coordinate
+	float GetMouseYWorldCoordinate(); //!Gets and returns the mouse y world coordinate translated from the screen coordinate
 
 private:
 	void UpdatePosition(float playerXPosition, float playerYPosition); //Updates the position of the camera relative to the player position
@@ -30,8 +30,8 @@ private:
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the player class
 	ALLEGRO_TRANSFORM CameraTransform; //The transform for the camera
 
-	float m_MouseXCoordinate;
-	float m_MouseYCoordinate;
+	float m_MouseXCoordinate; //mouse coordinate x on screen
+	float m_MouseYCoordinate; //mouse coordinate y on screen
 
 	float m_XPosition; //x position of the camera
 	float m_YPosition; //y position of the camera

@@ -54,8 +54,6 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 void Camera::UpdatePosition(float PlayerXPosition, float PlayerYPosition)
 {
 	//Update the posiotion of the camera relative to the player position and bound
-	//m_XPosition = -(1280 / 2) + (PlayerXPosition + (PlayerWidth / 2));
-	//m_YPosition = -(720 / 2) + (PlayerYPosition + (PlayerHeight / 2));
 	m_XPosition = -(1280 / 2) + (PlayerXPosition);
 	m_YPosition = -(720 / 2) + (PlayerYPosition);
 
@@ -84,21 +82,27 @@ void Camera::UpdateTransform()
 	al_use_transform(&CameraTransform);
 }
 
+//!Gets and returns the mouse x world coordinate translated from the screen coordinate
 float Camera::GetMouseXWorldCoordinate()
 {
+	//get the current mouse screen positions
 	float TempMouseXCoordinate = m_MouseXCoordinate;
 	float TempMouseYCoordinate = m_MouseYCoordinate;
 
+	//transform mouse screen coordinate sinto world coordinates
 	al_transform_coordinates(&CameraTransform, &TempMouseXCoordinate, &TempMouseYCoordinate);
 
 	return TempMouseXCoordinate;
 }
 
+//!Gets and returns the mouse y world coordinate translated from the screen coordinate
 float Camera::GetMouseYWorldCoordinate()
 {
+	//get the current mouse screen positions
 	float TempMouseXCoordinate = m_AlEvent.mouse.x;
 	float TempMouseYCoordinate = m_AlEvent.mouse.y;
 
+	//transform mouse screen coordinate sinto world coordinates
 	al_transform_coordinates(&CameraTransform, &TempMouseXCoordinate, &TempMouseYCoordinate);
 
 	return TempMouseYCoordinate;

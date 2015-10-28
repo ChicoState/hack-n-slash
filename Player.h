@@ -8,14 +8,13 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 
-#include "Vec2.h"
 #include "PlayerTile.h"
 #include "Camera.h"
 #include "Inventory.h"
 #include "Weapon.h"
 
 #include "SwordWeapon.h"
-#include "LongSwordWeapon.h"
+//#include "LongSwordWeapon.h"
 
 #include <string>
 #include <map>
@@ -26,13 +25,12 @@ class Player
 {
 public:
 
-	Player(ALLEGRO_BITMAP *SpriteImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
+	Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
 
 	~Player(); //Deconstructor for the player class
 
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
 	void DrawPlayer(); //Draws the player character to the screen
-	void MovementColliding(); //Tells the player that they have collided with something in thier current moving direction
 	void MovementCollidingBoundOne(); //Tells the player that their bound one has collided with something in their current moving direction
 	void MovementCollidingBoundTwo(); //Tells the player that their bound two has collided with something in their current moving direction
 
@@ -57,19 +55,16 @@ public:
 	int GetNorthWestYBoundPoint(); //Gtes and returns the north west bound point y position
 	float GetXPosition(); //Gets and returns the X position of the player
 	float GetYPosition(); //Gets and returns the Y position of the player
-	int GetCurrentMovingXPosition(); //Gets and returns the current X bound position of the player relative to the direction the player is moving
-	int GetCurrentMovingYPosition(); //Gets and returns the current y bound position of the player relative to the direction the player is moving
 	int GetCollisionXBoundOne(); //Gets and returns the first current X collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 	int GetCollisionYBoundOne(); //Gets and returns the first current Y collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 	int GetCollisionXBoundTwo(); //Gets and returns the second current X collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
 	int GetCollisionYBoundTwo(); //Gets and returns the second current Y collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
-
-
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
 	void SetYPosition(float NewYPosition); //Sets the y position of the player
 
 private:
 
+	//Player class enum for direction and which way the player is moving and facing
 	enum Direction
 	{
 		North,
@@ -78,7 +73,6 @@ private:
 		West
 	};
 
-	
 	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
 	void CheckCollision(); //!Checks and updates the collision of the player to allow movement directions
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
@@ -92,10 +86,10 @@ private:
 
 	int m_ScreenWidth; //the screen width dimension of the game
 	int m_ScreenHeight; //the screen height dimension of the game
-	PlayerTile m_PlayerTile;
-	Camera *m_Camera;
-	Inventory m_Inventory;
-	Weapon* m_ActiveWeapon;
+	PlayerTile m_PlayerTile; //member player tile instance
+	Camera *m_Camera; //member camera instance
+	Inventory m_Inventory; //Player inventory
+	Weapon* m_ActiveWeapon; //Player current active weapon holder
 
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
@@ -113,7 +107,6 @@ private:
 	bool m_CanMoveDown; //true if the player can move down else false
 	bool m_CanMoveLeft; //true if the player can move left else false
 	bool m_CanMoveRight; //true if the player can move right else false
-	bool m_IsColliding; //true if the ploayer is colliding else false
 	bool m_IsCollidingBoundOne; //true if the ploayer is colliding on movement bound one else false
 	bool m_IsCollidingBoundTwo; //true if the ploayer is colliding on movement bound two else false
 	float m_LockedXPosition; //x position to lock the player to when their bounds go off screen
