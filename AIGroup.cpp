@@ -2,7 +2,7 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/25/2015
+// Date: 10/29/2015
 //
 #include "AIGroup.h"
 
@@ -49,27 +49,18 @@ void AI_Group::RandomSetup(int n, DungeonGenerator &d)
 void AI_Group::AddRandom(DungeonGenerator &d)
 {
 	AI* ai;
-	int id, sight;
-	int counter = 1;            // This counter is for modifying the RNG
-	                            // to help prevent duplicate results
-
-	srand(time(NULL));
-	id = rand() % 99999 + 1;    // Get random ID value (up to 5 digits)
-	while (IDExists(id))        // Ensure the ID is unique
-	{
-		srand(time(NULL) + counter);
-		id = rand() % 99999 + 1;
-		counter++;
-	}
-	sight = rand() % 4 + 2;     // Sight ranges from 2 to 5  (This may change later)
-	ai = new AI(MELEE, sight);  // There's only one AI type for now
-	ai->SetSpawn(d, 0);         // Set a spawn point
-	counter = 1;
-	while (Overlap(ai))  // Ensure the new AI doesn't overlap with anyone else in the group
-	{
-		ai->SetSpawn(d, counter);
-		counter++;
-	}
+	std::random_device rd;
+	int id, sight, speed;
+ 
+	id = rd() % 99999 + 1;             // Get random ID value (up to 5 digits)
+	while (IDExists(id))               // Ensure the ID is unique
+		id = rd() % 99999 + 1;
+	sight = rd() % 4 + 2;              // Sight ranges from 2 to 5  (This may change later)
+	speed = rd() % 4 + 1;              // Speed ranges from 1 to 4  (This may change later)
+	ai = new AI(MELEE, sight, speed);  // There's only one AI type for now
+	ai->SetSpawn(d);                   // Set a spawn point
+	while (Overlap(ai))                // Ensure the new AI doesn't overlap with anyone else in the group
+		ai->SetSpawn(d);
 	group.insert(std::pair<int, AI*>(id, ai));
 }
 //
@@ -84,10 +75,10 @@ void AI_Group::GroupClear()
 //
 // Process all AI in the group.
 //
-void AI_Group::ProcessAll(Player &p, DungeonGenerator &d)
+void AI_Group::ProcessAll(Player &p)
 {
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-		(it->second)->ProcessAI(p, d);
+		(it->second)->ProcessAI(p);
 }
 //
 // Draw everyone in the group onto the screen.
@@ -101,8 +92,8 @@ void AI_Group::DrawAll()
 // Make everyone in the group find a path to the player.
 // This is here for testing purposes, and may be removed later.
 //
-void AI_Group::GetPathToPlayer(Player &p, DungeonGenerator &d)
+void AI_Group::GetPathToPlayer(Player &p)
 {
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-		(it->second)->FindPath(p.GetXPosition()/128, p.GetYPosition()/128, d);
+		(it->second)->FindPath(p.GetXPosition()/T_SIZE, p.GetYPosition()/T_SIZE);
 }

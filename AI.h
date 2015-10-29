@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/25/2015
+// Date: 10/29/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -13,13 +13,14 @@
 #include <list>
 #include <map>
 #include <cstdlib>
-#include <ctime>
+#include <random>
 #include "Player.h"
 #include "Vec2.h"
 #include "DungeonGenerator.h"
 
 enum AI_STATE{ IDLE, CHASE, SEEK };
 enum AI_TYPE{ MELEE };
+const int T_SIZE = 128;
 
 //
 // This class is for pathfinding.
@@ -45,33 +46,39 @@ public:
 class AI
 {
 private:
-	int state;                                       // The AI's current behavior (IDLE, ATTACK, etc.)
-	int sight;                                       // How far the AI can see (in number of tiles)
-	int type;                                        // The type of AI (MELEE, RANGER, etc)
-	int speed;                                       // The movement speed of the AI (NOTE: Not implemented yet)
-	std::vector<PathNode*> path;                     // The current path for the AI to follow
-	std::vector<PathNode*> garbage;                  // Use for deallocating all PathNodes when the AI no longer needs the path
-	int ai_x, ai_y;                                  // The coordinates of the AI's position relative to the dungeon
-	bool InVector(int, int, std::vector<PathNode*>); // Checks if the specified x and y coordinates are in the specified vector
+	int state;                                     // The AI's current behavior (IDLE, ATTACK, etc.)
+	int sight;                                     // How far the AI can see (in number of tiles)
+	int type;                                      // The type of AI (MELEE, RANGER, etc)
+	int speed;                                     // The movement speed of the AI
+	std::vector<PathNode*> path;                   // The current path for the AI to follow
+	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
+	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
+	float l_x, l_y;                                // The coordinates where the player was last seen
+	DungeonGenerator *ai_dungeon;                  // Pointer to the dungeon the AI is spawned in
+	bool ValueEqual(int, int);                     // Check to see if given values are equal or close enough to be equal
+	void MoveAlongPath();                          // Move along a path, if it exists, created in AI::FindPath
+	void MoveTowardTarget(int, int);               // Move toward the specifed coordinates
+	void MoveUp();                                 // Move up
+	void MoveDown();                               // Move down
+	void MoveLeft();                               // Move left
+	void MoveRight();                              // Move right
+	void CleanPath();                              // Deallocates all PathNodes created in AI::FindPath (Takes out the garbage)
 public:
-	AI(int t, int s) : state(IDLE), type(t), sight(s), ai_x(0), ai_y(0) {}
-	AI(int t, int s, int x, int y) : state(IDLE), type(t), sight(s), ai_x(x), ai_y(y) {}
+	AI(int t, int si, int sp) 
+		: state(IDLE), type(t), sight(si), speed(sp), ai_x(0), ai_y(0), ai_dungeon(NULL) {}
 	~AI() { CleanPath(); }                         // Gotta prevent memory leaks :P
 	int GetState() { return state; }
 	void SetState(int s) { state = s; }
 	int GetType() { return type; }
-	int GetXPosition() { return ai_x; }
-	int GetYPosition() { return ai_y; }
-	void SetXPosition(int x) { ai_x = x; }
-	void SetYPosition(int y) { ai_y = y; }
+	float GetXPosition() { return ai_x; }
+	float GetYPosition() { return ai_y; }
+	void SetXPosition(float x) { ai_x = x; }
+	void SetYPosition(float y) { ai_y = y; }
 	void Draw();                                   // Draw the AI to the screen
-	void SetSpawn(DungeonGenerator &, int);        // Set a random spawn point
-	void MoveTowardTarget();                       // Move along a path, if it exists, created in AI::FindPath
-	void MoveRandom();                             // Move in a random direction
-	void FindPath(int, int, DungeonGenerator &);   // Find the shortest path to the given target coordinates
-	void CleanPath();                              // Deallocates all PathNodes created in AI::FindPath (Takes out the garbage)
-	bool SeePlayer(Player &, DungeonGenerator &);  // Check if the AI can see the player
-	void ProcessAI(Player &, DungeonGenerator &);  // Process the AI
+	void SetSpawn(DungeonGenerator &);             // Set a random spawn point and then set the ai_dungeon pointer
+	void FindPath(int, int);                       // Find the shortest path to the given target coordinates
+	bool SeePlayer(Player &);                      // Check if the AI can see the player
+	void ProcessAI(Player &);                      // Process the AI
 };
 
 #endif

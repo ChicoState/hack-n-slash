@@ -2,7 +2,7 @@
 // File: AIGroup.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/25/2015
+// Date: 10/29/2015
 //
 #ifndef __AIGROUP_H__
 #define __AIGROUP_H__
@@ -23,8 +23,8 @@ public:
 	void RandomSetup(int, DungeonGenerator &);      // Set up the group with random attributes
     void AddRandom(DungeonGenerator &);             // Generate a new AI and add it to the group
 	void GroupClear();                              // Deallocate all AI and clear the container
-	void ProcessAll(Player &, DungeonGenerator &);  // Process everyone in the group
+	void ProcessAll(Player &);                      // Process everyone in the group
 	void DrawAll();                                 // Draw everyone onto the screen
-	void GetPathToPlayer(Player &, DungeonGenerator &);  // Make everyone find a path to the player (For testing purposes; may be removed later)
+	void GetPathToPlayer(Player &);                 // Make everyone find a path to the player (For testing purposes; may be removed later)
 };
 #endif
