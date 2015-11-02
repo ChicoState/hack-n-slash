@@ -48,6 +48,34 @@ void SwordWeapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void SwordWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
+	m_LastDrawnXPosition = DrawXCoordinate;
+	m_LastDrawnYPosition = DrawYCoordinate;
+
+	if(XDirection == 0 && YDirection == -1)
+	{
+		m_LastDrawnDirection = Direction(North);
+	}
+
+	else if(XDirection == 0 && YDirection == 1)
+	{
+		m_LastDrawnDirection = Direction(South);
+	}
+
+	else if(XDirection == 1 && YDirection == 0)
+	{
+		m_LastDrawnDirection = Direction(East);
+	}
+
+	else if(XDirection == -1 && YDirection == 0)
+	{
+		m_LastDrawnDirection = Direction(West);
+	}
+
+	else
+	{
+		m_LastDrawnDirection = Direction(North);
+	}
+
 	m_SwordWeaponTile.Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection, m_IsActive);
 }
 

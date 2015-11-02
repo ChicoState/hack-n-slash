@@ -81,11 +81,9 @@ Weapon* Inventory::GetNextCycledWeapon()
 		//reset the previous weapon asked for
 		m_WeaponInventory[m_LastWeaponSelected]->ResetWeapon();
 
-		//keep track of the currently selected weapon and return the weapon asked for
-		int TempLastWeaponSelected = m_LastWeaponSelected;
 		m_LastWeaponSelected++;
 
-		return m_WeaponInventory[(TempLastWeaponSelected)];
+		return m_WeaponInventory[(m_LastWeaponSelected)];
 	}
 
 	//reset to the first index if the next index is greater than the vector size

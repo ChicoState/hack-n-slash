@@ -10,7 +10,7 @@
 //		int InputScreenWidth - the input screen width dimension of the game
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
+Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_BITMAP *BowImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
 		m_PlayerTile(SpriteImage, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, true, false, true, 6)
 {
 	//Set input variables to member variables
@@ -46,9 +46,9 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, int Inpu
 
 	//Initiate weapons
 	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_AlEvent, SwordImage);
-	//LongSwordWeapon* TempLongSwordWeapon = new LongSwordWeapon(m_AlEvent);
+	BowWeapon* TempBoWeapon = new BowWeapon(m_AlEvent, BowImage);
 	m_Inventory.AddWeapon(TempSwordWeapon);
-	//m_Inventory.AddWeapon(TempLongSwordWeapon);
+	m_Inventory.AddWeapon(TempBoWeapon);
 	m_ActiveWeapon = m_Inventory.GetWeaponFromSlot(1);
 }
 
@@ -127,6 +127,12 @@ void Player::DrawPlayer()
 	al_draw_pixel(GetSouthEastXBoundPoint(), GetSouthEastYBoundPoint(), al_map_rgb(255, 255, 255));
 	al_draw_pixel(GetSouthWestXBoundPoint(), GetSouthWestYBoundPoint(), al_map_rgb(0, 0, 255));
 	al_draw_pixel(GetNorthWestXBoundPoint(), GetNorthWestYBoundPoint(), al_map_rgb(0, 255, 0));
+
+	//draw player hit box
+	al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 20);
+
+	//draw the weapon hit box
+	al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
 }
 
 //!Handles movement for the player character each update
@@ -227,12 +233,9 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 
 		if(m_KeyboardMap["A"])
 		{
-			
 			if(m_CanMoveLeft)
 			{
-				m_KeyboardMoving = true;
 				m_PlayerTile.Set_CurRow(1, false);
-				m_CurrentDirection = Direction(West);
 				MoveLeft();
 			}
 		}
@@ -241,9 +244,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveRight)
 			{
-				m_KeyboardMoving = true;
 				m_PlayerTile.Set_CurRow(2, false);
-				m_CurrentDirection = Direction(East);
 				MoveRight();
 			}
 		}
@@ -252,9 +253,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveUp)
 			{
-				m_KeyboardMoving = true;
 				m_PlayerTile.Set_CurRow(3, false);
-				m_CurrentDirection = Direction(North);
 				MoveUp();
 			}
 		}
@@ -263,9 +262,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveDown)
 			{
-				m_KeyboardMoving = true;
 				m_PlayerTile.Set_CurRow(0, false);
-				m_CurrentDirection = Direction(South);
 				MoveDown();
 			}
 		}
@@ -404,27 +401,26 @@ void Player::CheckCollision()
 	//if both collision points are colliding
 	if(m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
 	{
+		m_XPosition	= m_PreviousXPosition;
+		m_YPosition	= m_PreviousYPosition;
+
 		if(m_CurrentDirection == Direction(North))
 		{
-			m_LockedYPosition = m_YPosition;
 			m_CanMoveUp = false;
 		}
 
 		if(m_CurrentDirection == Direction(South))
 		{
-			m_LockedYPosition = m_YPosition;
 			m_CanMoveDown = false;
 		}
 
 		if(m_CurrentDirection == Direction(East))
 		{
-			m_LockedXPosition = m_XPosition;
 			m_CanMoveRight = false;
 		}
 
 		if(m_CurrentDirection == Direction(West))
 		{
-			m_LockedXPosition = m_XPosition;
 			m_CanMoveLeft = false;
 		}
 	}
@@ -434,38 +430,44 @@ void Player::CheckCollision()
 	{		
 		if(m_CurrentDirection == Direction(North) && m_KeyboardMap["D"] == true)
 		{
-			m_LockedYPosition = m_YPosition;
-			m_CanMoveRight = false;
+			m_XPosition	= m_PreviousXPosition;
+			//m_CanMoveRight = false;
+			m_CanMoveUp = false;
 		}
 
 		else if(m_CurrentDirection == Direction(North))
 		{
-			m_LockedYPosition = m_YPosition;
+			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
+			m_CanMoveUp = false;
 		}
 
 		if(m_CurrentDirection == Direction(South) && m_KeyboardMap["D"] == true)
 		{
-			m_LockedYPosition = m_YPosition;
-			m_CanMoveRight = false;
+			m_XPosition	= m_PreviousXPosition;
+			//m_CanMoveRight = false;
+			m_CanMoveUp = false;
 		}
 
 		else if(m_CurrentDirection == Direction(South))
 		{
-			m_LockedYPosition = m_YPosition;
+			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
+			m_CanMoveDown = false;
 		}
 
 		if(m_CurrentDirection == Direction(East))
 		{
-			m_LockedXPosition = m_XPosition;
+			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveUp = false;
+			m_CanMoveRight = false;
 		}
 
 		if(m_CurrentDirection == Direction(West))
 		{
-			m_LockedXPosition = m_XPosition;
+			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveUp = false;
+			m_CanMoveLeft = false;
 		}
 	}
 
@@ -474,38 +476,42 @@ void Player::CheckCollision()
 	{
 		if(m_CurrentDirection == Direction(North) && m_KeyboardMap["A"] == true)
 		{
-			m_LockedYPosition = m_YPosition;
-			m_CanMoveLeft = false;
+			m_XPosition	= m_PreviousXPosition;
+			//m_CanMoveLeft = false;
 		}
 
 		else if(m_CurrentDirection == Direction(North))
 		{
-			m_LockedYPosition = m_YPosition;
+			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveLeft = false;
+			m_CanMoveUp = false;
 		}
 
 		if(m_CurrentDirection == Direction(South) && m_KeyboardMap["A"] == true)
 		{
-			m_LockedYPosition = m_YPosition;
-			m_CanMoveLeft = false;
+			m_XPosition	= m_PreviousXPosition;
+			//m_CanMoveLeft = false;
 		}
 
 		else if(m_CurrentDirection == Direction(South))
 		{
-			m_LockedYPosition = m_YPosition;
+			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveLeft = false;
+			m_CanMoveDown = false;
 		}
 
 		if(m_CurrentDirection == Direction(East))
 		{
-			m_LockedXPosition = m_XPosition;
+			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveDown = false;
+			m_CanMoveRight = false;
 		}
 
 		if(m_CurrentDirection == Direction(West))
 		{
-			m_LockedXPosition = m_XPosition;
+			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveDown = false;
+			m_CanMoveLeft = false;
 		}
 	}
 }
@@ -560,8 +566,10 @@ void Player::CheckMouseMovement()
 void Player::MoveUp()
 {
 	//move the player in its specified direction
-	//m_YPosition -= m_MovementSpeed;
+	m_PreviousYPosition = m_YPosition;
+	m_YPosition -= m_MovementSpeed;
 
+	/*
 	//if the player is about to go off screen lock its position
 	if(GetYNorthBoundPoint() < 0)
 	{
@@ -574,12 +582,14 @@ void Player::MoveUp()
 	{
 		m_YPosition -= m_MovementSpeed;
 	}
+	*/
 }
 
 //!Moves the player positive in the y axis
 void Player::MoveDown()
 {
 	//move the player in its specified direction
+	m_PreviousYPosition = m_YPosition;
 	m_YPosition += m_MovementSpeed;
 
 	/*
@@ -602,8 +612,10 @@ void Player::MoveDown()
 void Player::MoveLeft()
 {
 	//move the player in its specified direction
-	//m_XPosition -= m_MovementSpeed;
+	m_PreviousXPosition = m_XPosition;
+	m_XPosition -= m_MovementSpeed;
 
+	/*
 	//if the player is about to go off screen lock its position
 	if(GetXWestBoundPoint() < 0)
 	{
@@ -616,12 +628,14 @@ void Player::MoveLeft()
 	{
 		m_XPosition -= m_MovementSpeed;
 	}
+	*/
 }
 
 //!Moves the player positive in the x axis
 void Player::MoveRight()
 {
 	//move the player in its specified direction
+	m_PreviousXPosition = m_XPosition;
 	m_XPosition += m_MovementSpeed;
 
 	/*
@@ -650,6 +664,16 @@ void Player::MovementCollidingBoundOne()
 void Player::MovementCollidingBoundTwo()
 {
 	m_IsCollidingBoundTwo = true;
+}
+
+void Player::DealDamage(int InputDamage)
+{
+	m_CurrentHealth -= InputDamage;
+
+	if(m_CurrentHealth < 0)
+	{
+		m_CurrentHealth = 0;
+	}
 }
 
 //!Gets and returns the player class tag
@@ -820,6 +844,38 @@ float Player::GetYPosition()
 	return m_YPosition;
 }
 
+//!Gets and returns the player's first hitbox x bound (will always be top left)
+//Out - 
+//		int - first x bound of the player hitbox
+int Player::GetHitBoxXBoundOne()
+{
+	return (m_XPosition - (m_XBound / 2));
+}
+
+//!Gets and returns the player's first hitbox y bound (will always be top left)
+//Out - 
+//		int - first y bound of the player hitbox
+int Player::GetHitBoxYBoundOne()
+{
+	return (m_YPosition - (m_YBound / 2));
+}
+
+//!Gets and returns the player's second hitbox x bound (will always be bottom right)
+//Out - 
+//		int - second x bound of the player hitbox
+int Player::GetHitBoxXBoundTwo()
+{
+	return (m_XPosition + (m_XBound / 2));
+}
+
+//!Gets and returns the player's second hitbox y bound (will always be bottom right)
+//Out - 
+//		int - second y bound of the player hitbox
+int Player::GetHitBoxYBoundTwo()
+{
+	return (m_YPosition + (m_YBound / 2));
+}
+
 //!Gets and returns the first current X collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 //Out - 
 //		int - the first current X collision bound of the player relative to their moving direction
@@ -950,6 +1006,54 @@ int Player::GetCollisionYBoundTwo()
 	{
 		return NULL;
 	}
+}
+
+//!Gets and returns the current weapon's first active hit box x bound
+//Out - 
+//		int - x bound of the current weapon's active hit box
+int Player::GetWeaponHitBoxXBoundOne()
+{
+	return m_ActiveWeapon->GetHitBoxXBoundOne();
+}
+
+//!Gets and returns the current weapon's first active hit box y bound
+//Out - 
+//		int - y bound of the current weapon's active hit box
+int Player::GetWeaponHitBoxYBoundOne()
+{
+	return m_ActiveWeapon->GetHitBoxYBoundOne();
+}
+
+//!Gets and returns the current weapon's second active hit box x bound
+//Out - 
+//		int - x bound of the current weapon's active hit box
+int Player::GetWeaponHitBoxXBoundTwo()
+{
+	return m_ActiveWeapon->GetHitBoxXBoundTwo();
+}
+
+//!Gets and returns the current weapon's second active hit box y bound
+//Out - 
+//		int - y bound of the current weapon's active hit box
+int Player::GetWeaponHitBoxYBoundTwo()
+{
+	return m_ActiveWeapon->GetHitBoxYBoundTwo();
+}
+
+//Gets and returns the player's current health
+//Out - 
+//		float - the player's current health
+float Player::GetCurrentHealth()
+{
+	return m_CurrentHealth;
+}
+
+//!Gets and returns the current weapon's damage
+//Out - 
+//		float - the damage of the current weapon
+float Player::GetWeaponDamage()
+{
+	return m_ActiveWeapon->GetDamage();
 }
 
 //!Sets the x position of the player

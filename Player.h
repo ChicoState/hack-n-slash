@@ -14,7 +14,7 @@
 #include "Weapon.h"
 
 #include "SwordWeapon.h"
-//#include "LongSwordWeapon.h"
+#include "BowWeapon.h"
 
 #include <string>
 #include <map>
@@ -25,7 +25,7 @@ class Player
 {
 public:
 
-	Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
+	Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_BITMAP *BowImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the player class
 
 	~Player(); //Deconstructor for the player class
 
@@ -33,6 +33,7 @@ public:
 	void DrawPlayer(); //Draws the player character to the screen
 	void MovementCollidingBoundOne(); //Tells the player that their bound one has collided with something in their current moving direction
 	void MovementCollidingBoundTwo(); //Tells the player that their bound two has collided with something in their current moving direction
+	void DealDamage(int InputDamage); //Deal damage to th eplayer's health
 
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
@@ -55,10 +56,20 @@ public:
 	int GetNorthWestYBoundPoint(); //Gtes and returns the north west bound point y position
 	float GetXPosition(); //Gets and returns the X position of the player
 	float GetYPosition(); //Gets and returns the Y position of the player
+	int GetHitBoxXBoundOne(); //!Gets and returns the player's first hitbox x bound (will always be top left)
+	int GetHitBoxYBoundOne(); //!Gets and returns the player's first hitbox x bound (will always be top left)
+	int GetHitBoxXBoundTwo(); //!Gets and returns the player's second hitbox x bound (will always be bottom right)
+	int GetHitBoxYBoundTwo(); //!Gets and returns the player's second hitbox x bound (will always be bottom right)
 	int GetCollisionXBoundOne(); //Gets and returns the first current X collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 	int GetCollisionYBoundOne(); //Gets and returns the first current Y collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 	int GetCollisionXBoundTwo(); //Gets and returns the second current X collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
 	int GetCollisionYBoundTwo(); //Gets and returns the second current Y collision bound position of the player relative to the direction the player is moving will always be the south or west most bound point
+	int GetWeaponHitBoxXBoundOne(); //!Gets and returns the current weapon's first active hit box x bound
+	int GetWeaponHitBoxYBoundOne(); //!Gets and returns the current weapon's first active hit box y bound
+	int GetWeaponHitBoxXBoundTwo(); //!Gets and returns the current weapon's second active hit box x bound
+	int GetWeaponHitBoxYBoundTwo(); //!Gets and returns the current weapon's second active hit box y bound
+	float GetCurrentHealth(); //Gets and returns the player's current health
+	float GetWeaponDamage(); //!Gets and returns the current weapon's damage
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
 	void SetYPosition(float NewYPosition); //Sets the y position of the player
 
@@ -96,7 +107,11 @@ private:
 	int m_YBound; //the y bound for the player
 	float m_XPosition; //the current x position of the player
 	float m_YPosition; //the current y position of the player
-	Direction m_CurrentDirection;
+	float m_PreviousXPosition; //the previous x position of the player
+	float m_PreviousYPosition; //the previous y position of the player
+	Direction m_CurrentDirection; //The current moving direction of the player
+	float m_MaxHealth; //The max health of the player
+	float m_CurrentHealth; //the current health of the player
 	int m_MovementSpeed; //the speed at which the player moves
 	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
 	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to
