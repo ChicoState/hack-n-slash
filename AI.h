@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/29/2015
+// Date: 11/6/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -17,10 +17,14 @@
 #include "Player.h"
 #include "Vec2.h"
 #include "DungeonGenerator.h"
+#include "PlayerTile.h"
 
-enum AI_STATE{ IDLE, CHASE, SEEK };
+enum AI_STATE{ IDLE, CHASE, SEEK, ATTACK, DEAD };
 enum AI_TYPE{ MELEE };
+enum AI_FACE{ N, S, W, E };
+
 const int T_SIZE = 128;
+const int TICK_DELAY_MAX = 100;
 
 //
 // This class is for pathfinding.
@@ -46,16 +50,28 @@ public:
 class AI
 {
 private:
-	int state;                                     // The AI's current behavior (IDLE, ATTACK, etc.)
+	//
+	// Private variables
+	//
+	AI_STATE state;                                // The AI's current behavior (IDLE, ATTACK, etc.)
+	AI_TYPE type;                                  // The type of AI (MELEE, RANGER, etc)
+	AI_FACE ai_direction;                          // The AI's current facing direction
 	int sight;                                     // How far the AI can see (in number of tiles)
-	int type;                                      // The type of AI (MELEE, RANGER, etc)
-	int speed;                                     // The movement speed of the AI
+	int health, ATK, speed;                        // The AI's attribute values
+	int tick_delay;                                // For timing so that the AI doesn't attack the player every tick
 	std::vector<PathNode*> path;                   // The current path for the AI to follow
 	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
 	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
+	int bound_x, bound_y;                          // x and y bounds for the AI
 	float l_x, l_y;                                // The coordinates where the player was last seen
+	PlayerTile ai_tile;                            // The AI sprite, using the PlayerTile class
 	DungeonGenerator *ai_dungeon;                  // Pointer to the dungeon the AI is spawned in
-	bool ValueEqual(int, int);                     // Check to see if given values are equal or close enough to be equal
+
+	//
+	// Private functions
+	//
+	bool InBoundX(float, float);                   // Check to see if an x bound point is within 2 given values
+	bool InBoundY(float, float);                   // Check to see if a y bound point is within 2 given values
 	void MoveAlongPath();                          // Move along a path, if it exists, created in AI::FindPath
 	void MoveTowardTarget(int, int);               // Move toward the specifed coordinates
 	void MoveUp();                                 // Move up
@@ -63,22 +79,50 @@ private:
 	void MoveLeft();                               // Move left
 	void MoveRight();                              // Move right
 	void CleanPath();                              // Deallocates all PathNodes created in AI::FindPath (Takes out the garbage)
+	void FacePlayer(Player &p);                    // Makes the AI face towards the player
+	bool CollideWithPlayer(Player &p);             // Checks to see if it the AI collides with the player
+	void DealDamageToPlayer(Player &p, int v) { p.DealDamage(v); }
+	void TakeDamage(int v) { health -= v; }
+	// These one line functions return the bound points of the AI at particular locations
+	int GetXNorthBoundPoint() { return ai_x; }
+	int GetYNorthBoundPoint() { return (ai_y - (bound_y / 2)); }
+	int GetXSouthBoundPoint() { return ai_x; }
+	int GetYSouthBoundPoint() { return (ai_y + (bound_y / 2)); }
+	int GetXEastBoundPoint() { return (ai_x + (bound_x / 2)); }
+	int GetYEastBoundPoint() { return ai_y; }
+	int GetXWestBoundPoint() { return (ai_x - (bound_x / 2)); }
+	int GetYWestBoundPoint() { return ai_y; }
+	int GetXNorthEastBoundPoint() { return (GetXNorthBoundPoint() + (bound_x / 2)); }
+	int GetYNorthEastBoundPoint() { return (GetYNorthBoundPoint()); }
+	int GetXNorthWestBoundPoint() { return (GetXNorthBoundPoint() - (bound_x / 2)); }
+	int GetYNorthWestBoundPoint() { return (GetYNorthBoundPoint()); }
+	int GetXSouthEastBoundPoint() { return (GetXSouthBoundPoint() + (bound_x / 2)); }
+	int GetYSouthEastBoundPoint() { return (GetYSouthBoundPoint()); }
+	int GetXSouthWestBoundPoint() { return (GetXSouthBoundPoint() - (bound_x / 2)); }
+	int GetYSouthWestBoundPoint() { return (GetYSouthBoundPoint()); }
 public:
-	AI(int t, int si, int sp) 
-		: state(IDLE), type(t), sight(si), speed(sp), ai_x(0), ai_y(0), ai_dungeon(NULL) {}
+	//
+	// Public functions
+	//
+	AI(ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp)
+		: state(IDLE), type(t), sight(si), speed(sp), health(100), ATK(5),
+		tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(N), ai_dungeon(NULL),
+		ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6) {}
 	~AI() { CleanPath(); }                         // Gotta prevent memory leaks :P
-	int GetState() { return state; }
-	void SetState(int s) { state = s; }
-	int GetType() { return type; }
-	float GetXPosition() { return ai_x; }
-	float GetYPosition() { return ai_y; }
-	void SetXPosition(float x) { ai_x = x; }
-	void SetYPosition(float y) { ai_y = y; }
+	bool CollusionBlock(int, int);                 // Detect collusion between player's bounds and the AI's bounds
+	void WeaponHit(int, int, int);                 // Detect collusion between the weapon and the AI
 	void Draw();                                   // Draw the AI to the screen
 	void SetSpawn(DungeonGenerator &);             // Set a random spawn point and then set the ai_dungeon pointer
 	void FindPath(int, int);                       // Find the shortest path to the given target coordinates
 	bool SeePlayer(Player &);                      // Check if the AI can see the player
 	void ProcessAI(Player &);                      // Process the AI
+	int GetState() { return state; }
+	int GetType() { return type; }
+	float GetXPosition() { return ai_x; }
+	float GetYPosition() { return ai_y; }
+	void SetXPosition(float x) { ai_x = x; }
+	void SetYPosition(float y) { ai_y = y; }
+	DungeonGenerator* GetActiveDungeon() { return ai_dungeon; }
 };
 
 #endif

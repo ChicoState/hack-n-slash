@@ -2,7 +2,7 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/29/2015
+// Date: 11/6/2015
 //
 #include "AIGroup.h"
 
@@ -32,21 +32,33 @@ bool AI_Group::Overlap(AI* ai)
 	return false;
 }
 //
+// Check to see if the given AI overlaps with the player's starting position
+//
+bool AI_Group::OverlapWithPlayerStart(AI* ai)
+{
+	Vec2f pos = ai->GetActiveDungeon()->GetStartPosition();
+
+	if (ai->GetXPosition() == pos.x() && ai->GetYPosition() == pos.y())
+		return true;
+	else
+		return false;
+}
+//
 // Set up the group with a given number of randomly generated AI.
 //
-void AI_Group::RandomSetup(int n, DungeonGenerator &d)
+void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
 {
 	// If the group is not empty, clear it first
 	if (!group.empty())
 		GroupClear();
 
 	for (int i = 0; i < n; i++)
-		AddRandom(d);
+		AddRandom(d, image);
 }
 //
 // Generate a new AI with random attributes and then add it to the group.
 //
-void AI_Group::AddRandom(DungeonGenerator &d)
+void AI_Group::AddRandom(DungeonGenerator &d, ALLEGRO_BITMAP *image)
 {
 	AI* ai;
 	std::random_device rd;
@@ -57,10 +69,12 @@ void AI_Group::AddRandom(DungeonGenerator &d)
 		id = rd() % 99999 + 1;
 	sight = rd() % 4 + 2;              // Sight ranges from 2 to 5  (This may change later)
 	speed = rd() % 4 + 1;              // Speed ranges from 1 to 4  (This may change later)
-	ai = new AI(MELEE, sight, speed);  // There's only one AI type for now
+	ai = new AI(image, MELEE, sight, speed);  // There's only one AI type for now
 	ai->SetSpawn(d);                   // Set a spawn point
-	while (Overlap(ai))                // Ensure the new AI doesn't overlap with anyone else in the group
+
+	while (Overlap(ai) || OverlapWithPlayerStart(ai))      // Ensure the new AI doesn't spawn on top of anyone else
 		ai->SetSpawn(d);
+
 	group.insert(std::pair<int, AI*>(id, ai));
 }
 //
@@ -75,10 +89,18 @@ void AI_Group::GroupClear()
 //
 // Process all AI in the group.
 //
-void AI_Group::ProcessAll(Player &p)
+void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 {
+	if (ev.type != ALLEGRO_EVENT_TIMER)
+		return;
+
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
+	{
+		// Ignore dead AI
+		if ((it->second)->GetState() == DEAD)
+			continue;
 		(it->second)->ProcessAI(p);
+	}
 }
 //
 // Draw everyone in the group onto the screen.
@@ -86,7 +108,12 @@ void AI_Group::ProcessAll(Player &p)
 void AI_Group::DrawAll()
 {
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
+	{
+		// Ignore dead AI
+		if ((it->second)->GetState() == DEAD)
+			continue;
 		(it->second)->Draw();
+	}
 }
 //
 // Make everyone in the group find a path to the player.
@@ -96,4 +123,38 @@ void AI_Group::GetPathToPlayer(Player &p)
 {
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
 		(it->second)->FindPath(p.GetXPosition()/T_SIZE, p.GetYPosition()/T_SIZE);
+}
+//
+// Check to see if the player's bound points are colliding with any of the AI in the group near
+// the player.
+//
+bool AI_Group::CollideWithAI(int pb_x, int pb_y)
+{
+	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
+	{
+		// Ignore dead AI
+		if ((it->second)->GetState() == DEAD)
+			continue;
+		if ((it->second)->CollusionBlock(pb_x, pb_y))
+			return true;
+	}
+
+	return false;
+}
+//
+// Similar to the above function, but with weapon bound points and damage.
+//
+void AI_Group::HitAI(int w_x, int w_y, int w_d)
+{
+	// Ignore inactive weapons
+	if (!w_d)
+		return;
+
+	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
+	{
+		// Ignore dead AI
+		if ((it->second)->GetState() == DEAD)
+			continue;
+		(it->second)->WeaponHit(w_x, w_y, w_d);
+	}
 }

@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 10/29/2015
+// Date: 11/6/2015
 //
 #include "AI.h"
 
@@ -21,20 +21,6 @@ int randomize(int RandomAmount1, int RandomAmount2)
 	return Number;
 }
 //
-// Check to see if two given values are equal or close enough to be equal.
-// This is for getting around an issue where the AI gets stuck while moving
-// along the path with noneven speed values.
-//
-bool AI::ValueEqual(int p1, int p2)
-{
-	if (p1 == p2)
-		return true;
-	else if (p1 < p2 + speed && p1 > p2 - speed)
-		return true;
-	else
-		return false;
-}
-//
 // Searches a given vector of pointers to see if any one of them point to
 // a PathNode with the specified coordinates.
 //
@@ -45,6 +31,54 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 		if ((*it)->X() == x && (*it)->Y() == y)
 			return true;
 	}
+	return false;
+}
+//
+// Checks to see if any of the AI's x bound points are within the player's
+// bound area. Returns true if it is, false otherwise.
+//
+bool AI::InBoundX(float v1, float v2)
+{
+	int b_x = GetXNorthBoundPoint();
+	if (b_x >= v1 && b_x <= v2)
+		return true;
+
+	b_x = GetXSouthBoundPoint();
+	if (b_x >= v1 && b_x <= v2)
+		return true;
+
+	b_x = GetXWestBoundPoint();
+	if (b_x >= v1 && b_x <= v2)
+		return true;
+
+	b_x = GetXEastBoundPoint();
+	if (b_x >= v1 && b_x <= v2)
+		return true;
+
+	return false;
+}
+//
+// Checks to see if any of the AI's y bound points are within the player's
+// bound area. Returns true if it is, false otherwise.
+//
+bool AI::InBoundY(float v1, float v2)
+{
+	int b_y = GetYNorthBoundPoint();
+	if (b_y >= v1 && b_y <= v2)
+		return true;
+
+	b_y = GetYSouthBoundPoint();
+	if (b_y >= v1 && b_y <= v2)
+		return true;
+
+	b_y = GetYWestBoundPoint();
+	if (b_y >= v1 && b_y <= v2)
+		return true;
+
+	b_y = GetYEastBoundPoint();
+	if (b_y >= v1 && b_y <= v2)
+		return true;
+
 	return false;
 }
 //
@@ -121,21 +155,14 @@ void AI::MoveAlongPath()
 	else
 	{
 		p_node = path.back();
-		if (ValueEqual(ai_x, p_node->X() * T_SIZE + (T_SIZE / 2)) && ValueEqual(ai_y, p_node->Y() * T_SIZE + (T_SIZE / 2)))
+		if (ai_x == p_node->X() * T_SIZE + (T_SIZE / 2) && ai_y == p_node->Y() * T_SIZE + (T_SIZE / 2))
 		{
 			path.pop_back();
 			if (path.empty())
 				return;
 			p_node = path.back();
 		}
-		if (ai_y > p_node->Y() * T_SIZE + (T_SIZE / 2))
-			MoveUp();
-		if (ai_y < p_node->Y() * T_SIZE + (T_SIZE / 2))
-			MoveDown();
-		if (ai_x > p_node->X() * T_SIZE + (T_SIZE / 2))
-			MoveLeft();
-		if (ai_x < p_node->X() * T_SIZE + (T_SIZE / 2))
-			MoveRight();
+		MoveTowardTarget(p_node->X() * T_SIZE + (T_SIZE / 2), p_node->Y() * T_SIZE + (T_SIZE / 2));
 	}
 }
 //
@@ -144,33 +171,69 @@ void AI::MoveAlongPath()
 void AI::MoveTowardTarget(int t_x, int t_y)
 {
 	if (ai_y > t_y)
+	{
 		MoveUp();
-	if (ai_y < t_y)
+		if (ai_y < t_y)
+			ai_y = t_y;
+	}
+	else if (ai_y < t_y)
+	{
 		MoveDown();
+		if (ai_y > t_y)
+			ai_y = t_y;
+	}
 	if (ai_x > t_x)
+	{
 		MoveLeft();
-	if (ai_x < t_x)
+		if (ai_x < t_x)
+			ai_x = t_x;
+	}
+	else if (ai_x < t_x)
+	{
 		MoveRight();
+		if (ai_x > t_x)
+			ai_x = t_x;
+	}
 }
 void AI::MoveUp()
 {
-	if (ai_dungeon->Get_Tile(Vec2i(ai_x / T_SIZE, (ai_y - speed) / T_SIZE)) != Wall)
+	ai_direction = N;
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXNorthBoundPoint(), GetYNorthBoundPoint())))
+	{
 		ai_y -= speed;
+		ai_tile.Set_CurRow(3, false);
+		ai_tile.Event_Handler();
+	}
 }
 void AI::MoveDown()
 {
-	if (ai_dungeon->Get_Tile(Vec2i(ai_x / T_SIZE, (ai_y + speed) / T_SIZE)) != Wall)
+	ai_direction = S;
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXSouthBoundPoint(), GetYSouthBoundPoint())))
+	{
 		ai_y += speed;
+		ai_tile.Set_CurRow(0, false);
+		ai_tile.Event_Handler();
+	}
 }
 void AI::MoveLeft()
 {
-	if (ai_dungeon->Get_Tile(Vec2i((ai_x - speed) / T_SIZE, ai_y / T_SIZE)) != Wall)
+	ai_direction = W;
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXWestBoundPoint(), GetYWestBoundPoint())))
+	{
 		ai_x -= speed;
+		ai_tile.Set_CurRow(1, false);
+		ai_tile.Event_Handler();
+	}
 }
 void AI::MoveRight()
 {
-	if (ai_dungeon->Get_Tile(Vec2i((ai_x + speed) / T_SIZE, ai_y / T_SIZE)) != Wall)
+	ai_direction = E;
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXEastBoundPoint(), GetYEastBoundPoint())))
+	{
 		ai_x += speed;
+		ai_tile.Set_CurRow(2, false);
+		ai_tile.Event_Handler();
+	}
 }
 //
 // Check to see if the AI can see the player. Returns true if it can, false otherwise.
@@ -363,15 +426,92 @@ void AI::CleanPath()
 	path.clear();
 }
 //
+// Checks to see if the AI collides with the player. Returns true if it does, false otherwise.
+//
+bool AI::CollideWithPlayer(Player &p)
+{
+	// Note the order of arguments for the calls to the Inbound functions here.
+	// North and west go in negative directions while south and east go in positive directions.
+	// For the Inbound functions, the AI bound point has to be in between the player's bound point
+	// and the player's position.
+
+	if (InBoundX(p.GetNorthWestXBoundPoint(), p.GetXPosition())
+		&& InBoundY(p.GetNorthWestYBoundPoint(), p.GetYPosition()))
+		return true;
+	else if (InBoundX(p.GetXPosition(), p.GetNorthEastXBoundPoint())
+		&& InBoundY(p.GetNorthEastYBoundPoint(), p.GetYPosition()))
+		return true;
+	else if (InBoundX(p.GetSouthWestXBoundPoint(), p.GetXPosition())
+		&& InBoundY(p.GetYPosition(), p.GetSouthWestYBoundPoint()))
+		return true;
+	else if (InBoundX(p.GetXPosition(), p.GetSouthEastXBoundPoint())
+		&& InBoundY(p.GetYPosition(), p.GetSouthEastYBoundPoint()))
+		return true;
+
+	return false;
+}
+//
+// Makes the AI face toward the player.
+//
+void AI::FacePlayer(Player &p)
+{
+	if (ai_y > p.GetYPosition())
+		ai_direction = N;
+	else if (ai_y < p.GetYPosition())
+		ai_direction = S;
+	if (ai_x > p.GetXPosition())
+		ai_direction = W;
+	else if (ai_x < p.GetXPosition())
+		ai_direction = E;
+}
+//
+// Checks to see if the given player bound points are within the AI's collusion bound.
+// Returns true if they do, false otherwise.
+//
+bool AI::CollusionBlock(int pb_x, int pb_y)
+{
+	if (pb_x >= GetXWestBoundPoint() && pb_x <= GetXEastBoundPoint())
+		if (pb_y >= GetYNorthBoundPoint() && pb_y <= GetYSouthBoundPoint())
+			return true;
+
+	return false;
+}
+//
+// Checks to see if the given weapon bound points are within the AI's collusion bound.
+// Deals damage to the AI if it is.
+//
+void AI::WeaponHit(int w_x, int w_y, int w_d)
+{
+	if (w_x >= GetXWestBoundPoint() && w_x <= GetXEastBoundPoint())
+		if (w_y >= GetYNorthBoundPoint() && w_y <= GetYSouthBoundPoint())
+		{
+			TakeDamage(w_d);
+			std::cout << "The AI took " << w_d << " damage...\n";
+			if (health <= 0)
+			{
+				std::cout << "...and is now dead...\n";
+				state = DEAD;
+			}
+		}
+}
+//
 // Draw the AI to the screen.
 //
 void AI::Draw()
 {
-	// For now, the AI is represented by a magenta square
-	al_draw_filled_rectangle(ai_x - (T_SIZE / 4), ai_y - (T_SIZE / 4),
-		ai_x + (T_SIZE / 4), ai_y + (T_SIZE / 4), al_map_rgb(255, 0, 255));
-	// A blue pixel represents the center of the square (where the AI coordinates are)
-	al_draw_pixel(ai_x, ai_y, al_map_rgb(0, 0, 255));
+	// A small red circle indicates where the AI is facing
+	if (ai_direction == N)
+		al_draw_filled_circle(ai_x, ai_y - (bound_y / 2), 2, al_map_rgb(255, 0, 0));
+	else if (ai_direction == S)
+		al_draw_filled_circle(ai_x, ai_y + (bound_y / 2), 2, al_map_rgb(255, 0, 0));
+	else if (ai_direction == W)
+		al_draw_filled_circle(ai_x - (bound_x / 2), ai_y, 2, al_map_rgb(255, 0, 0));
+	else if (ai_direction == E)
+		al_draw_filled_circle(ai_x + (bound_x / 2), ai_y, 2, al_map_rgb(255, 0, 0));
+
+	// Draw the AI's sprite
+	ai_tile.Draw((ai_x - bound_x / 2), (ai_y - bound_y / 2));
+
     // For debugging purposes, draw magenta circles showing the path the AI created to a target position
 	// The circles are located at the center of each tile
 	for (std::vector<PathNode*>::reverse_iterator it = path.rbegin(); it != path.rend(); it++)
@@ -402,6 +542,12 @@ void AI::ProcessAI(Player &player)
 		{
 			l_x = player.GetXPosition();
 			l_y = player.GetYPosition();
+			if (CollideWithPlayer(player))
+			{
+				state = ATTACK;
+				tick_delay = TICK_DELAY_MAX;
+				std::cout << "The AI is attacking you...\n";
+			}
 			MoveTowardTarget(l_x, l_y);
 		}
 	}
@@ -420,5 +566,21 @@ void AI::ProcessAI(Player &player)
 			state = IDLE;
 			std::cout << "The AI is now IDLE again...\n";
 		}
+	}
+	else if (state == ATTACK)
+	{
+		if (!CollideWithPlayer(player))
+		{
+			state = CHASE;
+			std::cout << "The AI is now chasing you again...\n";
+		}
+		FacePlayer(player);
+		if (tick_delay >= TICK_DELAY_MAX)
+		{
+			DealDamageToPlayer(player, ATK);
+			std::cout << "Dealing " << ATK << " damage to player...\n";
+			tick_delay = 0;
+		}
+		tick_delay++;
 	}
 }
