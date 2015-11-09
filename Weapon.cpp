@@ -31,16 +31,19 @@ Weapon::Weapon(ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bo
 	m_IsRangedWeapon = IsRangedWeapon;
 	m_ProjectileXBound = 0;
 	m_ProjectileYBound = 0;
-	m_ProjectileXPosition = 0;
-	m_ProjectileYPosition = 0;
 	m_ProjectileSpeed = 6;
 	m_IsActive = false;
 	m_LastDrawnDirection = Direction(North);
-	m_CurrentProjectileDirection = Direction(North);
 	m_AttackTime = (InputAttackTime * 60);
 	m_CurrentAttackCount = 0;
 	m_Damage = InputDamage;
 	m_DamageModifier = 1;
+}
+
+//Destructor for the weapon class
+Weapon::~Weapon()
+{
+	delete m_Projectile;
 }
 
 //!Handles allegro events for the weapon class
@@ -54,32 +57,11 @@ void Weapon::EventHandler()
 			//iterate the timer
 			m_CurrentAttackCount++;
 
-			//move the projectile if a ranged weapon
 			if(m_IsRangedWeapon)
 			{
-				if(m_CurrentProjectileDirection == Direction(North))
+				if(m_Projectile != NULL)
 				{
-					m_ProjectileYPosition -= m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(South))
-				{
-					m_ProjectileYPosition += m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(East))
-				{
-					m_ProjectileXPosition += m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(West))
-				{
-					m_ProjectileXPosition -= m_ProjectileSpeed;
-				}
-
-				else
-				{
-					m_ProjectileYPosition -= m_ProjectileSpeed;
+					m_Projectile->UpdatePosition();
 				}
 			}
 
@@ -89,9 +71,14 @@ void Weapon::EventHandler()
 				//make weapon unactive and reset timer
 				m_IsActive = false;
 				m_CurrentAttackCount = 0;
-				m_ProjectileXPosition = 0;
-				m_ProjectileYPosition = 0;
-
+				
+				if(m_IsRangedWeapon)
+				{
+					if(m_Projectile != NULL)
+					{
+						delete m_Projectile;
+					}
+				}
 			}
 		}
 	}
@@ -157,9 +144,36 @@ void Weapon::Attack()
 
 	if(m_IsRangedWeapon)
 	{
-		m_ProjectileXPosition = m_LastDrawnXPosition;
-		m_ProjectileYPosition = m_LastDrawnYPosition;
-		m_CurrentProjectileDirection = m_LastDrawnDirection;
+		//reset current projectile
+		if(m_Projectile != NULL)
+		{
+			m_Projectile->ResetProjectile();
+		}
+
+		if(m_LastDrawnDirection == Direction(North))
+		{
+			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
+		}
+		
+		else if(m_LastDrawnDirection == Direction(South))
+		{
+			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, 1);
+		}
+
+		else if(m_LastDrawnDirection == Direction(East))
+		{
+			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, -1, 0);
+		}
+
+		else if(m_LastDrawnDirection == Direction(West))
+		{
+			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 1, 0);
+		}
+
+		else
+		{
+			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
+		}
 	}
 }
 
@@ -188,24 +202,14 @@ int Weapon::GetHitBoxXBoundOne()
 	{
 		if(m_IsRangedWeapon)
 		{
-			if(m_CurrentProjectileDirection == Direction(North))
+			if(m_Projectile != NULL)
 			{
-				return (m_ProjectileXPosition - (m_ProjectileXBound / 2));
+				return m_Projectile->GetHitBoxXBoundOne();
 			}
 
-			if(m_CurrentProjectileDirection == Direction(South))
+			else
 			{
-				return (m_ProjectileXPosition + (m_ProjectileXBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(East))
-			{
-				return (m_ProjectileXPosition + (m_ProjectileXBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(West))
-			{
-				return (m_ProjectileXPosition - (m_ProjectileXBound / 2));
+				return 0;
 			}
 		}
 
@@ -216,19 +220,24 @@ int Weapon::GetHitBoxXBoundOne()
 				return (m_LastDrawnXPosition - (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(South))
+			else if(m_LastDrawnDirection == Direction(South))
 			{
 				return (m_LastDrawnXPosition + (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(East))
+			else if(m_LastDrawnDirection == Direction(East))
 			{
 				return (m_LastDrawnXPosition + (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(West))
+			else if(m_LastDrawnDirection == Direction(West))
 			{
 				return (m_LastDrawnXPosition - (m_XBound / 2));
+			}
+
+			else
+			{
+				return 0;
 			}
 		}
 	}
@@ -248,24 +257,14 @@ int Weapon::GetHitBoxYBoundOne()
 	{
 		if(m_IsRangedWeapon)
 		{
-			if(m_CurrentProjectileDirection == Direction(North))
+			if(m_Projectile != NULL)
 			{
-				return (m_ProjectileYPosition - (m_ProjectileYBound / 2));
+				return m_Projectile->GetHitBoxYBoundOne();
 			}
 
-			if(m_CurrentProjectileDirection == Direction(South))
+			else
 			{
-				return (m_ProjectileYPosition + (m_ProjectileYBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(East))
-			{
-				return (m_ProjectileYPosition - (m_ProjectileYBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(West))
-			{
-				return (m_ProjectileYPosition + (m_ProjectileYBound / 2));
+				return 0;
 			}
 		}
 
@@ -276,19 +275,24 @@ int Weapon::GetHitBoxYBoundOne()
 				return (m_LastDrawnYPosition - (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(South))
+			else if(m_LastDrawnDirection == Direction(South))
 			{
 				return (m_LastDrawnYPosition + (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(East))
+			else if(m_LastDrawnDirection == Direction(East))
 			{
 				return (m_LastDrawnYPosition - (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(West))
+			else if(m_LastDrawnDirection == Direction(West))
 			{
 				return (m_LastDrawnYPosition + (m_YBound / 2));
+			}
+
+			else
+			{
+				return 0;
 			}
 		}
 	}
@@ -308,24 +312,14 @@ int Weapon::GetHitBoxXBoundTwo()
 	{
 		if(m_IsRangedWeapon)
 		{
-			if(m_CurrentProjectileDirection == Direction(North))
+			if(m_Projectile != NULL)
 			{
-				return (m_ProjectileXPosition + (m_ProjectileXBound / 2));
+				return m_Projectile->GetHitBoxXBoundTwo();
 			}
 
-			if(m_CurrentProjectileDirection == Direction(South))
+			else
 			{
-				return (m_ProjectileXPosition - (m_ProjectileXBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(East))
-			{
-				return (m_ProjectileXPosition - (m_ProjectileXBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(West))
-			{
-				return (m_ProjectileXPosition + (m_ProjectileXBound / 2));
+				return 0;
 			}
 		}
 
@@ -336,19 +330,24 @@ int Weapon::GetHitBoxXBoundTwo()
 				return (m_LastDrawnXPosition + (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(South))
+			else if(m_LastDrawnDirection == Direction(South))
 			{
 				return (m_LastDrawnXPosition - (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(East))
+			else if(m_LastDrawnDirection == Direction(East))
 			{
 				return (m_LastDrawnXPosition - (m_XBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(West))
+			else if(m_LastDrawnDirection == Direction(West))
 			{
 				return (m_LastDrawnXPosition + (m_XBound / 2));
+			}
+
+			else
+			{
+				return 0;
 			}
 		}
 	}
@@ -368,24 +367,14 @@ int Weapon::GetHitBoxYBoundTwo()
 	{
 		if(m_IsRangedWeapon)
 		{
-			if(m_CurrentProjectileDirection == Direction(North))
+			if(m_Projectile != NULL)
 			{
-				return (m_ProjectileYPosition + (m_ProjectileYBound / 2));
+				return m_Projectile->GetHitBoxYBoundTwo();
 			}
 
-			if(m_CurrentProjectileDirection == Direction(South))
+			else
 			{
-				return (m_ProjectileYPosition - (m_ProjectileYBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(East))
-			{
-				return (m_ProjectileYPosition + (m_ProjectileYBound / 2));
-			}
-
-			if(m_CurrentProjectileDirection == Direction(West))
-			{
-				return (m_ProjectileYPosition - (m_ProjectileYBound / 2));
+				return 0;
 			}
 		}
 
@@ -396,19 +385,24 @@ int Weapon::GetHitBoxYBoundTwo()
 				return (m_LastDrawnYPosition + (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(South))
+			else if(m_LastDrawnDirection == Direction(South))
 			{
 				return (m_LastDrawnYPosition - (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(East))
+			else if(m_LastDrawnDirection == Direction(East))
 			{
 				return (m_LastDrawnYPosition + (m_YBound / 2));
 			}
 
-			if(m_LastDrawnDirection == Direction(West))
+			else if(m_LastDrawnDirection == Direction(West))
 			{
 				return (m_LastDrawnYPosition - (m_YBound / 2));
+			}
+
+			else
+			{
+				return 0;
 			}
 		}
 	}
@@ -416,6 +410,22 @@ int Weapon::GetHitBoxYBoundTwo()
 	else
 	{
 		return 0;
+	}
+}
+
+//!Gets and returns the current projectile of the weapon
+//Out - 
+//		Projectile* - the current projectile of the weapon
+Projectile* Weapon::GetProjectile()
+{
+	if(m_IsRangedWeapon)
+	{
+		return m_Projectile;
+	}
+
+	else
+	{
+		return NULL;
 	}
 }
 

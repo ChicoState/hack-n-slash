@@ -124,6 +124,7 @@ void BowWeaponTile::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirectio
 	}
 }
 
+/*
 //!Overloaded draw function from Sprite class
 //In - 
 //		int DrawXCoordinate - DrawXCoordinate - the x coordinate to draw the weapon at
@@ -176,3 +177,4 @@ void BowWeaponTile::DrawProjectile(int DrawXCoordinate, int DrawYCoordinate, int
 		al_draw_rectangle(DrawXCoordinate - 6, DrawYCoordinate - 8, DrawXCoordinate + 6, DrawYCoordinate + 8, al_map_rgb(255, 0, 2550), 5);
 	}
 }
+*/

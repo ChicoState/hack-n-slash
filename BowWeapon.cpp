@@ -34,29 +34,9 @@ void BowWeapon::EventHandler()
 			//move the projectile if a ranged weapon
 			if(m_IsRangedWeapon)
 			{
-				if(m_CurrentProjectileDirection == Direction(North))
+				if(m_Projectile != NULL)
 				{
-					m_ProjectileYPosition -= m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(South))
-				{
-					m_ProjectileYPosition += m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(East))
-				{
-					m_ProjectileXPosition += m_ProjectileSpeed;
-				}
-
-				else if(m_CurrentProjectileDirection == Direction(West))
-				{
-					m_ProjectileXPosition -= m_ProjectileSpeed;
-				}
-
-				else
-				{
-					m_ProjectileYPosition -= m_ProjectileSpeed;
+					m_Projectile->UpdatePosition();
 				}
 			}
 
@@ -66,8 +46,14 @@ void BowWeapon::EventHandler()
 				//make weapon unactive and reset timer
 				m_IsActive = false;
 				m_CurrentAttackCount = 0;
-				m_ProjectileXPosition = 0;
-				m_ProjectileYPosition = 0;
+
+				if(m_IsRangedWeapon)
+				{
+					if(m_Projectile != NULL)
+					{
+						m_Projectile->ResetProjectile();
+					}
+				}
 			}
 		}
 	}
@@ -114,30 +100,7 @@ void BowWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, i
 	//if active draw the projectile
 	if(m_IsActive)
 	{
-		if(m_CurrentProjectileDirection == Direction(North))
-		{
-			m_BowWeaponTile.DrawProjectile(m_ProjectileXPosition, m_ProjectileYPosition, 0, -1);
-		}
-
-		else if(m_CurrentProjectileDirection == Direction(South))
-		{
-			m_BowWeaponTile.DrawProjectile(m_ProjectileXPosition, m_ProjectileYPosition, 0, 1);
-		}
-
-		else if(m_CurrentProjectileDirection == Direction(East))
-		{
-			m_BowWeaponTile.DrawProjectile(m_ProjectileXPosition, m_ProjectileYPosition, 1, 0);
-		}
-
-		else if(m_CurrentProjectileDirection == Direction(West))
-		{
-			m_BowWeaponTile.DrawProjectile(m_ProjectileXPosition, m_ProjectileYPosition, -1, 0);
-		}
-
-		else
-		{
-			m_BowWeaponTile.DrawProjectile(m_ProjectileXPosition, m_ProjectileYPosition, 0, -1);
-		}
+		m_Projectile->Draw();
 	}
 }
 

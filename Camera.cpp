@@ -55,10 +55,12 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 //		int PlayerHeight - The player height bound	
 void Camera::UpdatePosition(float PlayerXPosition, float PlayerYPosition)
 {
+	/*
 	if(std::abs((-(1280 / 2) + (PlayerXPosition)) - m_XPosition) < 3 && std::abs(-(720 / 2) + (PlayerYPosition) - m_YPosition) < 3)
 	{
 		return;
 	}
+	*/
 
 	//Update the posiotion of the camera relative to the player position and bound
 	m_XPosition = -(1280 / 2) + (PlayerXPosition);
