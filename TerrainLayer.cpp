@@ -10,6 +10,15 @@ void TerrainLayer::Draw()
 	}
 }
 
+void TerrainLayer::Event_Handler(ALLEGRO_EVENT &EV)
+{
+	for (int i = 0; i < m_AnimatedTiles.size(); i++)
+	{
+		m_AnimatedTiles[i].Event_Handler(EV);
+	}
+}
+
+
 void TerrainLayer::CreateBitmap(Display &MainDisplay)
 {
 	m_LayerImage = al_create_bitmap(m_LayerWidth, m_LayerHeight);

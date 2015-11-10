@@ -1,4 +1,5 @@
 #include "TerrainMap.h"
+#include <iostream>
 
 void TerrainMap::InitInfoLayer()
 {
@@ -49,6 +50,35 @@ void TerrainMap::UpdateInfoLayer(int LayerChangeIndex)
 			{
 				m_InfoLayer[x][y] = Temp;
 			}
+		}
+	}
+}
+
+void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
+{
+	static Projectile *Temp = NULL;
+
+	for (int i = 0; i < m_Map.size(); i++)
+	{
+		m_Map[i]->Event_Handler(EV);
+	}
+
+	if (EV.type == PROJECTILE_EVENT)
+	{
+		Temp = (Projectile*)EV.user.data1;
+	}
+
+	if (Temp != NULL)
+	{
+		if (CheckMapCollision(Vec2f(Temp->GetHitBoxXBoundOne(), Temp->GetHitBoxYBoundOne())))
+		{
+			Temp->ResetProjectile();
+			Temp = NULL;
+		}
+		else if (CheckMapCollision(Vec2f(Temp->GetHitBoxXBoundTwo(), Temp->GetHitBoxYBoundTwo())))
+		{
+			Temp->ResetProjectile();
+			Temp = NULL;
 		}
 	}
 }

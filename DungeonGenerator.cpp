@@ -16,10 +16,6 @@ bool Streamline = true; //Not used currently
 
 int currentRegion = -1; //Don't change this. It's used internally. Should be a member variable but I'm just too lazy to move it there at the moment :P
 
-//This is the size of the graphical tiles that being drawn. This is set low currently in order to see the entire map on the screen.
-//Normally this value should be set 64. 
-int TileSize = 128; 
-
 //used for generating a random number between two values. Should probably be moved to a different file but again, I'm lazy :P.
 int Random(int RandomAmount1, int RandomAmount2)
 {
@@ -33,6 +29,8 @@ int Random(int RandomAmount1, int RandomAmount2)
 void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 {
 	currentRegion = -1;
+
+	m_GroundImage = al_load_bitmap("GroundTile.jpg");
 
 	m_Dungeon.resize(cm_DungeonWidth, std::vector<TILE>(cm_DungeonHeight, Wall));
 	m_Regions.resize(cm_DungeonWidth, std::vector<int>(cm_DungeonHeight, currentRegion));
@@ -516,15 +514,16 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 			
 			if (CurTileType == Wall)
 			{
-				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Wall, TileSize, TileSize, true);
+				Layer[x][y] = TerrainTile(NULL, x * cm_TileSize, y * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true);
 			}
 			else if (CurTileType == Floor)
 			{
-				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Floor, TileSize, TileSize, false);
+				//Layer[x][y] = TerrainTile(NULL, x * cm_TileSize, y * cm_TileSize, Floor, cm_TileSize, cm_TileSize, false);
+				Layer[x][y] = TerrainTile(m_GroundImage, x * cm_TileSize, y * cm_TileSize, Floor, cm_TileSize, cm_TileSize, false);
 			}
 			else if (CurTileType == Door)
 			{
-				Layer[x][y] = TerrainTile(NULL, x * TileSize, y * TileSize, Door, TileSize, TileSize, false);
+				Layer[x][y] = TerrainTile(NULL, x * cm_TileSize, y * cm_TileSize, Door, cm_TileSize, cm_TileSize, false);
 			}
 		}
 	}
@@ -539,7 +538,12 @@ void DungeonGenerator::Draw()
 {
 	m_Map->Draw();
 	
-	al_draw_filled_circle(m_StartPosition.x() * TileSize, m_StartPosition.y() * TileSize, 5, al_map_rgb(255, 255, 255));
+	al_draw_filled_circle(m_StartPosition.x() * cm_TileSize, m_StartPosition.y() * cm_TileSize, 5, al_map_rgb(255, 255, 255));
+}
+
+void DungeonGenerator::Event_Handler(ALLEGRO_EVENT &EV)
+{
+	m_Map->Event_Handler(EV);
 }
 
 void DungeonGenerator::SetStartPosition()
@@ -592,5 +596,51 @@ void DungeonGenerator::SetStartPosition()
 	//Then choose a random position in that room to spawn at.
 	TempRoom = TempRooms[Random(0, TempRooms.size())];
 	
+	m_StartPosition = Vec2f(Random(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1), Random(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1));
+}
+
+void DungeonGenerator::SetBossPortalSpawn()
+{
+	std::vector<Rect> TempRooms;
+
+	Rect TempRoom(cm_DungeonWidth, cm_DungeonHeight, 1, 1);
+
+	//Find the room furthest to the right of the screen
+	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
+	{
+		if (it->Get_X1() > TempRoom.Get_X1())
+		{
+			TempRoom = *it;
+		}
+	}
+
+	//Find any other rooms that may be at that Xposition
+	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
+	{
+		if (it->Get_X1() == TempRoom.Get_X1())
+		{
+			TempRooms.push_back(*it);
+		}
+	}
+
+	//Find all rooms that are within the Xposition of the widest room
+	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
+	{
+		if (it->Get_X1() < TempRoom.Get_X2())
+		{
+			TempRooms.push_back(*it);
+		}
+	}
+
+	//Now we should have, in general, all the rooms that are furthest to the left
+	//later I think it would be better to spawn in a room with only one door, might 
+	//add an additional step to single out rooms with the least amount doors
+
+
+
+	//For now though we'll just choose a random room from those that we currently have
+	//Then choose a random position in that room to spawn at.
+	TempRoom = TempRooms[Random(0, TempRooms.size())];
+
 	m_StartPosition = Vec2f(Random(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1), Random(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1));
 }

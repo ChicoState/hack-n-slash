@@ -45,6 +45,7 @@ public:
 
 	std::vector<std::vector<TerrainTile>>& Get_VectorLayer() { return m_Layer; } //return the layer in vector form
 
+	void Event_Handler(ALLEGRO_EVENT&);
 	void Draw();
 	void CreateBitmap(Display&);
 };

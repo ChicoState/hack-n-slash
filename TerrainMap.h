@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "TerrainLayer.h"
+#include "Projectile.h"
+#include "Utility.h"
 
 //TerrainMap is responsible for controlling the entire Terrain.
 class TerrainMap
@@ -29,7 +31,7 @@ public:
 	}
 	~TerrainMap()
 	{
-		for (int i = 0; i < m_Map.size(); i++)
+		for (unsigned int i = 0; i < m_Map.size(); i++)
 		{
 			delete m_Map[i];
 		}
@@ -44,7 +46,8 @@ public:
 	
 	bool CheckMapCollision(Vec2f);
 
-	virtual void Draw();
+	void Event_Handler(ALLEGRO_EVENT&);
+	void Draw();
 
 };
 
