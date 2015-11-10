@@ -15,6 +15,14 @@
 #include <allegro5\allegro_ttf.h>
 #include <allegro5\allegro_image.h>
 
+enum CUSTOM_EVENT_ID 
+{ 
+	PROJECTILE_EVENT = 1025, 
+	MYNEXTEVENT, 
+	MYOTHEREVENT 
+};
+
+
 //Global utility class for keeping track of global key presses/game state/if game is over/etc..
 //Do NOT create another variable of this class. Include this class and use "MainUtility" variable
 //instead (located at bottom of class declaration)

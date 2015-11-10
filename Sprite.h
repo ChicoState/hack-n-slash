@@ -61,7 +61,7 @@ public:
 	{
 		if (m_Image)
 		{
-			al_destroy_bitmap(m_Image);
+			//al_destroy_bitmap(m_Image);
 		}
 	}
 
