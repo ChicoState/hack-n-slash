@@ -11,7 +11,7 @@
 //Terrain Tile types. More to be added later!
 enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water };
 
-
+//A single Tile that makes up the terrain.
 class TerrainTile : public Sprite
 {
 private:

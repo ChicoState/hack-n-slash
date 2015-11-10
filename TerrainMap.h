@@ -5,15 +5,15 @@
 
 #include "TerrainLayer.h"
 
-
+//TerrainMap is responsible for controlling the entire Terrain.
 class TerrainMap
 {
 private:
 	std::vector<TerrainLayer*> m_Map;
 	std::vector<std::vector<TerrainTile*>> m_InfoLayer;
-	int m_MapSizeX;
-	int m_MapSizeY;
-	int m_TileSize;
+	int m_MapSizeX; //The number of tiles wide the Map is
+	int m_MapSizeY; //The number of tiles tall the Map is
+	int m_TileSize; //The size of a single tile (terrain tiles are assumed to be square)
 
 public:
 	TerrainMap()

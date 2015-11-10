@@ -69,6 +69,7 @@ private:
 
 	Vec2f m_StartPosition; //The players start position in the dungeon
 
+	const int cm_TileSize = 128;
 	const int cm_DungeonWidth = 51; //The width of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 	const int cm_DungeonHeight = 31; //The height of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 
@@ -95,7 +96,7 @@ public:
 
 	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
-	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * 128, m_StartPosition.y() * 128); }
+	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * cm_TileSize, m_StartPosition.y() * cm_TileSize); }
 
 	void GenerateDungeon(Display&);
 
