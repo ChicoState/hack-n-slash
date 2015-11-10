@@ -8,8 +8,8 @@
 //In - 
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 //		ALLEGRO_BITMAP *SpriteImage - the sprite image of the sword weapon
-SwordWeapon::SwordWeapon(ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) : 
-				Weapon(InputAlEvent, 16, 16, false, 2, 10),
+SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) : 
+				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 2, 10),
 				m_SwordWeaponTile(SpriteImage, 0, 0, 70, 70, true, true, false, true, 6)
 {
 

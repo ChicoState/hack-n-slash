@@ -11,11 +11,12 @@
 #include <vector>
 #include "Sprite.h"
 #include "Projectile.h"
+#include "Utility.h"
 
 class Weapon
 {
 public:
-	Weapon(ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage); //!Constructor for the weapon class
+	Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage); //!Constructor for the weapon class
 	~Weapon(); //Destructor for the weapon class
 	virtual void EventHandler(); //!Handles allegro events for the weapon class
 	virtual void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon sprite to the screen
@@ -44,6 +45,7 @@ protected:
 		West
 	};
 
+	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the weapon class
 
 	int m_XBound; //the x bound of the weapon

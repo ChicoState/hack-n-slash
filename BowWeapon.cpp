@@ -8,13 +8,23 @@
 //In - 
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 //		ALLEGRO_BITMAP *SpriteImage - the sprite image of the Bow weapon
-BowWeapon::BowWeapon(ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) :
-				Weapon(InputAlEvent, 16, 16, true, 4, 6),
+BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) :
+				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 4, 6),
 				m_BowWeaponTile(SpriteImage, 0, 0, 80, 76, true, true, false, true, 6)
 {
 	m_ProjectileXBound = 16;
 	m_ProjectileYBound = 16;
 	m_ProjectileSpeed = 12;
+	
+	al_init_user_event_source(&m_ProjectileEventSource);
+	al_register_event_source(m_EventQueue, &m_ProjectileEventSource);
+}
+
+//Destructor for the weapon class
+BowWeapon::~BowWeapon()
+{
+	al_unregister_event_source(m_EventQueue, &m_ProjectileEventSource);
+	al_destroy_user_event_source(&m_ProjectileEventSource);
 }
 
 //!Handles allegro events for the Bow weapon class
@@ -37,6 +47,11 @@ void BowWeapon::EventHandler()
 				if(m_Projectile != NULL)
 				{
 					m_Projectile->UpdatePosition();
+
+					//emit the event source that the projectile has moved
+					m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
+					m_AlEvent.user.data1 = (intptr_t)m_Projectile;
+					//al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
 				}
 			}
 
@@ -57,6 +72,14 @@ void BowWeapon::EventHandler()
 			}
 		}
 	}
+
+	/*
+	if(m_AlEvent.type == PROJECTILE_EVENT)
+	{
+		Projectile* yes = (Projectile*)m_AlEvent.user.data1;
+		printf("%i", yes->GetHitBoxXBoundOne());
+	}
+	*/
 }
 
 //!Handles drawing for the weapon class

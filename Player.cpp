@@ -46,8 +46,8 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 	m_CanAttack = true;
 
 	//Initiate weapons
-	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_AlEvent, SwordImage);
-	BowWeapon* TempBoWeapon = new BowWeapon(m_AlEvent, BowImage);
+	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_EventQueue, m_AlEvent, SwordImage);
+	BowWeapon* TempBoWeapon = new BowWeapon(m_EventQueue, m_AlEvent, BowImage);
 	m_Inventory.AddWeapon(TempSwordWeapon);
 	m_Inventory.AddWeapon(TempBoWeapon);
 	m_ActiveWeapon = m_Inventory.GetWeaponFromSlot(1);
@@ -506,42 +506,42 @@ void Player::CheckCollision()
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
-			//m_CanMoveUp = false;
+			m_CanMoveUp = false;
 		}
 
 		else if(m_CurrentDirection == Direction(North))
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
-			//m_CanMoveUp = false;
+			m_CanMoveUp = false;
 		}
 
 		if(m_CurrentDirection == Direction(South) && m_KeyboardMap["D"] == true)
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
-			//m_CanMoveUp = false;
+			m_CanMoveUp = false;
 		}
 
 		else if(m_CurrentDirection == Direction(South))
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveRight = false;
-			//m_CanMoveDown = false;
+			m_CanMoveDown = false;
 		}
 
 		if(m_CurrentDirection == Direction(East))
 		{
 			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveUp = false;
-			//m_CanMoveRight = false;
+			m_CanMoveRight = false;
 		}
 
 		if(m_CurrentDirection == Direction(West))
 		{
 			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveUp = false;
-			//m_CanMoveLeft = false;
+			m_CanMoveLeft = false;
 		}
 	}
 
@@ -560,7 +560,7 @@ void Player::CheckCollision()
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveLeft = false;
-			//m_CanMoveUp = false;
+			m_CanMoveUp = false;
 		}
 
 		if(m_CurrentDirection == Direction(South) && m_KeyboardMap["A"] == true)
@@ -573,21 +573,21 @@ void Player::CheckCollision()
 		{
 			m_XPosition	= m_PreviousXPosition;
 			m_CanMoveLeft = false;
-			//m_CanMoveDown = false;
+			m_CanMoveDown = false;
 		}
 
 		if(m_CurrentDirection == Direction(East))
 		{
 			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveDown = false;
-			//m_CanMoveRight = false;
+			m_CanMoveRight = false;
 		}
 
 		if(m_CurrentDirection == Direction(West))
 		{
 			m_YPosition	= m_PreviousYPosition;
 			m_CanMoveDown = false;
-			//m_CanMoveLeft = false;
+			m_CanMoveLeft = false;
 		}
 	}
 

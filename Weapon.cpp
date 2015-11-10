@@ -6,6 +6,7 @@
 
 //!Constructor for the weapon class
 //In - 
+//      ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue
 //		ALLEGRO_EVENT& InputAlEvent - the allegro event of the game system for the weapon to use
 //		int InputXBound - the x bound for the weapon
 //		int InputYBound - the y bound for the weapon
@@ -22,9 +23,10 @@
 //		bool Continuous - true if the tile is continues else false
 //		bool Looped - true if the tile should loop else false
 //		int AnimFPS - the fps for the animated tile
-Weapon::Weapon(ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
+Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
 {
 	//initialize member variables
+	m_EventQueue = InputEventQueue;
 	m_AlEvent = InputAlEvent;
 	m_XBound = InputXBound;
 	m_YBound = InputYBound;
