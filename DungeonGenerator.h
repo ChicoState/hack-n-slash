@@ -20,7 +20,7 @@
 #include "TerrainLayer.h"
 #include "TerrainTile.h"
 #include "TerrainMap.h"
-
+#include "Player.h"
 
 //Definition of a simple rectangle class. 
 //Used for creating Rooms in the Dungeon Generator
@@ -69,11 +69,16 @@ private:
 
 	Vec2f m_StartPosition; //The players start position in the dungeon
 
+	const int cm_TileSize = 128;
 	const int cm_DungeonWidth = 51; //The width of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 	const int cm_DungeonHeight = 31; //The height of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 
+	Player *m_MainPlayer;
+
+	ALLEGRO_BITMAP *m_GroundImage;
+
 public:
-	DungeonGenerator(ALLEGRO_EVENT_QUEUE *EventQueue) : m_EventQueue(EventQueue)
+	DungeonGenerator(ALLEGRO_EVENT_QUEUE *EventQueue, Player *MainPlayer) : m_EventQueue(EventQueue), m_MainPlayer(MainPlayer)
 	{
 		m_Cardinal.push_back(Vec2i(0, 1));
 		m_Cardinal.push_back(Vec2i(1, 0));
@@ -95,10 +100,11 @@ public:
 
 	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
-	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * 128, m_StartPosition.y() * 128); }
+	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * cm_TileSize, m_StartPosition.y() * cm_TileSize); }
 
 	void GenerateDungeon(Display&);
 
+	void Event_Handler(ALLEGRO_EVENT &EV);
 	void Draw(); //This draw function will be changed quite a bit later once all of the Base classes needed have been created and once I get some actual graphics to use
 
 private:
@@ -118,6 +124,7 @@ private:
 	bool EraserFunc(std::vector<int>&, std::map<std::vector<int>, std::unordered_set<int>>&, std::map<int, int>&);
 
 	void SetStartPosition();
+	void SetBossPortalSpawn();
 	void InitMap(Display&);
 
 	void PrintCurrentMap(); //Used for printing a command console version of the dungeon. Used for debugging.

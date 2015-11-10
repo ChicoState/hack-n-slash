@@ -11,17 +11,19 @@
 //Terrain Tile types. More to be added later!
 enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water };
 
-
+//A single Tile that makes up the terrain.
 class TerrainTile : public Sprite
 {
-private:
-	
+private:	
 	bool m_TriggerTile; //Does this tile trigger an event when the player walks over it?
 	//m_TriggerType //A trigger Enum will be created at some point for triggerable tiles.
 
 	TILE m_TileType; //Type of tile
 
+	float R, G, B;
+
 	bool m_debugDraw;
+	bool m_IsOccupied;
 
 public:
 
@@ -30,6 +32,7 @@ public:
 		: Sprite(Image, PosX, PosY, FrameWidth, FrameHeight, Collidable, Animated, Continuious, Looped, AnimFPS),
 		m_TriggerTile(m_TriggerTile), m_TileType(TileType)
 	{
+		m_IsOccupied = false;
 	}
 	~TerrainTile()
 	{

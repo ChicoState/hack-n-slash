@@ -4,16 +4,18 @@
 #include <vector>
 
 #include "TerrainLayer.h"
+#include "Projectile.h"
+#include "Utility.h"
 
-
+//TerrainMap is responsible for controlling the entire Terrain.
 class TerrainMap
 {
 private:
 	std::vector<TerrainLayer*> m_Map;
 	std::vector<std::vector<TerrainTile*>> m_InfoLayer;
-	int m_MapSizeX;
-	int m_MapSizeY;
-	int m_TileSize;
+	int m_MapSizeX; //The number of tiles wide the Map is
+	int m_MapSizeY; //The number of tiles tall the Map is
+	int m_TileSize; //The size of a single tile (terrain tiles are assumed to be square)
 
 public:
 	TerrainMap()
@@ -29,7 +31,7 @@ public:
 	}
 	~TerrainMap()
 	{
-		for (int i = 0; i < m_Map.size(); i++)
+		for (unsigned int i = 0; i < m_Map.size(); i++)
 		{
 			delete m_Map[i];
 		}
@@ -44,7 +46,8 @@ public:
 	
 	bool CheckMapCollision(Vec2f);
 
-	virtual void Draw();
+	void Event_Handler(ALLEGRO_EVENT&);
+	void Draw();
 
 };
 
