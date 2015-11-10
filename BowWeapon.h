@@ -22,6 +22,8 @@ private:
 	ALLEGRO_EVENT_SOURCE m_ProjectileEventSource;
 
 	BowWeaponTile m_BowWeaponTile;
+
+	bool m_OnActive; //true on the first iteration of m_IsActive in the event queue timer
 };
 
 #endif

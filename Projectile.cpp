@@ -22,14 +22,17 @@ Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int Starting
 	m_CurrentYPosition = StartingYPosition;
 	m_CurrentXDirection = XDirection;
 	m_CurrentYDirection = YDirection;
+
+	m_RestingXPosition = 0;
+	m_RestingYPosition = 0;
 }
 
 //!Draws the projectile
 void Projectile::Draw()
 {
 	//if not at reset (standby) locatioon draw projectile
-	if(m_CurrentXPosition != 0 && m_CurrentYPosition != 0)
-	{
+	//if(m_CurrentXPosition != m_RestingXPosition && m_CurrentYPosition != m_RestingYPosition)
+	//{
 		//draw sprite up
 		if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
 		{
@@ -73,7 +76,21 @@ void Projectile::Draw()
 			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
 			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
 		}
-	}
+	//}
+}
+
+//Re-sends the projectile in the attacking direction
+//In - 
+//		int StartingXPosition - the starting x positon of the projectile
+//		int StartingYPosition - the starting y positon of the projectile
+//		int XDirection - the direction the projectile will travel on the x axis
+//		int YDirection - the direction the projectile will travel on the y axis
+void Projectile::SendProjecile(int StartingXPosition, int StartingYPosition, int XDirection, int YDirection)
+{
+	m_CurrentXPosition = StartingXPosition;
+	m_CurrentYPosition = StartingYPosition;
+	m_CurrentXDirection = XDirection;
+	m_CurrentYDirection = YDirection;
 }
 
 //!Update sthe position of the projectile
@@ -236,6 +253,24 @@ int Projectile::GetHitBoxYBoundTwo()
 //!Resets the projectile to its resting position (destroys it technically)
 void Projectile::ResetProjectile()
 {
-	m_CurrentXPosition = 0;
-	m_CurrentYPosition = 0;
+	//reset the projectile to resting position
+	m_CurrentXPosition = m_RestingXPosition;
+	m_CurrentYPosition = m_RestingYPosition;
+}
+
+//!Checks to see if the projectile is at its resting position (destroyed technically)
+//Out - 
+//		bool - //return true if the projectile is at its resting position else false
+bool Projectile::IsAtRestingPosition()
+{
+	//return true if the projectile is at its resting position else false
+	if(m_CurrentXPosition == m_RestingXPosition && m_CurrentYPosition == m_RestingYPosition)
+	{
+		return true;
+	}
+
+	else
+	{
+		return false;
+	}
 }

@@ -15,6 +15,10 @@ BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputA
 	m_ProjectileXBound = 16;
 	m_ProjectileYBound = 16;
 	m_ProjectileSpeed = 12;
+	m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, 0, 0, 0, -1);
+	m_Projectile->ResetProjectile();
+	
+	m_OnActive = true;
 	
 	al_init_user_event_source(&m_ProjectileEventSource);
 	al_register_event_source(m_EventQueue, &m_ProjectileEventSource);
@@ -23,8 +27,8 @@ BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputA
 //Destructor for the weapon class
 BowWeapon::~BowWeapon()
 {
-	al_unregister_event_source(m_EventQueue, &m_ProjectileEventSource);
-	al_destroy_user_event_source(&m_ProjectileEventSource);
+	//al_unregister_event_source(m_EventQueue, &m_ProjectileEventSource);
+	//al_destroy_user_event_source(&m_ProjectileEventSource);
 }
 
 //!Handles allegro events for the Bow weapon class
@@ -35,32 +39,22 @@ void BowWeapon::EventHandler()
 		//if the weapon is active watch the active timer
 		if(m_IsActive)
 		{
-			//iterate the timer
-			m_CurrentAttackCount++;
-
-			//Update the weapon sprite tile
-			m_BowWeaponTile.Event_Handler();
-
-			//move the projectile if a ranged weapon
-			if(m_IsRangedWeapon)
+			if(m_OnActive)
 			{
-				if(m_Projectile != NULL)
-				{
-					m_Projectile->UpdatePosition();
-
-					//emit the event source that the projectile has moved
-					m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
-					m_AlEvent.user.data1 = (intptr_t)m_Projectile;
-					//al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
-				}
+				//emit the event source that the projectile has moved
+				m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
+				m_AlEvent.user.data1 = (intptr_t)m_Projectile;
+				al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
+				m_OnActive = false;
 			}
 
 			//if the active timer is reached
-			if(m_CurrentAttackCount >= m_AttackTime)
+			if(m_CurrentAttackCount >= m_AttackTime || m_Projectile->IsAtRestingPosition())
 			{
 				//make weapon unactive and reset timer
 				m_IsActive = false;
 				m_CurrentAttackCount = 0;
+				m_OnActive = true;
 
 				if(m_IsRangedWeapon)
 				{
@@ -70,16 +64,33 @@ void BowWeapon::EventHandler()
 					}
 				}
 			}
+
+			else
+			{
+				//iterate the timer
+				m_CurrentAttackCount++;
+
+				//Update the weapon sprite tile
+				m_BowWeaponTile.Event_Handler();
+
+				//move the projectile if a ranged weapon
+				if(m_IsRangedWeapon)
+				{
+					if(m_Projectile != NULL)
+					{
+						m_Projectile->UpdatePosition();
+					}
+				}
+			}
 		}
 	}
-
-	/*
+	
 	if(m_AlEvent.type == PROJECTILE_EVENT)
 	{
 		Projectile* yes = (Projectile*)m_AlEvent.user.data1;
 		printf("%i", yes->GetHitBoxXBoundOne());
 	}
-	*/
+	
 }
 
 //!Handles drawing for the weapon class

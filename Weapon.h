@@ -8,7 +8,6 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include <vector>
 #include "Sprite.h"
 #include "Projectile.h"
 #include "Utility.h"

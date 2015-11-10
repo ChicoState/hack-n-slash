@@ -40,6 +40,7 @@ Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent
 	m_CurrentAttackCount = 0;
 	m_Damage = InputDamage;
 	m_DamageModifier = 1;
+	m_Projectile = NULL;
 }
 
 //Destructor for the weapon class
@@ -151,30 +152,33 @@ void Weapon::Attack()
 		{
 			m_Projectile->ResetProjectile();
 		}
-
-		if(m_LastDrawnDirection == Direction(North))
-		{
-			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
-		}
 		
-		else if(m_LastDrawnDirection == Direction(South))
+		if(m_Projectile != NULL)
 		{
-			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, 1);
-		}
+			if(m_LastDrawnDirection == Direction(North))
+			{
+				m_Projectile->SendProjecile(m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
+			}
+		
+			else if(m_LastDrawnDirection == Direction(South))
+			{
+				m_Projectile->SendProjecile(m_LastDrawnXPosition, m_LastDrawnYPosition, 0, 1);
+			}
 
-		else if(m_LastDrawnDirection == Direction(East))
-		{
-			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, -1, 0);
-		}
+			else if(m_LastDrawnDirection == Direction(East))
+			{
+				m_Projectile->SendProjecile(m_LastDrawnXPosition, m_LastDrawnYPosition, -1, 0);
+			}
 
-		else if(m_LastDrawnDirection == Direction(West))
-		{
-			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 1, 0);
-		}
+			else if(m_LastDrawnDirection == Direction(West))
+			{
+				m_Projectile->SendProjecile(m_LastDrawnXPosition, m_LastDrawnYPosition, 1, 0);
+			}
 
-		else
-		{
-			m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
+			else
+			{
+				m_Projectile->SendProjecile(m_LastDrawnXPosition, m_LastDrawnYPosition, 0, -1);
+			}
 		}
 	}
 }

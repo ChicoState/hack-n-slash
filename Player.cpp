@@ -19,6 +19,7 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 
 	//register the event sources to the event queue
 	al_register_event_source(m_EventQueue, al_get_keyboard_event_source());
+	font36 = al_load_font("GOUDOS.TTF", 36, 0);
 
 	//initialize the member variables
 	ClassTag = "Player";
@@ -44,6 +45,8 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 	m_LockedXPosition = m_ScreenWidth / 2;
 	m_LockedYPosition = m_ScreenHeight / 2;
 	m_CanAttack = true;
+	m_MaxHealth = 100;
+	m_CurrentHealth = m_MaxHealth;
 
 	//Initiate weapons
 	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_EventQueue, m_AlEvent, SwordImage);
@@ -114,6 +117,16 @@ void Player::DrawPlayer()
 	{
 		m_ActiveWeapon->Draw(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 	}
+
+	//draw health box
+	al_draw_rectangle(m_XPosition - 615, m_YPosition + 320, (m_XPosition - 550) + 70, (m_YPosition + 300) + 30, al_map_rgb(0, 0, 0), 40);
+
+	//draw health
+	std::string HealthNumber = std::to_string(m_CurrentHealth);
+	std::string FullHealthText = "Health: ";
+	FullHealthText.append(HealthNumber);
+	char const *HealthChar = FullHealthText.c_str();
+	al_draw_text(font36, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 300, ALLEGRO_ALIGN_CENTER, HealthChar);
 
 	//draw the bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
@@ -1171,7 +1184,7 @@ Projectile* Player::GetWeaponProjectile()
 //Gets and returns the player's current health
 //Out - 
 //		float - the player's current health
-float Player::GetCurrentHealth()
+int Player::GetCurrentHealth()
 {
 	return m_CurrentHealth;
 }
