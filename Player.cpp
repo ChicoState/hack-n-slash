@@ -119,7 +119,7 @@ void Player::DrawPlayer()
 	}
 
 	//draw health box
-	al_draw_rectangle(m_XPosition - 615, m_YPosition + 320, (m_XPosition - 550) + 70, (m_YPosition + 300) + 30, al_map_rgb(0, 0, 0), 40);
+	al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 300) + 25, al_map_rgb(0, 0, 0), 40);
 
 	//draw health
 	std::string HealthNumber = std::to_string(m_CurrentHealth);

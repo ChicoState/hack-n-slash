@@ -79,7 +79,7 @@ public:
 	int GetWeaponHitBoxXBoundTwo(); //!Gets and returns the current weapon's second active hit box x bound
 	int GetWeaponHitBoxYBoundTwo(); //!Gets and returns the current weapon's second active hit box y bound
 	Projectile* GetWeaponProjectile(); //!Gets and returns the current weapon's projectile if it is a ranged weapon
-	float GetCurrentHealth(); //Gets and returns the player's current health
+	int GetCurrentHealth(); //Gets and returns the player's current health
 	float GetWeaponDamage(); //!Gets and returns the current weapon's damage
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
 	void SetYPosition(float NewYPosition); //Sets the y position of the player
@@ -106,6 +106,7 @@ private:
 
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the player class
+	ALLEGRO_FONT *font36;
 
 	int m_ScreenWidth; //the screen width dimension of the game
 	int m_ScreenHeight; //the screen height dimension of the game
@@ -123,8 +124,8 @@ private:
 	float m_PreviousYPosition; //the previous y position of the player
 	Direction m_CurrentDirection; //The current moving direction of the player
 	Direction m_PreviousLockedDirection; //The last direction locked from colliding
-	float m_MaxHealth; //The max health of the player
-	float m_CurrentHealth; //the current health of the player
+	int m_MaxHealth; //The max health of the player
+	int m_CurrentHealth; //the current health of the player
 	int m_MovementSpeed; //the speed at which the player moves
 	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
 	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to
