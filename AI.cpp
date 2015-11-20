@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/6/2015
+// Date: 11/16/2015
 //
 #include "AI.h"
 
@@ -32,6 +32,17 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 			return true;
 	}
 	return false;
+}
+//
+// AI Constructor
+//
+AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp)
+	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(100), ATK(5),
+	tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(N), ai_dungeon(NULL),
+	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
+{
+	al_init_user_event_source(&ai_event_killed);
+	al_register_event_source(ai_ev_queue, &ai_event_killed);
 }
 //
 // Checks to see if any of the AI's x bound points are within the player's
@@ -99,41 +110,14 @@ void AI::SetSpawn(DungeonGenerator &dungeon)
 	std::list<Rect> m_Rooms = dungeon.Get_Rooms();
 
 	Rect TempRoom(D_WIDTH, D_HEIGHT, 1, 1);
+	Vec2f PlayerStart = dungeon.GetStartPosition() / T_SIZE;
 
-	//Find the room furthest to the left of the screen
+	// Get all rooms except the one with the player's starting position
 	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
 	{
-		if (it->Get_X1() < TempRoom.Get_X1())
-		{
-			TempRoom = *it;
-		}
-	}
-
-	//Find any other rooms that may be at that Xposition
-	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
-	{
-		if (it->Get_X1() == TempRoom.Get_X1())
-		{
-			TempRooms.push_back(*it);
-		}
-	}
-
-	//Of all those rooms find the one that is the widest
-	for (std::vector<Rect>::iterator it = TempRooms.begin(); it != TempRooms.end(); it++)
-	{
-		if (it->Get_X2() > TempRoom.Get_X2())
-		{
-			TempRoom = *it;
-		}
-	}
-
-	//Find all rooms that are within the Xposition of the widest room
-	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
-	{
-		if (it->Get_X1() < TempRoom.Get_X2())
-		{
-			TempRooms.push_back(*it);
-		}
+		if (it->ContainsPoint(PlayerStart.x(), PlayerStart.y()))
+			continue;
+		TempRooms.push_back(*it);
 	}
 
 	TempRoom = TempRooms[randomize(0, TempRooms.size())];
@@ -490,6 +474,8 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 			if (health <= 0)
 			{
 				std::cout << "...and is now dead...\n";
+				ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
+				al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
 				state = DEAD;
 			}
 		}
@@ -520,8 +506,12 @@ void AI::Draw()
 //
 // The AI in action.
 //
-void AI::ProcessAI(Player &player)
+void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
+	ai_ev = ev;
+	if (ai_ev.type != ALLEGRO_EVENT_TIMER)
+		return;
+
 	if (state == IDLE)
 	{
 		if (SeePlayer(player))
@@ -545,7 +535,6 @@ void AI::ProcessAI(Player &player)
 			if (CollideWithPlayer(player))
 			{
 				state = ATTACK;
-				tick_delay = TICK_DELAY_MAX;
 				std::cout << "The AI is attacking you...\n";
 			}
 			MoveTowardTarget(l_x, l_y);

@@ -2,7 +2,7 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/6/2015
+// Date: 11/16/2015
 //
 #include "AIGroup.h"
 
@@ -67,12 +67,12 @@ void AI_Group::AddRandom(DungeonGenerator &d, ALLEGRO_BITMAP *image)
 	id = rd() % 99999 + 1;             // Get random ID value (up to 5 digits)
 	while (IDExists(id))               // Ensure the ID is unique
 		id = rd() % 99999 + 1;
-	sight = rd() % 4 + 2;              // Sight ranges from 2 to 5  (This may change later)
-	speed = rd() % 4 + 1;              // Speed ranges from 1 to 4  (This may change later)
-	ai = new AI(image, MELEE, sight, speed);  // There's only one AI type for now
+	sight = rd() % 3 + 3;              // Sight ranges from 3 to 5
+	speed = rd() % 3 + 2;              // Speed ranges from 2 to 4
+	ai = new AI(e_queue, image, MELEE, sight, speed);  // There's only one AI type for now
 	ai->SetSpawn(d);                   // Set a spawn point
 
-	while (Overlap(ai) || OverlapWithPlayerStart(ai))      // Ensure the new AI doesn't spawn on top of anyone else
+	while (Overlap(ai))      // Ensure the new AI doesn't spawn on top of anyone else
 		ai->SetSpawn(d);
 
 	group.insert(std::pair<int, AI*>(id, ai));
@@ -99,7 +99,7 @@ void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 		// Ignore dead AI
 		if ((it->second)->GetState() == DEAD)
 			continue;
-		(it->second)->ProcessAI(p);
+		(it->second)->ProcessAI(ev, p);
 	}
 }
 //

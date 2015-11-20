@@ -2,7 +2,7 @@
 // File: AIGroup.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/6/2015
+// Date: 11/16/2015
 //
 #ifndef __AIGROUP_H__
 #define __AIGROUP_H__
@@ -20,7 +20,9 @@ private:
 	bool IDExists(int);                // Checks the container to see if the specified ID exists
 	bool Overlap(AI*);                 // Check to see if an AI overlaps with any other AI in the group
 	bool OverlapWithPlayerStart(AI*);  // Check to see if an AI overlaps with the player's starting position
+	ALLEGRO_EVENT_QUEUE *e_queue;
 public:
+	AI_Group(ALLEGRO_EVENT_QUEUE* e_q) : e_queue(e_q) {}
 	~AI_Group() { GroupClear(); }
 	void RandomSetup(int, DungeonGenerator &, ALLEGRO_BITMAP *);    // Set up the group with random attributes
     void AddRandom(DungeonGenerator &, ALLEGRO_BITMAP *);           // Generate a new AI and add it to the group

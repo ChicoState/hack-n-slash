@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/6/2015
+// Date: 11/16/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -20,7 +20,7 @@
 #include "PlayerTile.h"
 
 enum AI_STATE{ IDLE, CHASE, SEEK, ATTACK, DEAD };
-enum AI_TYPE{ MELEE };
+enum AI_TYPE{ MELEE, RANGER };
 enum AI_FACE{ N, S, W, E };
 
 const int T_SIZE = 128;
@@ -59,13 +59,16 @@ private:
 	int sight;                                     // How far the AI can see (in number of tiles)
 	int health, ATK, speed;                        // The AI's attribute values
 	int tick_delay;                                // For timing so that the AI doesn't attack the player every tick
-	std::vector<PathNode*> path;                   // The current path for the AI to follow
-	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
-	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
 	int bound_x, bound_y;                          // x and y bounds for the AI
+	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
 	float l_x, l_y;                                // The coordinates where the player was last seen
 	PlayerTile ai_tile;                            // The AI sprite, using the PlayerTile class
 	DungeonGenerator *ai_dungeon;                  // Pointer to the dungeon the AI is spawned in
+	std::vector<PathNode*> path;                   // The current path for the AI to follow
+	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
+	ALLEGRO_EVENT ai_ev;
+	ALLEGRO_EVENT_SOURCE ai_event_killed;
+	ALLEGRO_EVENT_QUEUE *ai_ev_queue;
 
 	//
 	// Private functions
@@ -104,10 +107,7 @@ public:
 	//
 	// Public functions
 	//
-	AI(ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp)
-		: state(IDLE), type(t), sight(si), speed(sp), health(100), ATK(5),
-		tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(N), ai_dungeon(NULL),
-		ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6) {}
+	AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp);
 	~AI() { CleanPath(); }                         // Gotta prevent memory leaks :P
 	bool CollusionBlock(int, int);                 // Detect collusion between player's bounds and the AI's bounds
 	void WeaponHit(int, int, int);                 // Detect collusion between the weapon and the AI
@@ -115,7 +115,7 @@ public:
 	void SetSpawn(DungeonGenerator &);             // Set a random spawn point and then set the ai_dungeon pointer
 	void FindPath(int, int);                       // Find the shortest path to the given target coordinates
 	bool SeePlayer(Player &);                      // Check if the AI can see the player
-	void ProcessAI(Player &);                      // Process the AI
+	void ProcessAI(ALLEGRO_EVENT &, Player &);     // Process the AI
 	int GetState() { return state; }
 	int GetType() { return type; }
 	float GetXPosition() { return ai_x; }
