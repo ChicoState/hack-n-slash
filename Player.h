@@ -13,6 +13,7 @@
 #include "Inventory.h"
 #include "Weapon.h"
 #include "Projectile.h"
+#include "FoodPickup.h"
 
 #include "SwordWeapon.h"
 #include "BowWeapon.h"
@@ -31,13 +32,17 @@ public:
 	~Player(); //Deconstructor for the player class
 
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
+	void ScaleGameUp(int InputScaleLevel); //Scales the game up to the input level
 	void DrawPlayer(); //Draws the player character to the screen
 	void MovementColliding();
 	void NoMovementCollidingBoundOne(); //Tells the player that they are not colliding with something in their current moving direction
 	void NoMovementCollidingBoundTwo(); //Tells the player that they are not colliding with something in their current moving direction
 	void MovementCollidingBoundOne(); //Tells the player that their bound one has collided with something in their current moving direction
 	void MovementCollidingBoundTwo(); //Tells the player that their bound two has collided with something in their current moving direction
+	void GiveExperience(); //Give sthe player experience depending on the current scale of the game
+	void AddPlayerLevel(); //Adds a player level to the player
 	void DealDamage(int InputDamage); //Deal damage to th eplayer's health
+	void HealPlayer(); //Heals player depending on current scale
 
 	std::string GetTag(); //Gets and returns the player class tag
 	int GetXBound(); //Gets and returns the X Bound of the player
@@ -58,8 +63,8 @@ public:
 	int GetSouthWestYBoundPoint(); //Gtes and returns the south west bound point y position
 	int GetNorthWestXBoundPoint(); //Gtes and returns the north west bound point x position
 	int GetNorthWestYBoundPoint(); //Gtes and returns the north west bound point y position
-	float GetXPosition(); //Gets and returns the X position of the player
-	float GetYPosition(); //Gets and returns the Y position of the player
+	int GetXPosition(); //Gets and returns the X position of the player
+	int GetYPosition(); //Gets and returns the Y position of the player
 	int GetHitBoxXBoundOne(); //!Gets and returns the player's first hitbox x bound (will always be top left)
 	int GetHitBoxYBoundOne(); //!Gets and returns the player's first hitbox x bound (will always be top left)
 	int GetHitBoxXBoundTwo(); //!Gets and returns the player's second hitbox x bound (will always be bottom right)
@@ -106,10 +111,15 @@ private:
 
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the player class
-	ALLEGRO_FONT *font36;
+	ALLEGRO_FONT *font28; //font for player health
+	ALLEGRO_FONT *font16; //font for experience and level up draw
+	ALLEGRO_EVENT_SOURCE m_PositionEventSource; //event source for emitting player position
 
 	int m_ScreenWidth; //the screen width dimension of the game
 	int m_ScreenHeight; //the screen height dimension of the game
+	int m_CurrentGameScale; //the current scale level of the game
+	int m_ExperienceMultiplier; //the multiplier to calculate player experience gained
+	int m_MaxHealthIncrement; //the amount of health to increment the max health on level up
 	PlayerTile m_PlayerTile; //member player tile instance
 	Camera *m_Camera; //member camera instance
 	Inventory m_Inventory; //Player inventory
@@ -118,14 +128,16 @@ private:
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
 	int m_YBound; //the y bound for the player
-	float m_XPosition; //the current x position of the player
-	float m_YPosition; //the current y position of the player
+	int m_XPosition; //the current x position of the player
+	int m_YPosition; //the current y position of the player
 	float m_PreviousXPosition; //the previous x position of the player
 	float m_PreviousYPosition; //the previous y position of the player
 	Direction m_CurrentDirection; //The current moving direction of the player
 	Direction m_PreviousLockedDirection; //The last direction locked from colliding
 	int m_MaxHealth; //The max health of the player
 	int m_CurrentHealth; //the current health of the player
+	int m_Level; //the current player level
+	int m_Experience; //the current player experience
 	int m_MovementSpeed; //the speed at which the player moves
 	bool m_MouseMoving; //true if the player is moving by a mouse click and the position has not been reached else false
 	int m_CurrentMouseMoveXPosition; //the last x position the player clicked to move to
@@ -142,6 +154,11 @@ private:
 	float m_LockedXPosition; //x position to lock the player to when their bounds go off screen
 	float m_LockedYPosition; //y position to lock the player to when their bounds go off screen
 	bool m_CanAttack; //tells the player whether or not they can attack
+	
+	bool m_DrawExperienceUp; //true if experience marker should be drawn else false
+	int m_DrawExperienceUpTimer; //the amount of time the draw experience up should be displayed
+	bool m_DrawLevelUp; //true if the level up marker should be drawn else false
+	int m_DrawLevelUpTimer; //the amount of time the draw level up should be displayed
 };
 
 #endif

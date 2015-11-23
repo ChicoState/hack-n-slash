@@ -24,7 +24,8 @@ PlayerTile::PlayerTile(ALLEGRO_BITMAP *SpriteImage, int InputPlayerXPosition, in
 		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
 		: Sprite(SpriteImage, InputPlayerXPosition, InputPlayerYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
-	
+	//set the alpha of the sprite
+	Sprite::Set_ImageAlpha(135, 135, 135);
 }
 
 //!Overloaded event handler from Sprite class

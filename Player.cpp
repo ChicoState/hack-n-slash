@@ -11,7 +11,7 @@
 //		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_BITMAP *BowImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(SpriteImage, m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, true, false, true, 6)
+		m_PlayerTile(al_load_bitmap("Player_Sprite.png"), m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, true, false, true, 6)
 {
 	//Set input variables to member variables
 	m_ScreenWidth = InputScreenWidth;
@@ -19,15 +19,29 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 
 	//register the event sources to the event queue
 	al_register_event_source(m_EventQueue, al_get_keyboard_event_source());
-	font36 = al_load_font("GOUDOS.TTF", 36, 0);
+
+	//load fonts for player
+	font28 = al_load_font("GOUDOS.TTF", 28, 0);
+	font16 = al_load_font("GOUDOS.TTF", 16, 0);
+
+	al_init_user_event_source(&m_PositionEventSource);
+	al_register_event_source(m_EventQueue, &m_PositionEventSource);
 
 	//initialize the member variables
+	m_CurrentGameScale = 1;
+	m_ExperienceMultiplier = 100;
+	m_MaxHealthIncrement = 20;
 	ClassTag = "Player";
 	m_XBound = 48;
 	m_YBound = 64;
 	m_XPosition = m_ScreenWidth / 2;
 	m_YPosition = m_ScreenHeight / 2;
 	m_CurrentDirection = Direction(North);
+	m_PreviousLockedDirection = Direction(North);
+	m_MaxHealth = 100;
+	m_CurrentHealth = 10;
+	m_Level = 0;
+	m_Experience = 0;
 	m_KeyboardMap["W"] = false; //W used to move player up
 	m_KeyboardMap["S"] = false; //S used to move player down
 	m_KeyboardMap["A"] = false; //A used to move player left
@@ -40,13 +54,17 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 	m_CanMoveDown = true;
 	m_CanMoveLeft = true;
 	m_CanMoveRight = true;
+	m_IsColliding = false;
 	m_IsCollidingBoundOne = false;
 	m_IsCollidingBoundTwo = false;
 	m_LockedXPosition = m_ScreenWidth / 2;
 	m_LockedYPosition = m_ScreenHeight / 2;
 	m_CanAttack = true;
-	m_MaxHealth = 100;
-	m_CurrentHealth = m_MaxHealth;
+
+	m_DrawExperienceUp = false;
+	m_DrawExperienceUpTimer = 0;
+	m_DrawLevelUp = false;
+	m_DrawLevelUpTimer = 0;
 
 	//Initiate weapons
 	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_EventQueue, m_AlEvent, SwordImage);
@@ -77,23 +95,29 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 	m_IsCollidingBoundOne = false;
 	m_IsCollidingBoundTwo = false;
 
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
 		//check active weapon
 		m_ActiveWeapon->EventHandler();
+	}
+
+	if(m_AlEvent.type == AI_KILLED_EVENT)
+	{
+		GiveExperience();
+	}
+
+	if(m_AlEvent.type == FOODPICKUP_EVENT)
+	{
+		GiveExperience();
+		HealPlayer();
+		FoodPickup* TempFoodPickup = (FoodPickup*)m_AlEvent.user.data1;
+		TempFoodPickup = NULL;
 	}
 }
 
 //!Draws the player character to the screen
 void Player::DrawPlayer()
 {
-	//if the player is moving update the sprite
-	if(m_KeyboardMoving || m_MouseMoving)
-	{
-		//update sprite
-		m_PlayerTile.Event_Handler();
-	}
-
 	//draw the player sprite
 	m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2));
 
@@ -119,14 +143,61 @@ void Player::DrawPlayer()
 	}
 
 	//draw health box
-	al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 300) + 25, al_map_rgb(0, 0, 0), 40);
+	al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 320) + 25, al_map_rgb(0, 0, 0), 40);
 
 	//draw health
 	std::string HealthNumber = std::to_string(m_CurrentHealth);
 	std::string FullHealthText = "Health: ";
 	FullHealthText.append(HealthNumber);
 	char const *HealthChar = FullHealthText.c_str();
-	al_draw_text(font36, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 300, ALLEGRO_ALIGN_CENTER, HealthChar);
+	al_draw_text(font28, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 295, ALLEGRO_ALIGN_CENTER, HealthChar);
+
+	//draw level
+	std::string LevelNumber = std::to_string(m_Level);
+	std::string FullLevelText = "Level: ";
+	FullLevelText.append(LevelNumber);
+	char const *LevelChar = FullLevelText.c_str();
+	al_draw_text(font28, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 325, ALLEGRO_ALIGN_CENTER, LevelChar);
+
+	//draw experience up
+	if(m_DrawExperienceUp)
+	{
+		m_DrawExperienceUpTimer++;
+
+		if(m_DrawExperienceUpTimer < 45)
+		{
+			std::string ExperienceNumber = std::to_string((m_ExperienceMultiplier * m_CurrentGameScale));
+			std::string FullExperienceText = "XP+ ";
+			FullExperienceText.append(ExperienceNumber);
+			char const *ExperienceChar = FullExperienceText.c_str();
+			al_draw_text(font16, al_map_rgb(50, 50, 0), m_XPosition, m_YPosition - 50 - (m_DrawExperienceUpTimer), ALLEGRO_ALIGN_CENTER, ExperienceChar);
+		}
+
+		else
+		{
+			m_DrawExperienceUp = false;
+			m_DrawExperienceUpTimer = 0;
+		}
+	}
+
+	//draw level up
+	if(m_DrawLevelUp)
+	{
+		m_DrawLevelUpTimer++;
+
+		if(m_DrawLevelUpTimer < 45)
+		{
+			std::string FullLevelUpText = "LEVEL UP";
+			char const *LevelUpChar = FullLevelUpText.c_str();
+			al_draw_text(font28, al_map_rgb(50, 50, 0), m_XPosition, m_YPosition - 50 - (m_DrawLevelUpTimer), ALLEGRO_ALIGN_CENTER, LevelUpChar);
+		}
+
+		else
+		{
+			m_DrawLevelUp = false;
+			m_DrawLevelUpTimer = 0;
+		}
+	}
 
 	//draw the bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
@@ -453,6 +524,19 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			break;
 		}
 	}
+
+	//if the player is moving update the sprite
+	if(m_KeyboardMoving || m_MouseMoving)
+	{
+		//update sprite
+		m_PlayerTile.Event_Handler();
+		
+		//emit the event source of the player position
+		m_AlEvent.user.type = CUSTOM_EVENT_ID(PLAYERPOSITION_EVENT);
+		m_AlEvent.user.data1 =  (intptr_t)m_XPosition;
+		m_AlEvent.user.data2 =  (intptr_t)m_YPosition;
+		al_emit_user_event(&m_PositionEventSource, &m_AlEvent, NULL);
+	}
 }
 
 //!Checks and updates the collision of the player to allow movement directions
@@ -741,6 +825,39 @@ void Player::MovementCollidingBoundTwo()
 	m_IsCollidingBoundTwo = true;
 }
 
+//Scales the game up to the input level
+//In - 
+//		int InputScaleLevel - the input scale level for the game
+void Player::ScaleGameUp(int InputScaleLevel)
+{
+	m_CurrentGameScale = InputScaleLevel;
+}
+
+//Give sthe player experience depending on the current scale of the game
+void Player::GiveExperience()
+{
+	m_Experience += (m_ExperienceMultiplier * m_CurrentGameScale);
+
+	if(m_Experience >= ((m_Level * m_ExperienceMultiplier) * 4))
+	{
+		m_Experience = m_Experience - (m_Level * m_ExperienceMultiplier);
+		AddPlayerLevel();
+	}
+
+	m_DrawExperienceUpTimer = 0;
+	m_DrawExperienceUp = true;
+}
+
+//Adds a player level to the player
+void Player::AddPlayerLevel()
+{
+	m_Level++;
+	m_MaxHealth += m_MaxHealthIncrement;
+	m_CurrentHealth = m_MaxHealth;
+
+	m_DrawLevelUpTimer = 0;
+	m_DrawLevelUp = true;
+}
 
 void Player::DealDamage(int InputDamage)
 {
@@ -750,6 +867,17 @@ void Player::DealDamage(int InputDamage)
 	{
 		m_CurrentHealth = 0;
 		printf("DEAD");
+	}
+}
+
+//Heals player depending on current scale
+void Player::HealPlayer()
+{
+	m_CurrentHealth += 10;
+
+	if(m_CurrentHealth > m_MaxHealth)
+	{
+		m_CurrentHealth = m_MaxHealth;
 	}
 }
 
@@ -908,7 +1036,7 @@ int Player::GetSouthWestYBoundPoint()
 //!Gets and returns the X position of the player
 //Out - 
 //		int - the current x position of the player
-float Player::GetXPosition()
+int Player::GetXPosition()
 {
 	return m_XPosition;
 }
@@ -916,7 +1044,7 @@ float Player::GetXPosition()
 //!Gets and returns the Y position of the player
 //Out - 
 //		int - the current y position of the player
-float Player::GetYPosition()
+int Player::GetYPosition()
 {
 	return m_YPosition;
 }
@@ -1194,7 +1322,7 @@ int Player::GetCurrentHealth()
 //		float - the damage of the current weapon
 float Player::GetWeaponDamage()
 {
-	return m_ActiveWeapon->GetDamage();
+	return (m_ActiveWeapon->GetDamage() * m_Level);
 }
 
 //!Sets the x position of the player
@@ -1203,6 +1331,7 @@ float Player::GetWeaponDamage()
 void Player::SetXPosition(float NewXPosition)
 {
 	m_XPosition = NewXPosition;
+	m_PreviousXPosition = NewXPosition;
 }
 
 //!Sets the y position of the player
@@ -1211,5 +1340,6 @@ void Player::SetXPosition(float NewXPosition)
 void Player::SetYPosition(float NewYPosition)
 {
 	m_YPosition = NewYPosition;
+	m_PreviousYPosition = NewYPosition;
 }
 

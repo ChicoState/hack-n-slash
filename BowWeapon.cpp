@@ -54,7 +54,7 @@ void BowWeapon::EventHandler()
 				//make weapon unactive and reset timer
 				m_IsActive = false;
 				m_CurrentAttackCount = 0;
-				m_OnActive = true;
+				//m_OnActive = true;
 
 				if(m_IsRangedWeapon)
 				{
@@ -85,12 +85,13 @@ void BowWeapon::EventHandler()
 		}
 	}
 	
+	/*
 	if(m_AlEvent.type == PROJECTILE_EVENT)
 	{
 		Projectile* yes = (Projectile*)m_AlEvent.user.data1;
 		printf("%i", yes->GetHitBoxXBoundOne());
 	}
-	
+	*/
 }
 
 //!Handles drawing for the weapon class
