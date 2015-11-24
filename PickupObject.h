@@ -18,6 +18,8 @@ public:
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //Constructor for the PickupObject class
 	void EventHandler(); //Event handler for the PickupObject class
 	void Draw(); //Draws the PickupObject
+	virtual void DeletePickup(); //Calls delete on the pickup for it to execute its ending statements
+	virtual bool IsPickupDead(); //Returns whether or not the pickup item has been picked up and should be deleted
 
 	int GetXBound(); //Gets and returns the X Bound
 	int GetYBound(); //Gets and returns the Y Bound 
@@ -32,9 +34,10 @@ protected:
 	int m_YBound; //the y bound
 	int m_XPosition; //x position of the object
 	int m_YPosition; //y position of the object
+	bool m_IsDead; //true if the pickup has been picked up and should be destroyed else false
 
 private:
-	PickupObjectTile m_SpriteImage;
+	PickupObjectTile m_SpriteImage; //Sprite image for the pickup object
 
 };
 

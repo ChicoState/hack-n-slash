@@ -67,14 +67,6 @@ Weapon* Inventory::GetWeaponFromSlot(int InputWeaponSlot)
 //		Weapon* - the weapon in the next inventory slot from the currently selected weapon
 Weapon* Inventory::GetNextCycledWeapon()
 {
-	/*
-	//if there is only one weapon in the inventory no need to switch
-	if(m_WeaponInventory.size() == 1)
-	{
-		return NULL;
-	}
-	*/
-
 	//if the next weapon is within the inventory indexes
 	if((m_LastWeaponSelected + 1) <= (m_WeaponInventory.size() - 1))
 	{

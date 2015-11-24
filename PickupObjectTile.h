@@ -15,6 +15,8 @@ public:
 	PickupObjectTile(ALLEGRO_BITMAP *SpriteImage, int InputXPosition, int InputYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //constructor for the pickupobjecttile class
 	void Draw(int DrawXCoordinate, int DrawYCoordinate); //Draws the pickupobjecttile
+	
+	void SetSpriteAlpha(int R, int G, int B); //sets the alpha for the sprite image
 
 private:
 

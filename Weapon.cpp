@@ -95,8 +95,11 @@ void Weapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
+	//keep track of last coordinates
 	m_LastDrawnXPosition = DrawXCoordinate;
 	m_LastDrawnYPosition = DrawYCoordinate;
+
+	//set draw direction
 
 	if(XDirection = 0 && YDirection == -1)
 	{
@@ -142,9 +145,11 @@ bool Weapon::IsActive()
 //!Attacks with the weapon to make it active
 void Weapon::Attack()
 {
+	//reset attack variables
 	m_IsActive = true;
 	m_CurrentAttackCount = 0;
 
+	//if a ranged weapon
 	if(m_IsRangedWeapon)
 	{
 		//reset current projectile
@@ -153,6 +158,8 @@ void Weapon::Attack()
 			m_Projectile->ResetProjectile();
 		}
 		
+		//send projectile in correct direction
+
 		if(m_Projectile != NULL)
 		{
 			if(m_LastDrawnDirection == Direction(North))
@@ -204,6 +211,8 @@ int Weapon::GetYBound()
 //		int - x bound of the weapon/projectile hitbox
 int Weapon::GetHitBoxXBoundOne()
 {
+	//if the weapon is active get its hitbox from last drawn location
+
 	if(m_IsActive)
 	{
 		if(m_IsRangedWeapon)
@@ -259,6 +268,8 @@ int Weapon::GetHitBoxXBoundOne()
 //		int - y bound of the weapon/projectile hitbox
 int Weapon::GetHitBoxYBoundOne()
 {
+	//if the weapon is active get its hitbox from last drawn location
+
 	if(m_IsActive)
 	{
 		if(m_IsRangedWeapon)
@@ -314,6 +325,8 @@ int Weapon::GetHitBoxYBoundOne()
 //		int - x bound of the weapon/projectile hitbox
 int Weapon::GetHitBoxXBoundTwo()
 {
+	//if the weapon is active get its hitbox from last drawn location
+
 	if(m_IsActive)
 	{
 		if(m_IsRangedWeapon)
@@ -369,6 +382,8 @@ int Weapon::GetHitBoxXBoundTwo()
 //		int - y bound of the weapon/projectile hitbox
 int Weapon::GetHitBoxYBoundTwo()
 {
+	//if the weapon is active get its hitbox from last drawn location
+
 	if(m_IsActive)
 	{
 		if(m_IsRangedWeapon)
@@ -424,6 +439,7 @@ int Weapon::GetHitBoxYBoundTwo()
 //		Projectile* - the current projectile of the weapon
 Projectile* Weapon::GetProjectile()
 {
+	//if its a ranged weapon return the projectile else return nothing
 	if(m_IsRangedWeapon)
 	{
 		return m_Projectile;
@@ -440,6 +456,7 @@ Projectile* Weapon::GetProjectile()
 //		float - the damage the weapon deals
 float Weapon::GetDamage()
 {
+	//get the weapon damage depending on the weapon modifier
 	if(m_IsActive)
 	{
 		return (m_Damage * m_DamageModifier);

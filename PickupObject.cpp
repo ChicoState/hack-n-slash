@@ -16,12 +16,34 @@ PickupObject::PickupObject(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_EVENT_QUEUE* Inp
 	m_YBound = FrameHeight;
 	m_XPosition = SpawnXPosition;
 	m_YPosition = SpawnYPosition;
+	m_IsDead = false;
 }
 
 //Draws the PickupObject
 void PickupObject::Draw()
 {
 	m_SpriteImage.Draw(m_XPosition, m_YPosition);
+}
+
+//Calls delete on the pickup for it to execute its ending statements
+void PickupObject::DeletePickup()
+{
+	
+}
+
+//Returns whether or not the pickup item has been picked up and should be deleted
+bool PickupObject::IsPickupDead()
+{
+	//Return true if the pickup object is dead and already picked up else false
+	if(m_IsDead)
+	{
+		return true;
+	}
+
+	else
+	{
+		return false;
+	}
 }
 
 //!Gets and returns the PickupObject X Bound

@@ -10,7 +10,6 @@
 
 //!Constructor for the playertile class
 //In - 
-//		ALLEGRO_BITMAP *SpriteImage - the sprite image of the player tile
 //		int InputPlayerXPosition - the starting x position of the player
 //		int InputPlayerXPosition - the starting y position of the player
 //		int FrameWidth - the width of one sprite frame
@@ -20,9 +19,9 @@
 //		bool Continuous - true if the tile is continues else false
 //		bool Looped - true if the tile should loop else false
 //		int AnimFPS - the fps for the animated tile
-PlayerTile::PlayerTile(ALLEGRO_BITMAP *SpriteImage, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
+PlayerTile::PlayerTile(int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
-		: Sprite(SpriteImage, InputPlayerXPosition, InputPlayerYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
+		: Sprite(al_load_bitmap("Player_Sprite.png"), InputPlayerXPosition, InputPlayerYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
 	//set the alpha of the sprite
 	Sprite::Set_ImageAlpha(135, 135, 135);

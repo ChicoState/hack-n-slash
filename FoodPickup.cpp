@@ -3,29 +3,32 @@
 //FoodPickup Class CPP: Food Pickup class that is a Pickup Object that gives health to the player.
 
 #include "FoodPickup.h"
-#include "Player.h"
 
-FoodPickup::FoodPickup(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int SpawnXPosition, int SpawnYPosition) 
+//Constructor for FoodPickup class
+FoodPickup::FoodPickup(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int SpawnXPosition, int SpawnYPosition) 
 	: PickupObject(al_load_bitmap("Food_Sprite.jpg"), InputEventQueue, InputAlEvent, SpawnXPosition, SpawnYPosition, 28, 28, true, false, false, false, 1)
 {
 	al_init_user_event_source(&m_FoodPickupEventSource);
 	al_register_event_source(m_EventQueue, &m_FoodPickupEventSource);
 }
 
-void FoodPickup::DeleteFoodPickup()
+//Calls delete on the pickup for it to execute its ending statements
+void FoodPickup::DeletePickup()
 {
 	al_unregister_event_source(m_EventQueue, &m_FoodPickupEventSource);
-	delete this;
-	
 }
 
+//Event handler for the FoodPickup class
 void FoodPickup::EventHandler(ALLEGRO_EVENT& InputAlEvent)
 {
-	if(this != NULL && InputAlEvent.type == PLAYERPOSITION_EVENT)
+	//check the update player position event
+	if(InputAlEvent.type == PLAYERPOSITION_EVENT)
 	{
+		//get the player position data
 		int TempPlayerXPosition = InputAlEvent.user.data1;
 		int TempPlayerYPosition = InputAlEvent.user.data2;
 
+		//check to see if the player is inside this objects bounds
 		if(TempPlayerXPosition > m_XPosition - m_XBound &&
 			TempPlayerXPosition < m_XPosition + m_XBound &&
 			TempPlayerYPosition > m_YPosition - m_YBound &&
@@ -33,9 +36,8 @@ void FoodPickup::EventHandler(ALLEGRO_EVENT& InputAlEvent)
 		{
 			//emit the event source that the food collided with the player
 			m_AlEvent.user.type = CUSTOM_EVENT_ID(FOODPICKUP_EVENT);
-			m_AlEvent.user.data1 = (intptr_t)this;
 			al_emit_user_event(&m_FoodPickupEventSource, &m_AlEvent, NULL);
-			//DeleteFoodPickup();
+			m_IsDead = true;
 		}
 	}
 }

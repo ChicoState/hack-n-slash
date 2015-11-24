@@ -6,11 +6,11 @@
 
 //!The constructor for the sword weapon
 //In - 
+//		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
-//		ALLEGRO_BITMAP *SpriteImage - the sprite image of the sword weapon
-SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) : 
+SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) : 
 				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 2, 10),
-				m_SwordWeaponTile(SpriteImage, 0, 0, 70, 70, true, true, false, true, 6)
+				m_SwordWeaponTile(0, 0, 70, 70, true, true, false, true, 6)
 {
 
 }
@@ -48,8 +48,11 @@ void SwordWeapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void SwordWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
+	//keep track of last coordinates
 	m_LastDrawnXPosition = DrawXCoordinate;
 	m_LastDrawnYPosition = DrawYCoordinate;
+
+	//set draw direction
 
 	if(XDirection == 0 && YDirection == -1)
 	{
@@ -76,6 +79,7 @@ void SwordWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection,
 		m_LastDrawnDirection = Direction(North);
 	}
 
+	//draw sprite
 	m_SwordWeaponTile.Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection, m_IsActive);
 }
 

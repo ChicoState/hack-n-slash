@@ -13,15 +13,15 @@
 class BowWeapon : public Weapon
 {
 public:
-	BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage); //!The constructor for the Bow weapon
+	BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent); //!The constructor for the Bow weapon
 	~BowWeapon(); //destructor for the weapon class
 	void BowWeapon::EventHandler(); //Handles events for the Bow weapon class
 	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon to the screen
 
 private:
-	ALLEGRO_EVENT_SOURCE m_ProjectileEventSource;
+	ALLEGRO_EVENT_SOURCE m_ProjectileEventSource; //The event source for the projectile custom event
 
-	BowWeaponTile m_BowWeaponTile;
+	BowWeaponTile m_BowWeaponTile; //bow weapon tile for sprite of bow weapon
 
 	bool m_OnActive; //true on the first iteration of m_IsActive in the event queue timer
 };

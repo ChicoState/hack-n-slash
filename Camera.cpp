@@ -25,8 +25,6 @@ Camera::Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQu
 //		ALLEGRO_EVENT& InputAlEvent - The global event handler for the game
 //		float PlayerXPosition - The current x position of the player
 //		float PlayerYPosition - The current y position of the player
-//		int PlayerWidth - The player width bound
-//		int PlayerHeight - The player height bound
 void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, float PlayerYPosition)
 {
 	//make member event the same as the input event
@@ -40,9 +38,6 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 		//Keep track of mouse coordinates
 		m_MouseXCoordinate = m_AlEvent.mouse.x;
 		m_MouseYCoordinate = m_AlEvent.mouse.y;
-
-		//printf("%i", m_MouseXCoordinate);
-		//printf("%i", m_MouseYCoordinate);
 	}
 }
 
@@ -51,32 +46,11 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 //In - 
 //		float PlayerXPosition - The current x position of the player
 //		float PlayerYPosition - The current y position of the player
-//		int PlayerWidth - The player width bound
-//		int PlayerHeight - The player height bound	
 void Camera::UpdatePosition(float PlayerXPosition, float PlayerYPosition)
 {
-	/*
-	if(std::abs((-(1280 / 2) + (PlayerXPosition)) - m_XPosition) < 3 && std::abs(-(720 / 2) + (PlayerYPosition) - m_YPosition) < 3)
-	{
-		return;
-	}
-	*/
-
 	//Update the posiotion of the camera relative to the player position and bound
 	m_XPosition = -(1280 / 2) + (PlayerXPosition);
 	m_YPosition = -(720 / 2) + (PlayerYPosition);
-
-	//if the x position is less than 0 keep it there
-	if(m_XPosition < 0)
-	{
-		//m_XPosition = 0;
-	}
-
-	//if the y position is less than 0 keep it there
-	if(m_YPosition < 0)
-	{
-		//m_YPosition = 0;
-	}
 
 	//Update the transform and translation of the camera
 	UpdateTransform();

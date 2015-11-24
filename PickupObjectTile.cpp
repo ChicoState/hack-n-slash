@@ -20,7 +20,8 @@ PickupObjectTile::PickupObjectTile(ALLEGRO_BITMAP *SpriteImage, int InputXPositi
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS)
 		: Sprite(SpriteImage, InputXPosition, InputYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
-
+	//set the alpha of the sprite
+	Sprite::Set_ImageAlpha(135, 135, 135);
 }
 
 //Draws the pickupobjecttile
@@ -30,4 +31,14 @@ PickupObjectTile::PickupObjectTile(ALLEGRO_BITMAP *SpriteImage, int InputXPositi
 void PickupObjectTile::Draw(int DrawXCoordinate, int DrawYCoordinate)
 {
 	al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (DrawXCoordinate - m_FrameWidth / 2), (DrawYCoordinate - m_FrameHeight / 2), 0);
+}
+
+//sets the alpha for the sprite image
+//In - 
+//		int R - the red alpha channel
+//		int G - the green alpha channel
+//		int B - the blue alpha channel
+void PickupObjectTile::SetSpriteAlpha(int R, int G, int B)
+{
+	Sprite::Set_ImageAlpha(R, G, B);
 }

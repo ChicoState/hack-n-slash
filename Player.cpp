@@ -6,47 +6,46 @@
 
 //!The constructor for the player class
 //In - 
-//		ALLEGRO_BITMAP *SpriteImage - the sprite image for the player sprite
-//		int InputScreenWidth - the input screen width dimension of the game
-//		int INputScreenHeight - the input screen height dimension of the game
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_BITMAP *BowImage, int InputScreenWidth, int InputScreenHeight, ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue),
-		m_PlayerTile(al_load_bitmap("Player_Sprite.png"), m_ScreenWidth / 2, m_ScreenHeight / 2, 48, 64, true, true, false, true, 6)
+Player::Player(ALLEGRO_EVENT_QUEUE* InputEventQueue)
+	: m_EventQueue(InputEventQueue),
+		m_PlayerTile(0, 0, 48, 64, true, true, false, true, 6)
 {
-	//Set input variables to member variables
-	m_ScreenWidth = InputScreenWidth;
-	m_ScreenHeight = InputScreenHeight;
-
 	//register the event sources to the event queue
 	al_register_event_source(m_EventQueue, al_get_keyboard_event_source());
+	al_init_user_event_source(&m_PositionEventSource);
+	al_register_event_source(m_EventQueue, &m_PositionEventSource);
 
 	//load fonts for player
 	font28 = al_load_font("GOUDOS.TTF", 28, 0);
 	font16 = al_load_font("GOUDOS.TTF", 16, 0);
 
-	al_init_user_event_source(&m_PositionEventSource);
-	al_register_event_source(m_EventQueue, &m_PositionEventSource);
-
 	//initialize the member variables
 	m_CurrentGameScale = 1;
 	m_ExperienceMultiplier = 100;
+	m_BaseMaxHealth = 100;
 	m_MaxHealthIncrement = 20;
+	m_SpeedPowerUpSpeed = 12;
+	m_StrengthPowerupMultiplier = 2;
+	m_BaseMovementSpeed = 7;
+	m_PowerupTimerLength = 2400;
+
 	ClassTag = "Player";
 	m_XBound = 48;
 	m_YBound = 64;
-	m_XPosition = m_ScreenWidth / 2;
-	m_YPosition = m_ScreenHeight / 2;
+	m_XPosition = 0;
+	m_YPosition = 0;
 	m_CurrentDirection = Direction(North);
 	m_PreviousLockedDirection = Direction(North);
-	m_MaxHealth = 100;
-	m_CurrentHealth = 10;
-	m_Level = 0;
+	m_MaxHealth = m_BaseMaxHealth;
+	m_CurrentHealth = m_MaxHealth;
+	m_Level = 1;
 	m_Experience = 0;
 	m_KeyboardMap["W"] = false; //W used to move player up
 	m_KeyboardMap["S"] = false; //S used to move player down
 	m_KeyboardMap["A"] = false; //A used to move player left
 	m_KeyboardMap["D"] = false; //D used to move player right
-	m_MovementSpeed = 7;
+	m_MovementSpeed = m_BaseMovementSpeed;
 	m_MouseMoving = false;
 	m_CurrentMouseMoveXPosition = 0;
 	m_CurrentMouseMoveYPosition = 0;
@@ -57,9 +56,15 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 	m_IsColliding = false;
 	m_IsCollidingBoundOne = false;
 	m_IsCollidingBoundTwo = false;
-	m_LockedXPosition = m_ScreenWidth / 2;
-	m_LockedYPosition = m_ScreenHeight / 2;
+	m_LockedXPosition = 0;
+	m_LockedYPosition = 0;
 	m_CanAttack = true;
+	m_IsDead = false;
+
+	m_SpeedPowerUp = false;
+	m_SpeedPowerUpTimer = 0;
+	m_StrengthPowerUp = false;
+	m_StrengthPowerUpTimer = 0;
 
 	m_DrawExperienceUp = false;
 	m_DrawExperienceUpTimer = 0;
@@ -67,10 +72,10 @@ Player::Player(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_BITMAP *SwordImage, ALLEGRO_
 	m_DrawLevelUpTimer = 0;
 
 	//Initiate weapons
-	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_EventQueue, m_AlEvent, SwordImage);
-	BowWeapon* TempBoWeapon = new BowWeapon(m_EventQueue, m_AlEvent, BowImage);
+	SwordWeapon* TempSwordWeapon = new SwordWeapon(m_EventQueue, m_AlEvent);
+	BowWeapon* TempBowWeapon = new BowWeapon(m_EventQueue, m_AlEvent);
 	m_Inventory.AddWeapon(TempSwordWeapon);
-	m_Inventory.AddWeapon(TempBoWeapon);
+	m_Inventory.AddWeapon(TempBowWeapon);
 	m_ActiveWeapon = m_Inventory.GetWeaponFromSlot(1);
 }
 
@@ -90,16 +95,13 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 	//make member event the same as the input event
 	m_AlEvent = InputAlEvent;
 
-	//check player movement
-	CheckMovement(InputMouseXWorldPosition, InputMouseYWorldPosition);
-	m_IsCollidingBoundOne = false;
-	m_IsCollidingBoundTwo = false;
-
 	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
 		//check active weapon
 		m_ActiveWeapon->EventHandler();
 	}
+
+	//Check custom events
 
 	if(m_AlEvent.type == AI_KILLED_EVENT)
 	{
@@ -108,11 +110,51 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 
 	if(m_AlEvent.type == FOODPICKUP_EVENT)
 	{
-		GiveExperience();
-		HealPlayer();
-		FoodPickup* TempFoodPickup = (FoodPickup*)m_AlEvent.user.data1;
-		TempFoodPickup = NULL;
+		m_StrengthPowerUp = true;
 	}
+
+	if(m_AlEvent.type == SPEEDPICKUP_EVENT)
+	{
+		m_SpeedPowerUp = true;
+		m_SpeedPowerUpTimer = 0;
+		m_MovementSpeed = m_SpeedPowerUpSpeed;
+	}
+
+	if(m_AlEvent.type == STRENGTHPICKUP_EVENT)
+	{
+		m_StrengthPowerUp = true;
+		m_StrengthPowerUpTimer = 0;
+	}
+
+	//check timers for power ups
+
+	if(m_SpeedPowerUp)
+	{
+		m_SpeedPowerUpTimer++;
+
+		if(m_SpeedPowerUpTimer >= m_PowerupTimerLength)
+		{
+			m_SpeedPowerUp = false;
+			m_SpeedPowerUpTimer = 0;
+			m_MovementSpeed = m_BaseMovementSpeed;
+		}
+	}
+
+	if(m_StrengthPowerUp)
+	{
+		m_StrengthPowerUpTimer++;
+
+		if(m_StrengthPowerUpTimer >= m_PowerupTimerLength)
+		{
+			m_StrengthPowerUp = false;
+			m_StrengthPowerUpTimer = 0;
+		}
+	}
+
+	//check player movement
+	CheckMovement(InputMouseXWorldPosition, InputMouseYWorldPosition);
+	m_IsCollidingBoundOne = false;
+	m_IsCollidingBoundTwo = false;
 }
 
 //!Draws the player character to the screen
@@ -199,6 +241,13 @@ void Player::DrawPlayer()
 		}
 	}
 
+	//draw strangth powerup color change
+	if(m_StrengthPowerUp)
+	{
+		al_draw_filled_ellipse(m_XPosition, m_YPosition + 5, m_XPosition, m_YPosition - 5, al_map_rgba(50, 50, 0, 30));
+	}
+
+	/*
 	//draw the bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
 	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
@@ -212,96 +261,11 @@ void Player::DrawPlayer()
 
 	//draw player hit box
 	al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 3);
+	*/
 
 	//draw the weapon hit box
 	al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
 }
-
-/*
-int Player::GetNextCollisionXPositionOne()
-{
-	if(m_KeyboardMap["A"])
-	{
-		if(m_CanMoveLeft)
-		{
-			return (GetCollisionXBoundOne() - 1);
-		}
-	}
-
-	else if(m_KeyboardMap["D"])
-	{
-		if(m_CanMoveRight)
-		{
-			return (GetCollisionXBoundOne() + 1);
-		}
-	}
-
-	return GetCollisionXBoundOne();
-}
-
-int Player::GetNextCollisionYPositionOne()
-{
-	if(m_KeyboardMap["W"])
-	{
-		if(m_CanMoveUp)
-		{
-			return (GetCollisionYBoundOne() - 1);
-		}
-	}
-
-	else if(m_KeyboardMap["S"])
-	{
-		if(m_CanMoveDown)
-		{
-			return (GetCollisionYBoundOne() + 1);
-		}
-	}
-
-	return GetCollisionYBoundOne();
-}
-
-int Player::GetNextCollisionXPositionTwo()
-{
-	if(m_KeyboardMap["A"])
-	{
-		if(m_CanMoveLeft)
-		{
-			return (GetCollisionXBoundTwo() - 1);
-		}
-	}
-
-	else if(m_KeyboardMap["D"])
-	{
-		if(m_CanMoveRight)
-		{
-			return (GetCollisionXBoundTwo() + 1);
-		}
-	}
-
-	return GetCollisionXBoundTwo();
-}
-
-int Player::GetNextCollisionYPositionTwo()
-{
-	if(m_KeyboardMap["W"])
-	{
-		if(m_CanMoveUp)
-		{
-			return (GetCollisionYBoundTwo() - 1);
-		}
-	}
-
-	else if(m_KeyboardMap["S"])
-	{
-		if(m_CanMoveDown)
-		{
-			return (GetCollisionYBoundTwo() + 1);
-		}
-	}
-
-	return GetCollisionYBoundTwo();
-}
-*/
 
 //!Handles movement for the player character each update
 void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
@@ -479,15 +443,6 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			//get inventory slot 2 weapon
 		case ALLEGRO_KEY_2:
 			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(2);
-			if(TempReturnedWeapon != NULL)
-			{
-				m_ActiveWeapon = TempReturnedWeapon;
-			}
-			break;
-
-			//get inventory slot 3 weapon
-		case ALLEGRO_KEY_3:
-			TempReturnedWeapon = m_Inventory.GetWeaponFromSlot(3);
 			if(TempReturnedWeapon != NULL)
 			{
 				m_ActiveWeapon = TempReturnedWeapon;
@@ -772,35 +727,6 @@ void Player::MoveRight()
 	m_XPosition += m_MovementSpeed;
 }
 
-
-void Player::MovementColliding()
-{
-	if(m_CurrentDirection == Direction(North))
-	{
-		m_CanMoveUp = false;
-	}
-
-	else if(m_CurrentDirection == Direction(South))
-	{
-		m_CanMoveDown = false;
-	}
-
-	else if(m_CurrentDirection == Direction(East))
-	{
-		m_CanMoveRight = false;
-	}
-
-	else if(m_CurrentDirection == Direction(West))
-	{
-		m_CanMoveLeft = false;
-	}
-
-	else
-	{
-		m_CanMoveUp = false;
-	}
-}
-
 //Tells the player that they are not colliding with something in their current moving direction
 void Player::NoMovementCollidingBoundOne()
 {
@@ -859,6 +785,9 @@ void Player::AddPlayerLevel()
 	m_DrawLevelUp = true;
 }
 
+//Deal damage to the eplayer's health
+//In - 
+//		int InputDamage - the input damage to deal to the player
 void Player::DealDamage(int InputDamage)
 {
 	m_CurrentHealth -= InputDamage;
@@ -866,7 +795,7 @@ void Player::DealDamage(int InputDamage)
 	if(m_CurrentHealth < 0)
 	{
 		m_CurrentHealth = 0;
-		printf("DEAD");
+		m_IsDead = true;
 	}
 }
 
@@ -878,6 +807,39 @@ void Player::HealPlayer()
 	if(m_CurrentHealth > m_MaxHealth)
 	{
 		m_CurrentHealth = m_MaxHealth;
+	}
+}
+
+//Resets the player for a fresh game
+void Player::ResetPlayer()
+{
+	m_IsDead = false;
+	m_CurrentGameScale = 1;
+	m_DrawExperienceUpTimer = 0;
+	m_DrawLevelUpTimer = 0;
+	m_SpeedPowerUp = false;
+	m_SpeedPowerUpTimer = 0;
+	m_StrengthPowerUp = false;
+	m_StrengthPowerUpTimer = 0;
+
+	m_Level = 1;
+	m_Experience = 0;
+	m_MaxHealth = m_BaseMaxHealth;
+	m_CurrentHealth = m_MaxHealth;
+}
+
+//Returns whether or not the player is dead
+bool Player::IsDead()
+{
+	//Return true if the playe ris dead else false
+	if(m_IsDead)
+	{
+		return true;
+	}
+
+	else
+	{
+		return false;
 	}
 }
 
@@ -1081,62 +1043,6 @@ int Player::GetHitBoxYBoundTwo()
 	return (m_YPosition + (m_YBound / 2));
 }
 
-int Player::GetCollisionXBound()
-{
-	if(m_CurrentDirection == Direction(North))
-	{
-		return GetXNorthBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(South))
-	{
-		return GetXSouthBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(East))
-	{
-		return GetXEastBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(West))
-	{
-		return GetXWestBoundPoint();
-	}
-
-	else
-	{
-		return GetXNorthBoundPoint();
-	}
-}
-
-int Player::GetCollisionYBound()
-{
-	if(m_CurrentDirection == Direction(North))
-	{
-		return GetYNorthBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(South))
-	{
-		return GetYSouthBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(East))
-	{
-		return GetYEastBoundPoint();
-	}
-
-	else if(m_CurrentDirection == Direction(West))
-	{
-		return GetYWestBoundPoint();
-	}
-
-	else
-	{
-		return GetYNorthBoundPoint();
-	}
-}
-
 //!Gets and returns the first current X collision bound position of the player relative to the direction the player is moving will always be the north or east most bound point
 //Out - 
 //		int - the first current X collision bound of the player relative to their moving direction
@@ -1322,7 +1228,17 @@ int Player::GetCurrentHealth()
 //		float - the damage of the current weapon
 float Player::GetWeaponDamage()
 {
-	return (m_ActiveWeapon->GetDamage() * m_Level);
+	//if there is a power up on calculate the new damage
+
+	if(m_StrengthPowerUp)
+	{
+		return ((m_ActiveWeapon->GetDamage() * m_Level) * m_StrengthPowerupMultiplier);
+	}
+
+	else
+	{
+		return (m_ActiveWeapon->GetDamage() * m_Level);
+	}
 }
 
 //!Sets the x position of the player

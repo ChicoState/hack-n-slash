@@ -6,11 +6,11 @@
 
 //!The constructor for the Bow weapon
 //In - 
+//		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
-//		ALLEGRO_BITMAP *SpriteImage - the sprite image of the Bow weapon
-BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) :
+BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) :
 				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 4, 6),
-				m_BowWeaponTile(SpriteImage, 0, 0, 80, 76, true, true, false, true, 6)
+				m_BowWeaponTile(0, 0, 80, 76, true, true, false, true, 6)
 {
 	m_ProjectileXBound = 16;
 	m_ProjectileYBound = 16;
@@ -102,8 +102,11 @@ void BowWeapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void BowWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
+	//keep track of last coordinates
 	m_LastDrawnXPosition = DrawXCoordinate;
 	m_LastDrawnYPosition = DrawYCoordinate;
+
+	//set draw direction
 
 	if(XDirection == 0 && YDirection == -1)
 	{
@@ -130,6 +133,7 @@ void BowWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, i
 		m_LastDrawnDirection = Direction(North);
 	}
 
+	//draw sprite
 	m_BowWeaponTile.Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection, m_IsActive);
 
 	//if active draw the projectile
