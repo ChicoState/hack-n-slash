@@ -56,7 +56,7 @@ void TerrainMap::UpdateInfoLayer(int LayerChangeIndex)
 
 void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 {
-	static Projectile *Temp = NULL;
+	static std::vector<Projectile*> Temp;
 
 	for (int i = 0; i < m_Map.size(); i++)
 	{
@@ -65,20 +65,31 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 
 	if (EV.type == PROJECTILE_EVENT)
 	{
-		Temp = (Projectile*)EV.user.data1;
+		Temp.push_back((Projectile*)EV.user.data1);
+	}
+	else if (EV.type == PLAYERMOVE_EVENT)
+	{
+		int PlayerX = EV.user.data1;
+		int PlayerY = EV.user.data2;
 	}
 
-	if (Temp != NULL)
+	if (Temp.size() > 0)
 	{
-		if (CheckMapCollision(Vec2f(Temp->GetHitBoxXBoundOne(), Temp->GetHitBoxYBoundOne())))
+ 		for (int i = 0; i < Temp.size(); i++)
 		{
-			Temp->ResetProjectile();
-			Temp = NULL;
-		}
-		else if (CheckMapCollision(Vec2f(Temp->GetHitBoxXBoundTwo(), Temp->GetHitBoxYBoundTwo())))
-		{
-			Temp->ResetProjectile();
-			Temp = NULL;
+			if (Temp[i] == NULL)
+			{
+				Temp.erase(Temp.begin() + i);
+				i -= 1;
+			}
+			else if (CheckMapCollision(Vec2f(Temp[i]->GetHitBoxXBoundOne(), Temp[i]->GetHitBoxYBoundOne())))
+			{
+				Temp[i]->ResetProjectile();
+			}
+			else if (CheckMapCollision(Vec2f(Temp[i]->GetHitBoxXBoundTwo(), Temp[i]->GetHitBoxYBoundTwo())))
+			{
+				Temp[i]->ResetProjectile();
+			}
 		}
 	}
 }
