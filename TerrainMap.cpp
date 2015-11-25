@@ -67,7 +67,7 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 	{
 		Temp.push_back((Projectile*)EV.user.data1);
 	}
-	else if (EV.type == PLAYERMOVE_EVENT)
+	else if (EV.type == PLAYERPOSITION_EVENT)
 	{
 		int PlayerX = EV.user.data1;
 		int PlayerY = EV.user.data2;

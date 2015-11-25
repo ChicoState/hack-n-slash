@@ -1,5 +1,5 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		10/9/15
+//Date updated:		11/15/15
 //Last update by:	N/A
 //Reason for update:N/A
 
@@ -38,9 +38,10 @@ int main(void)
 	const int FPS = 60;
 
 	//Allegro variables---------------------------------
+	ALLEGRO_EVENT ev;
 	ALLEGRO_EVENT_QUEUE *Event_Queue = NULL;
 	ALLEGRO_TIMER *Timer = NULL;
-
+	
 	Event_Queue = al_create_event_queue();				
 	Timer = al_create_timer(1.0 / FPS);
 
@@ -57,7 +58,7 @@ int main(void)
 	ALLEGRO_BITMAP *BowImage = al_load_bitmap("Bow_Sprite.png");
 	ALLEGRO_BITMAP *SwordImage = al_load_bitmap("Sword_Sprite.png");
 
-	Player MainPlayer(PlayerImage, SwordImage, BowImage, MainDisplay.Get_ScreenWidth(), MainDisplay.Get_ScreenHeight(), Event_Queue);
+	Player MainPlayer(Event_Queue);
 	Camera MainCamera(Event_Queue);
 	AI_Group TestAIGroup;  // Instance of an AI_Group
 
@@ -78,8 +79,6 @@ int main(void)
 	al_init_user_event_source(&ProjectileEvent);
 
 	
-
-	
 	al_register_event_source(Event_Queue, al_get_timer_event_source(Timer));
 	al_register_event_source(Event_Queue, al_get_keyboard_event_source());
 	al_register_event_source(Event_Queue, al_get_mouse_event_source());
@@ -89,7 +88,6 @@ int main(void)
 	//Main game loop------------------------------------
 	while (!MainUtility.Get_GameOver())
 	{
-		ALLEGRO_EVENT ev;
 		al_wait_for_event(Event_Queue, &ev);
 		
 		MainPlayer.EventHandler(ev, MainCamera.GetMouseXWorldCoordinate(), MainCamera.GetMouseYWorldCoordinate());
