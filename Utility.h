@@ -22,9 +22,16 @@ enum CUSTOM_EVENT_ID
 	FOODPICKUP_EVENT, 
 	SPEEDPICKUP_EVENT, 
 	STRENGTHPICKUP_EVENT,
-	AI_KILLED_EVENT
+	AI_KILLED_EVENT,
+	TERRAINTILE_TRIGGER_EVENT,
+	MELEEATTACK_EVENT,
+	PICKUP_EVENT,
+	INIT_AI_EVENT
 };
 
+
+//used for generating a random number between two values. Should probably be moved to a different file but again, I'm lazy :P.
+int Random(int RandomAmount1, int RandomAmount2);
 
 //Global utility class for keeping track of global key presses/game state/if game is over/etc..
 //Do NOT create another variable of this class. Include this class and use "MainUtility" variable
