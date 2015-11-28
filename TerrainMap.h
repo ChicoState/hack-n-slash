@@ -6,6 +6,9 @@
 #include "TerrainLayer.h"
 #include "Projectile.h"
 #include "Utility.h"
+#include "Player.h"
+#include "PickupObject.h"
+#include "TerrainObjectManager.h"
 
 //TerrainMap is responsible for controlling the entire Terrain.
 class TerrainMap
@@ -17,10 +20,15 @@ private:
 	int m_MapSizeY; //The number of tiles tall the Map is
 	int m_TileSize; //The size of a single tile (terrain tiles are assumed to be square)
 
+	TerrainObject_Manager m_ObjectManager;
+
+	Player *m_MainPlayer;
+
+	ALLEGRO_EVENT_QUEUE *m_EventQueue;
+
 public:
-	TerrainMap()
-	{}
-	TerrainMap(TerrainLayer* BaseLayer)
+	TerrainMap(ALLEGRO_EVENT_QUEUE *EventQueue, TerrainLayer* BaseLayer, Player *MainPlayer) : m_MainPlayer(MainPlayer), m_EventQueue(EventQueue),
+		m_ObjectManager(EventQueue)
 	{
 		m_Map.push_back(BaseLayer);
 		m_TileSize = BaseLayer->Get_TileSize();
@@ -48,6 +56,10 @@ public:
 
 	void Event_Handler(ALLEGRO_EVENT&);
 	void Draw();
+
+private:
+
+	void CreatePickupObjects(Vec2i);
 
 };
 
