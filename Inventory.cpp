@@ -4,46 +4,6 @@
 
 #include "Inventory.h"
 
-<<<<<<< HEAD
-Inventory::Inventory()
-{
-	m_LastWeaponSelected = 0;
-}
-
-void Inventory::AddWeapon(Weapon* InputWeapon)
-{
-	m_WeaponInventory.push_back(InputWeapon);
-}
-
-Inventory::~Inventory()
-{
-	m_WeaponInventory.clear();
-}
-
-Weapon* Inventory::GetWeaponFromSlot(int InputWeaponSlot)
-{
-	if(InputWeaponSlot <= m_WeaponInventory.size() && InputWeaponSlot > 0)
-	{
-		m_LastWeaponSelected = InputWeaponSlot;
-
-		return m_WeaponInventory[(InputWeaponSlot - 1)];
-	}
-}
-
-Weapon* Inventory::GetNextCycledWeapon()
-{
-	if((m_LastWeaponSelected + 1) <= m_WeaponInventory.size())
-	{
-		int TempLastWeaponSelected = m_LastWeaponSelected;
-		m_LastWeaponSelected++;
-		return m_WeaponInventory[(TempLastWeaponSelected)];
-	}
-
-	else if(m_LastWeaponSelected == m_WeaponInventory.size() && m_LastWeaponSelected > 0)
-	{
-		m_LastWeaponSelected = 1;
-		return m_WeaponInventory[0];
-=======
 //!Constructor for the inventory class
 Inventory::Inventory()
 {
@@ -132,6 +92,20 @@ Weapon* Inventory::GetNextCycledWeapon()
 	else
 	{
 		return NULL;
->>>>>>> Scott
+	}
+}
+
+//increases the attack time for the ranged weapons pertaining to projectile time
+void Inventory::IncreaseRangedWeaponsAttackTime()
+{
+	for(int count = 0; count < m_WeaponInventory.size(); count++)
+	{
+		if(m_WeaponInventory[count] != NULL)
+		{
+			if(m_WeaponInventory[count]->IsRangedWeapon())
+			{
+				m_WeaponInventory[count]->IncreaseRangedAttackTime();
+			}
+		}
 	}
 }

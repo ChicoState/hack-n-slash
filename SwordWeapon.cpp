@@ -4,28 +4,27 @@
 
 #include "SwordWeapon.h"
 
-<<<<<<< HEAD
-SwordWeapon::SwordWeapon(ALLEGRO_EVENT& InputAlEvent) : Weapon(InputAlEvent, 16, 16, false, 2, 10)
-=======
 //!The constructor for the sword weapon
 //In - 
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) : 
-				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 2, 10),
+				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 0.5, 10),
 				m_SwordWeaponTile(0, 0, 70, 70, true, true, false, true, 6)
->>>>>>> Scott
 {
+	m_OnActive = true;
 
+	al_init_user_event_source(&m_SwordActiveEventSource);
+	al_register_event_source(m_EventQueue, &m_SwordActiveEventSource);
 }
 
-<<<<<<< HEAD
-void SwordWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
+//Destructor for the sword weapon class
+SwordWeapon::~SwordWeapon()
 {
-	if(m_IsActive)
-	{
-		al_draw_line(DrawXCoordinate, DrawYCoordinate, DrawXCoordinate + (30 * XDirection), DrawYCoordinate + (30 * YDirection), al_map_rgb(255, 0, 0), 10);
-=======
+	//al_unregister_event_source(m_EventQueue, &m_SwordActiveEventSource);
+	//al_destroy_user_event_source(&m_SwordActiveEventSource);
+}
+
 //!Handles allegro events for the sword weapon class
 void SwordWeapon::EventHandler()
 {
@@ -34,6 +33,11 @@ void SwordWeapon::EventHandler()
 		//if the weapon is active watch the active timer
 		if(m_IsActive)
 		{
+			//emit the event source that the projectile has moved
+			m_AlEvent.user.type = CUSTOM_EVENT_ID(MELEEATTACK_EVENT);
+			al_emit_user_event(&m_SwordActiveEventSource, &m_AlEvent, NULL);
+			m_OnActive = false;
+
 			//Update the weapon sprite tile
 			m_SwordWeaponTile.Event_Handler();
 
@@ -46,6 +50,7 @@ void SwordWeapon::EventHandler()
 				//make weapon unactive and reset timer
 				m_IsActive = false;
 				m_CurrentAttackCount = 0;
+				m_OnActive = true;
 			}
 		}
 	}
@@ -83,20 +88,14 @@ void SwordWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection,
 	else if(XDirection == -1 && YDirection == 0)
 	{
 		m_LastDrawnDirection = Direction(West);
->>>>>>> Scott
 	}
 
 	else
 	{
-<<<<<<< HEAD
-		al_draw_line(DrawXCoordinate, DrawYCoordinate, DrawXCoordinate + (30 * XDirection), DrawYCoordinate + (30 * YDirection), al_map_rgb(0, 0, 255), 10);
-	}
-=======
 		m_LastDrawnDirection = Direction(North);
 	}
 
 	//draw sprite
 	m_SwordWeaponTile.Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection, m_IsActive);
->>>>>>> Scott
 }
 

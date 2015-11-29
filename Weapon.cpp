@@ -4,16 +4,6 @@
 
 #include "Weapon.h"
 
-<<<<<<< HEAD
-Weapon::Weapon(ALLEGRO_EVENT& InputAlEvent, /*InputWeaponSprite, */int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
-{
-	m_AlEvent = InputAlEvent;
-	//m_Sprite = InputWeaponSprite;
-	m_XBound = InputXBound;
-	m_YBound = InputYBound;
-	m_IsRangedWeapon = IsRangedWeapon;
-	m_IsActive = false;
-=======
 //!Constructor for the weapon class
 //In - 
 //      ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue
@@ -35,6 +25,8 @@ Weapon::Weapon(ALLEGRO_EVENT& InputAlEvent, /*InputWeaponSprite, */int InputXBou
 //		int AnimFPS - the fps for the animated tile
 Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
 {
+	m_RangedAttackIncreaseIncrement = 0.5f;
+
 	//initialize member variables
 	m_EventQueue = InputEventQueue;
 	m_AlEvent = InputAlEvent;
@@ -46,47 +38,10 @@ Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent
 	m_ProjectileSpeed = 6;
 	m_IsActive = false;
 	m_LastDrawnDirection = Direction(North);
->>>>>>> Scott
 	m_AttackTime = (InputAttackTime * 60);
 	m_CurrentAttackCount = 0;
 	m_Damage = InputDamage;
 	m_DamageModifier = 1;
-<<<<<<< HEAD
-}
-
-void Weapon::EventHandler(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
-{
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
-	{
-		//draw the weapon sprite
-		Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection);
-
-		if(m_IsActive)
-		{
-			m_CurrentAttackCount++;
-
-			if(m_CurrentAttackCount >= m_AttackTime)
-			{
-				m_IsActive = false;
-				m_CurrentAttackCount = 0;
-			}
-		}
-	}
-
-}
-
-void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
-{
-	
-}
-
-void Weapon::Attack()
-{
-	m_IsActive = true;
-	m_CurrentAttackCount = 0;
-}
-
-=======
 	m_Projectile = NULL;
 }
 
@@ -181,6 +136,23 @@ void Weapon::ResetWeapon()
 	m_CurrentAttackCount = 0;
 }
 
+//increases the attack time for the weapon pertaining to projectile time
+void Weapon::IncreaseRangedAttackTime()
+{
+	if(m_IsRangedWeapon)
+	{
+		m_AttackTime += m_RangedAttackIncreaseIncrement;
+	}
+}
+
+//!Returns whether or not the weapon is ranged
+//Out- 
+//		bool - true if the weapon is ranged else false
+bool Weapon::IsRangedWeapon()
+{
+	return m_IsRangedWeapon;
+}
+
 //!Returns whether or not the weapon is active
 //Out- 
 //		bool - true if the weapon is active else false
@@ -240,35 +212,19 @@ void Weapon::Attack()
 //!Gets and returns the weapon x bound
 //Out - 
 //		int - x bound of the weapon
->>>>>>> Scott
 int Weapon::GetXBound()
 {
 	return m_XBound;
 }
 
-<<<<<<< HEAD
-=======
 //!Gets and returns the weapon y bound
 //Out - 
 //		int - y bound of the weapon
->>>>>>> Scott
 int Weapon::GetYBound()
 {
 	return m_YBound;
 }
 
-<<<<<<< HEAD
-bool Weapon::IsActive()
-{
-	return m_IsActive;
-}
-
-float Weapon::GetDamage()
-{
-	return (m_Damage * m_DamageModifier);
-}
-
-=======
 //!Gets and returns the weapon/projectile first hitbox x bound (will always be top left in direction)
 //Out - 
 //		int - x bound of the weapon/projectile hitbox
@@ -534,7 +490,6 @@ float Weapon::GetDamage()
 //Sets the damage modifier for the weapon
 //In - 
 //		float InputDamageModifier - the input damage modifier
->>>>>>> Scott
 void Weapon::SetDamageModifier(float InputDamageModifier)
 {
 	m_DamageModifier = InputDamageModifier;

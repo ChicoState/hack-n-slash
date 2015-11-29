@@ -19,10 +19,13 @@
 //		int AnimFPS - the fps for the animated tile
 SwordWeaponTile::SwordWeaponTile(int InputXPosition = 0, int InputYPosition = 0, int FrameWidth = 70, int FrameHeight = 70,
 		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
-		: Sprite(al_load_bitmap("Sword_Sprite.png"), InputXPosition, InputYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
+		: Sprite(NULL, InputXPosition, InputYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
 {
 	//set the alpha of the sprite
-	Sprite::Set_ImageAlpha(135, 135, 135);
+	if(m_Image != NULL)
+	{
+		Sprite::Set_ImageAlpha(135, 135, 135);
+	}
 }
 
 //!Overloaded event handler from Sprite class

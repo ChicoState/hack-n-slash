@@ -6,7 +6,7 @@
 
 //Constructor for FoodPickup class
 FoodPickup::FoodPickup(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int SpawnXPosition, int SpawnYPosition) 
-	: PickupObject(al_load_bitmap("Food_Sprite.jpg"), InputEventQueue, InputAlEvent, SpawnXPosition, SpawnYPosition, 28, 28, true, false, false, false, 1)
+	: PickupObject(al_load_bitmap("Pickup_Food.png"), InputEventQueue, InputAlEvent, SpawnXPosition, SpawnYPosition, 44, 44, true, false, false, false, 1)
 {
 	al_init_user_event_source(&m_FoodPickupEventSource);
 	al_register_event_source(m_EventQueue, &m_FoodPickupEventSource);
