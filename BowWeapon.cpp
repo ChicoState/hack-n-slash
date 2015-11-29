@@ -9,7 +9,7 @@
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) :
-				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 4, 6),
+				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 0.25f, 6),
 				m_BowWeaponTile(0, 0, 80, 76, true, true, false, true, 6)
 {
 	m_ProjectileXBound = 16;
@@ -84,14 +84,6 @@ void BowWeapon::EventHandler()
 			}
 		}
 	}
-	
-	/*
-	if(m_AlEvent.type == PROJECTILE_EVENT)
-	{
-		Projectile* yes = (Projectile*)m_AlEvent.user.data1;
-		printf("%i", yes->GetHitBoxXBoundOne());
-	}
-	*/
 }
 
 //!Handles drawing for the weapon class

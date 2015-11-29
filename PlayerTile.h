@@ -15,10 +15,11 @@ public:
 	PlayerTile(int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //!Constructor for the playertile class
 	int Event_Handler(); //!Overloaded event handler from Sprite class
-	void Draw(int InputPlayerXPosition, int InputPlayerYPosition); //!Overloaded draw function from Sprite class
+	void Draw(int InputPlayerXPosition, int InputPlayerYPosition, bool SwordActive, bool BowActive); //!Overloaded draw function from Sprite class
 
 private:
-
+	Sprite m_SwordSprite; //sprite for the sword weapon and attack
+	Sprite m_BowSprite; //the sprite for the bow weapon and attack
 };
 
 #endif

@@ -9,7 +9,7 @@
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Player::Player(ALLEGRO_EVENT_QUEUE* InputEventQueue)
 	: m_EventQueue(InputEventQueue),
-		m_PlayerTile(0, 0, 48, 64, true, true, false, true, 6)
+		m_PlayerTile(0, 0, 88, 88, true, true, false, true, 6)
 {
 	//register the event sources to the event queue
 	al_register_event_source(m_EventQueue, al_get_keyboard_event_source());
@@ -31,8 +31,9 @@ Player::Player(ALLEGRO_EVENT_QUEUE* InputEventQueue)
 	m_PowerupTimerLength = 2400;
 
 	ClassTag = "Player";
-	m_XBound = 48;
-	m_YBound = 64;
+	m_XBound = 88;
+	m_YBound = 88;
+	m_SpriteBoundOffset = 22;
 	m_XPosition = 0;
 	m_YPosition = 0;
 	m_CurrentDirection = Direction(North);
@@ -110,7 +111,7 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 
 	if(m_AlEvent.type == FOODPICKUP_EVENT)
 	{
-		m_StrengthPowerUp = true;
+		HealPlayer();
 	}
 
 	if(m_AlEvent.type == SPEEDPICKUP_EVENT)
@@ -160,8 +161,16 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 //!Draws the player character to the screen
 void Player::DrawPlayer()
 {
-	//draw the player sprite
-	m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2));
+	//draw the player sprite and change depending on weapon
+	if(m_ActiveWeapon->IsRangedWeapon())
+	{
+		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), false, m_ActiveWeapon->IsActive());
+	}
+
+	else
+	{
+		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), m_ActiveWeapon->IsActive(), false);
+	}
 
 	//check weapon
 	if(m_CurrentDirection == Direction(North))
@@ -247,6 +256,7 @@ void Player::DrawPlayer()
 		al_draw_filled_ellipse(m_XPosition, m_YPosition + 5, m_XPosition, m_YPosition - 5, al_map_rgba(50, 50, 0, 30));
 	}
 
+
 	/*
 	//draw the bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
@@ -258,13 +268,14 @@ void Player::DrawPlayer()
 	al_draw_pixel(GetSouthEastXBoundPoint(), GetSouthEastYBoundPoint(), al_map_rgb(255, 255, 255));
 	al_draw_pixel(GetSouthWestXBoundPoint(), GetSouthWestYBoundPoint(), al_map_rgb(0, 0, 255));
 	al_draw_pixel(GetNorthWestXBoundPoint(), GetNorthWestYBoundPoint(), al_map_rgb(0, 255, 0));
-
-	//draw player hit box
-	al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 3);
 	*/
 
+	//draw player hit box
+	//al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 1);
+	
+
 	//draw the weapon hit box
-	al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
+	//al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
 }
 
 //!Handles movement for the player character each update
@@ -319,7 +330,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			{
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(West);
-				m_PlayerTile.Set_CurRow(1, false);
+				m_PlayerTile.Set_CurRow(3, false);
 				MoveLeft();
 			}
 		}
@@ -341,7 +352,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			{
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(North);
-				m_PlayerTile.Set_CurRow(3, false);
+				m_PlayerTile.Set_CurRow(1, false);
 				MoveUp();
 			}
 		}
@@ -357,11 +368,16 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			}
 		}
 
-		if(!m_KeyboardMoving)
+		else
+		{
+			m_KeyboardMoving = false;
+		}
+
+		if(!m_KeyboardMoving && !m_ActiveWeapon->IsActive())
 		{
 			if(m_CurrentDirection == Direction(North))
 			{
-				m_PlayerTile.Set_CurRow(3, true);
+				m_PlayerTile.Set_CurRow(1, true);
 			}
 
 			else if(m_CurrentDirection == Direction(South))
@@ -376,7 +392,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 
 			else if(m_CurrentDirection == Direction(West))
 			{
-				m_PlayerTile.Set_CurRow(1, true);
+				m_PlayerTile.Set_CurRow(3, true);
 			}
 		}
 
@@ -491,6 +507,13 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		m_AlEvent.user.data1 =  (intptr_t)m_XPosition;
 		m_AlEvent.user.data2 =  (intptr_t)m_YPosition;
 		al_emit_user_event(&m_PositionEventSource, &m_AlEvent, NULL);
+	}
+
+	//if the weapon is active continue updating sprite
+	else if(m_ActiveWeapon->IsActive())
+	{
+		//update sprite
+		m_PlayerTile.Event_Handler();
 	}
 }
 
@@ -727,18 +750,6 @@ void Player::MoveRight()
 	m_XPosition += m_MovementSpeed;
 }
 
-//Tells the player that they are not colliding with something in their current moving direction
-void Player::NoMovementCollidingBoundOne()
-{
-	m_IsCollidingBoundOne = false;
-}
-
-//Tells the player that they are not colliding with something in their current moving direction
-void Player::NoMovementCollidingBoundTwo()
-{
-	m_IsCollidingBoundTwo = false;
-}
-
 //Tells the player that their bound one has collided with something in their current moving direction
 void Player::MovementCollidingBoundOne()
 {
@@ -762,14 +773,20 @@ void Player::ScaleGameUp(int InputScaleLevel)
 //Give sthe player experience depending on the current scale of the game
 void Player::GiveExperience()
 {
+	//give experience to the player scaled to the current game scale
 	m_Experience += (m_ExperienceMultiplier * m_CurrentGameScale);
 
+	//calculate the current levels max experience
+	//if the current experience is above the max experience level up the player
 	if(m_Experience >= ((m_Level * m_ExperienceMultiplier) * 4))
 	{
+		//carry over any extra experience
 		m_Experience = m_Experience - (m_Level * m_ExperienceMultiplier);
+		//level up player
 		AddPlayerLevel();
 	}
 
+	//draw the level up pop up
 	m_DrawExperienceUpTimer = 0;
 	m_DrawExperienceUp = true;
 }
@@ -777,10 +794,13 @@ void Player::GiveExperience()
 //Adds a player level to the player
 void Player::AddPlayerLevel()
 {
+	//increment all needed game design variables
 	m_Level++;
 	m_MaxHealth += m_MaxHealthIncrement;
 	m_CurrentHealth = m_MaxHealth;
+	m_Inventory.IncreaseRangedWeaponsAttackTime();
 
+	//turn on draw level up
 	m_DrawLevelUpTimer = 0;
 	m_DrawLevelUp = true;
 }
@@ -790,8 +810,10 @@ void Player::AddPlayerLevel()
 //		int InputDamage - the input damage to deal to the player
 void Player::DealDamage(int InputDamage)
 {
+	//subject health from input damage
 	m_CurrentHealth -= InputDamage;
 
+	//if health goes below 0 the player is dead
 	if(m_CurrentHealth < 0)
 	{
 		m_CurrentHealth = 0;
@@ -802,8 +824,10 @@ void Player::DealDamage(int InputDamage)
 //Heals player depending on current scale
 void Player::HealPlayer()
 {
-	m_CurrentHealth += 10;
+	//heal player acccording to scale of game
+	m_CurrentHealth += (5 * m_CurrentGameScale);
 
+	//if healed health is above max health make it max health
 	if(m_CurrentHealth > m_MaxHealth)
 	{
 		m_CurrentHealth = m_MaxHealth;
@@ -813,6 +837,7 @@ void Player::HealPlayer()
 //Resets the player for a fresh game
 void Player::ResetPlayer()
 {
+	//reset all member variables
 	m_IsDead = false;
 	m_CurrentGameScale = 1;
 	m_DrawExperienceUpTimer = 0;
@@ -822,6 +847,7 @@ void Player::ResetPlayer()
 	m_StrengthPowerUp = false;
 	m_StrengthPowerUpTimer = 0;
 
+	//reset game design aspects
 	m_Level = 1;
 	m_Experience = 0;
 	m_MaxHealth = m_BaseMaxHealth;
@@ -1052,22 +1078,22 @@ int Player::GetCollisionXBoundOne()
 
 	if(m_CurrentDirection == Direction(North))
 	{
-		return GetNorthEastXBoundPoint();
+		return GetNorthEastXBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(South))
 	{
-		return GetSouthEastXBoundPoint();
+		return GetSouthEastXBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(East))
 	{
-		return GetNorthEastXBoundPoint();
+		return GetNorthEastXBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(West))
 	{
-		return GetNorthWestXBoundPoint();
+		return GetNorthWestXBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else
@@ -1085,22 +1111,22 @@ int Player::GetCollisionYBoundOne()
 
 	if(m_CurrentDirection == Direction(North))
 	{
-		return GetNorthEastYBoundPoint();
+		return GetNorthEastYBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(South))
 	{
-		return GetSouthEastYBoundPoint();
+		return GetSouthEastYBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(East))
 	{
-		return GetNorthEastYBoundPoint();
+		return GetNorthEastYBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(West))
 	{
-		return GetNorthWestYBoundPoint();
+		return GetNorthWestYBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else
@@ -1118,22 +1144,22 @@ int Player::GetCollisionXBoundTwo()
 
 	if(m_CurrentDirection == Direction(North))
 	{
-		return GetNorthWestXBoundPoint();
+		return GetNorthWestXBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(South))
 	{
-		return GetSouthWestXBoundPoint();
+		return GetSouthWestXBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(East))
 	{
-		return GetSouthEastXBoundPoint();
+		return GetSouthEastXBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(West))
 	{
-		return GetSouthWestXBoundPoint();
+		return GetSouthWestXBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else
@@ -1151,22 +1177,22 @@ int Player::GetCollisionYBoundTwo()
 
 	if(m_CurrentDirection == Direction(North))
 	{
-		return GetNorthWestYBoundPoint();
+		return GetNorthWestYBoundPoint() + m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(South))
 	{
-		return GetSouthWestYBoundPoint();
+		return GetSouthWestYBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(East))
 	{
-		return GetSouthEastYBoundPoint();
+		return GetSouthEastYBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else if(m_CurrentDirection == Direction(West))
 	{
-		return GetSouthWestYBoundPoint();
+		return GetSouthWestYBoundPoint() - m_SpriteBoundOffset;
 	}
 
 	else

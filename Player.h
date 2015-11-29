@@ -34,8 +34,6 @@ public:
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles all the functions for the player that need to be called every update
 	void ScaleGameUp(int InputScaleLevel); //Scales the game up to the input level
 	void DrawPlayer(); //Draws the player character to the screen
-	void NoMovementCollidingBoundOne(); //Tells the player that they are not colliding with something in their current moving direction
-	void NoMovementCollidingBoundTwo(); //Tells the player that they are not colliding with something in their current moving direction
 	void MovementCollidingBoundOne(); //Tells the player that their bound one has collided with something in their current moving direction
 	void MovementCollidingBoundTwo(); //Tells the player that their bound two has collided with something in their current moving direction
 	void GiveExperience(); //Give sthe player experience depending on the current scale of the game
@@ -122,6 +120,7 @@ private:
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
 	int m_YBound; //the y bound for the player
+	int m_SpriteBoundOffset; //the offset of the sprite from the full sprite image tile
 	int m_XPosition; //the current x position of the player
 	int m_YPosition; //the current y position of the player
 	float m_PreviousXPosition; //the previous x position of the player

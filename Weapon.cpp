@@ -25,6 +25,8 @@
 //		int AnimFPS - the fps for the animated tile
 Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
 {
+	m_RangedAttackIncreaseIncrement = 0.5f;
+
 	//initialize member variables
 	m_EventQueue = InputEventQueue;
 	m_AlEvent = InputAlEvent;
@@ -132,6 +134,23 @@ void Weapon::ResetWeapon()
 {
 	m_IsActive = false;
 	m_CurrentAttackCount = 0;
+}
+
+//increases the attack time for the weapon pertaining to projectile time
+void Weapon::IncreaseRangedAttackTime()
+{
+	if(m_IsRangedWeapon)
+	{
+		m_AttackTime += m_RangedAttackIncreaseIncrement;
+	}
+}
+
+//!Returns whether or not the weapon is ranged
+//Out- 
+//		bool - true if the weapon is ranged else false
+bool Weapon::IsRangedWeapon()
+{
+	return m_IsRangedWeapon;
 }
 
 //!Returns whether or not the weapon is active

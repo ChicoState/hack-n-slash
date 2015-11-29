@@ -94,3 +94,18 @@ Weapon* Inventory::GetNextCycledWeapon()
 		return NULL;
 	}
 }
+
+//increases the attack time for the ranged weapons pertaining to projectile time
+void Inventory::IncreaseRangedWeaponsAttackTime()
+{
+	for(int count = 0; count < m_WeaponInventory.size(); count++)
+	{
+		if(m_WeaponInventory[count] != NULL)
+		{
+			if(m_WeaponInventory[count]->IsRangedWeapon())
+			{
+				m_WeaponInventory[count]->IncreaseRangedAttackTime();
+			}
+		}
+	}
+}
