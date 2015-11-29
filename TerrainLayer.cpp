@@ -6,24 +6,52 @@ void TerrainLayer::Draw()
 	
 	for (int i = 0; i < m_AnimatedTiles.size(); i++)
 	{
-		m_AnimatedTiles[i].Draw();
+		m_AnimatedTiles[i]->Draw();
 	}
 }
 
-void TerrainLayer::CreateBitmap(Display &MainDisplay)
+void TerrainLayer::Event_Handler(ALLEGRO_EVENT &EV)
 {
-	m_LayerImage = al_create_bitmap(m_LayerWidth, m_LayerHeight);
+	for (int i = 0; i < m_AnimatedTiles.size(); i++)
+	{
+		m_AnimatedTiles[i]->Event_Handler(EV);
+	}
+	for (int i = 0; i < m_TriggerTiles.size(); i++)
+	{
+		m_TriggerTiles[i]->Event_Handler(EV);
+	}
+}
 
+void TerrainLayer::CreateBitmap(Display *MainDisplay)
+{
+	if (m_LayerImage == NULL)
+	{
+		m_MainDisplay = MainDisplay;
+		m_LayerImage = al_create_bitmap(m_LayerWidth, m_LayerHeight);
+	}
+
+	m_AnimatedTiles.clear();
+	m_TriggerTiles.clear();
 	
 	al_set_target_bitmap(m_LayerImage);
-
+	
+	al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+	
 	for (int x = 0; x < m_Layer.size(); x++)
 	{
 		for (int y = 0; y < m_Layer[0].size(); y++)
 		{
+			if (m_Layer[x][y].Get_Retired())
+				continue;
+
 			if (m_Layer[x][y].Get_IsAnimated())
 			{
-				m_AnimatedTiles.push_back(m_Layer[x][y]);
+				m_AnimatedTiles.push_back(&m_Layer[x][y]);
+			}
+			else if (m_Layer[x][y].Get_TriggerTile())
+			{
+				m_TriggerTiles.push_back(&m_Layer[x][y]);
+				m_Layer[x][y].Draw();
 			}
 			else
 			{
@@ -32,6 +60,6 @@ void TerrainLayer::CreateBitmap(Display &MainDisplay)
 		}
 	}
 
-	MainDisplay.SetDisplayAsTarget();
+	m_MainDisplay->SetDisplayAsTarget();
 	
 }

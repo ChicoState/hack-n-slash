@@ -8,6 +8,10 @@
 
 //!Constructor for the swordweapontile class
 //In - 
+<<<<<<< HEAD
+=======
+//		ALLEGRO_BITMAP *SpriteImage - the sprite image of the player tile
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 //		int InputXPosition - the starting x position of the player
 //		int InputXPosition - the starting y position of the player
 //		int FrameWidth - the width of one sprite frame
@@ -17,6 +21,7 @@
 //		bool Continuous - true if the tile is continues else false
 //		bool Looped - true if the tile should loop else false
 //		int AnimFPS - the fps for the animated tile
+<<<<<<< HEAD
 SwordWeaponTile::SwordWeaponTile(int InputXPosition = 0, int InputYPosition = 0, int FrameWidth = 70, int FrameHeight = 70,
 		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
 		: Sprite(NULL, InputXPosition, InputYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
@@ -26,6 +31,13 @@ SwordWeaponTile::SwordWeaponTile(int InputXPosition = 0, int InputYPosition = 0,
 	{
 		Sprite::Set_ImageAlpha(135, 135, 135);
 	}
+=======
+SwordWeaponTile::SwordWeaponTile(ALLEGRO_BITMAP *SpriteImage, int InputXPosition = 0, int InputYPosition = 0, int FrameWidth = 70, int FrameHeight = 70,
+		bool Collidable = true, bool Animated = true, bool Continuous = false, bool Looped = true, int AnimFPS =  6)
+		: Sprite(SpriteImage, InputXPosition, InputYPosition, FrameWidth, FrameHeight, Collidable, Animated, Continuous, Looped, AnimFPS)
+{
+	
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 }
 
 //!Overloaded event handler from Sprite class

@@ -4,6 +4,14 @@
 //Reason for update:N/A
 
 #include "Utility.h"
+int Random(int RandomAmount1, int RandomAmount2)
+{
+
+	int Number = rand() % (RandomAmount2 - RandomAmount1) + RandomAmount1;
+	//int Number = rand() % RandomAmount2 + RandomAmount1;
+
+	return Number;
+}
 
 void Utility::Set_GameOver(bool GameOver)
 {

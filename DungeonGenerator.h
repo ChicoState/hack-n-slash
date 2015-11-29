@@ -20,6 +20,7 @@
 #include "TerrainLayer.h"
 #include "TerrainTile.h"
 #include "TerrainMap.h"
+#include "Player.h"
 
 
 //Definition of a simple rectangle class. 
@@ -57,8 +58,6 @@ class DungeonGenerator
 private:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //Allegro Event Queue
 
-	std::vector<TerrainTile> m_TileTypes; //Templates for all of the tiles in my dungeon (i.e walls, floors, etc..)
-
 	TerrainMap *m_Map; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
 
 	std::vector<std::vector<TILE>> m_Dungeon; //This is another 2D Array containing a simple version of all the Tile types the dungeon is made (i.e. Wall, Floor, Door, etc...)
@@ -68,17 +67,36 @@ private:
 	std::vector<Vec2i> m_Cardinal; //Utility for directions
 
 	Vec2f m_StartPosition; //The players start position in the dungeon
+	Vec2f m_BossPortal; //spawn point for the boss portal
 
+	int m_Level; //The level the player is on
+	
+	
+	int m_CurrentRegion; 
+	int m_NumRoomTries; //The number of times a room will be created and tried to be randomly placed inside the dungeon.
+	int m_ExtraConnectorChance; //An extra chance for doors to be created
+	int m_RoomExtraSize; //An additional size to be applied to rooms
+	int m_WindingPercent; //A percentage for how windy the maze sections should be
+
+	const int cm_TileSize = 128; //The size, in pixels, of each tile in the dungeon
 	const int cm_DungeonWidth = 51; //The width of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 	const int cm_DungeonHeight = 31; //The height of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 
+	Player *m_MainPlayer;
+
+	ALLEGRO_BITMAP *m_DungeonTiles;
+
 public:
-	DungeonGenerator(ALLEGRO_EVENT_QUEUE *EventQueue) : m_EventQueue(EventQueue)
+	DungeonGenerator(ALLEGRO_EVENT_QUEUE *EventQueue, Player *MainPlayer) : m_EventQueue(EventQueue), m_MainPlayer(MainPlayer), 
+		m_DungeonTiles(al_load_bitmap("DungeonTiles.png"))
 	{
 		m_Cardinal.push_back(Vec2i(0, 1));
 		m_Cardinal.push_back(Vec2i(1, 0));
 		m_Cardinal.push_back(Vec2i(0, -1));
 		m_Cardinal.push_back(Vec2i(-1, 0));
+
+		m_Level = 1;
+		m_CurrentRegion = -1;
 	}
 	~DungeonGenerator()
 	{
@@ -95,11 +113,15 @@ public:
 
 	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
-	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * 128, m_StartPosition.y() * 128); }
+	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * cm_TileSize, m_StartPosition.y() * cm_TileSize); }
+
+	int Get_DungeonLevel() { return m_Level; }
+	void Set_DungeonLevel(int Level) { m_Level = Level; }
 
 	void GenerateDungeon(Display&);
 
-	void Draw(); //This draw function will be changed quite a bit later once all of the Base classes needed have been created and once I get some actual graphics to use
+	void Event_Handler(ALLEGRO_EVENT &EV);
+	void Draw();
 
 private:
 	
@@ -110,17 +132,24 @@ private:
 	bool CanCarve(Vec2i, Vec2i);
 	void connectRegions();
 	void AddJunction(Vec2i);
-	void StreamLineCorridors();
 	void RemoveDeadEnds();
-	int BuildLineSegment(Vec2i, std::vector<Vec2i>&, std::vector<Vec2i>&, int, bool);
+	void GenerateDungeonVars();
 
-	void MultiplyDungeon(int);
 	bool EraserFunc(std::vector<int>&, std::map<std::vector<int>, std::unordered_set<int>>&, std::map<int, int>&);
 
 	void SetStartPosition();
+	void SetBossPortalSpawn();
 	void InitMap(Display&);
+	void DecorateMap(Display&);
 
+	TerrainTile MakeWall(Vec2i);
+	TerrainTile MakeDoor(Vec2i);
+	TerrainTile MakeFloor(Vec2i);
+	
 	void PrintCurrentMap(); //Used for printing a command console version of the dungeon. Used for debugging.
 };
+
+//used for generating a random number between two values. Should probably be moved to a different file but again, I'm lazy :P.
+//int Random(int, int);
 
 #endif

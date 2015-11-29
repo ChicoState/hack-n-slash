@@ -61,7 +61,7 @@ public:
 	{
 		if (m_Image)
 		{
-			al_destroy_bitmap(m_Image);
+			//al_destroy_bitmap(m_Image);
 		}
 	}
 
@@ -71,6 +71,7 @@ public:
 	bool Get_Collidable() { return m_Collidable; }
 
 	void Set_CurRow(int Row, bool ResetCurColumn = true);
+	void Set_ImageAlpha(int, int, int);
 
 	virtual void Draw();
 

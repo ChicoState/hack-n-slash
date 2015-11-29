@@ -13,8 +13,12 @@
 //		int StartingYPosition - the starting y positon of the projectile
 //		int XDirection - the direction the projectile will travel on the x axis
 //		int YDirection - the direction the projectile will travel on the y axis
+<<<<<<< HEAD
 Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int StartingXPosition, int StartingYPosition, int XDirection, int YDirection) 
 		:	m_ProjectileSprite(StartingXPosition, StartingYPosition, 44, 44, true, false, false, false, 6)
+=======
+Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int StartingXPosition, int StartingYPosition, int XDirection, int YDirection)
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 {
 	m_XBound = XBound;
 	m_YBound = YBound;
@@ -31,7 +35,57 @@ Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int Starting
 //!Draws the projectile
 void Projectile::Draw()
 {
+<<<<<<< HEAD
 	m_ProjectileSprite.Draw(m_CurrentXPosition, m_CurrentYPosition, m_CurrentXDirection, m_CurrentYDirection);
+=======
+	//if not at reset (standby) locatioon draw projectile
+	//if(m_CurrentXPosition != m_RestingXPosition && m_CurrentYPosition != m_RestingYPosition)
+	//{
+		//draw sprite up
+		if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
+		{
+			//Set_CurRow(3, false);
+			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
+
+			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
+		}
+
+		//draw sprite down
+		else if(m_CurrentXDirection == 0 && m_CurrentYDirection == 1)
+		{
+			//Set_CurRow(0, false);
+			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
+
+			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
+		}
+
+		//draw sprite left
+		else if(m_CurrentXDirection == -1 && m_CurrentYDirection == 0)
+		{
+			//Set_CurRow(1, false);
+			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
+
+			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
+		}
+
+		//draw sprite right
+		else if(m_CurrentXDirection == 1 && m_CurrentYDirection == 0)
+		{
+			//Set_CurRow(2, false);
+			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
+
+			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
+		}
+
+		//else draw a default direction
+		else
+		{
+			//Set_CurRow(1, false);
+			//al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, (m_CurrentXPosition - m_FrameWidth / 2), (m_CurrentYPosition - m_FrameHeight / 2), 0);
+			al_draw_rectangle(m_CurrentXPosition - 6, m_CurrentYPosition - 8, m_CurrentXPosition + 6, m_CurrentYPosition + 8, al_map_rgb(255, 0, 2550), 5);
+		}
+	//}
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 }
 
 //Re-sends the projectile in the attacking direction

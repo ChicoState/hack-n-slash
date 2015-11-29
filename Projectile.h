@@ -5,7 +5,11 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 
+<<<<<<< HEAD
 #include "ProjectileTile.h"
+=======
+#include <iostream>
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
@@ -26,9 +30,12 @@ public:
 	int GetHitBoxYBoundTwo(); //!Gets and returns the y bound two of the projectile
 
 private:
+<<<<<<< HEAD
 	
 	ProjectileTile m_ProjectileSprite; //sprite for the projectile
 
+=======
+>>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	int m_XBound; //x bound of the projectile
 	int m_YBound; //y bound of the projectile
 	int m_ProjectileSpeed; //the projectile speed
