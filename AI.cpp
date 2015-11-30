@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/6/2015
+// Date: 11/29/2015
 //
 #include "AI.h"
 
@@ -32,6 +32,33 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 			return true;
 	}
 	return false;
+}
+//
+// AI Constructor
+//
+AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK)
+	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2),
+	tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(N), ai_dungeon(NULL),
+	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
+{
+	if (type == BOSS_MELEE || type == BOSS_RANGER)
+	{
+		al_init_user_event_source(&ai_boss_event_killed);
+		al_register_event_source(ai_ev_queue, &ai_boss_event_killed);
+	}
+	al_init_user_event_source(&ai_event_killed);
+	al_register_event_source(ai_ev_queue, &ai_event_killed);
+
+	if (type == RANGER || type == BOSS_RANGER)
+	{
+		int m_ProjectileXBound = 16;
+		int m_ProjectileYBound = 16;
+		int m_ProjectileSpeed = 12;
+		ai_projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, 0, 0, 0, -1);
+		ai_projectile->ResetProjectile();
+	}
+	else
+		ai_projectile = NULL;
 }
 //
 // Checks to see if any of the AI's x bound points are within the player's
@@ -82,6 +109,38 @@ bool AI::InBoundY(float v1, float v2)
 	return false;
 }
 //
+// Checks to see if any of the projectile's x bound points are within the player's
+// bound area. Returns true if it is, false otherwise.
+//
+bool AI::ProjectileInBoundX(float v1, float v2)
+{
+	int proj_x = ai_projectile->GetHitBoxXBoundOne();
+	if (proj_x >= v1 && proj_x <= v2)
+		return true;
+
+	proj_x = ai_projectile->GetHitBoxXBoundTwo();
+	if (proj_x >= v1 && proj_x <= v2)
+		return true;
+
+	return false;
+}
+//
+// Checks to see if any of the projectile's y bound points are within the player's
+// bound area. Returns true if it is, false otherwise.
+//
+bool AI::ProjectileInBoundY(float v1, float v2)
+{
+	int proj_y = ai_projectile->GetHitBoxYBoundOne();
+	if (proj_y >= v1 && proj_y <= v2)
+		return true;
+
+	proj_y = ai_projectile->GetHitBoxYBoundTwo();
+	if (proj_y >= v1 && proj_y <= v2)
+		return true;
+
+	return false;
+}
+//
 // Set a random spawn point in a given dungeon. Most of the code here is
 // based off of the code in DungeonGenerator::SetStartPosition that sets
 // the player's starting position in the dungeon. This function MUST be executed
@@ -99,41 +158,14 @@ void AI::SetSpawn(DungeonGenerator &dungeon)
 	std::list<Rect> m_Rooms = dungeon.Get_Rooms();
 
 	Rect TempRoom(D_WIDTH, D_HEIGHT, 1, 1);
+	Vec2f PlayerStart = dungeon.GetStartPosition() / T_SIZE;
 
-	//Find the room furthest to the left of the screen
+	// Get all rooms except the one with the player's starting position
 	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
 	{
-		if (it->Get_X1() < TempRoom.Get_X1())
-		{
-			TempRoom = *it;
-		}
-	}
-
-	//Find any other rooms that may be at that Xposition
-	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
-	{
-		if (it->Get_X1() == TempRoom.Get_X1())
-		{
-			TempRooms.push_back(*it);
-		}
-	}
-
-	//Of all those rooms find the one that is the widest
-	for (std::vector<Rect>::iterator it = TempRooms.begin(); it != TempRooms.end(); it++)
-	{
-		if (it->Get_X2() > TempRoom.Get_X2())
-		{
-			TempRoom = *it;
-		}
-	}
-
-	//Find all rooms that are within the Xposition of the widest room
-	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
-	{
-		if (it->Get_X1() < TempRoom.Get_X2())
-		{
-			TempRooms.push_back(*it);
-		}
+		if (it->ContainsPoint(PlayerStart.x(), PlayerStart.y()))
+			continue;
+		TempRooms.push_back(*it);
 	}
 
 	TempRoom = TempRooms[randomize(0, TempRooms.size())];
@@ -194,6 +226,18 @@ void AI::MoveTowardTarget(int t_x, int t_y)
 		if (ai_x > t_x)
 			ai_x = t_x;
 	}
+}
+void AI::MoveIntoRange(Player &p)
+{
+	int p_x = p.GetXPosition();
+	int p_y = p.GetYPosition();
+	int dist_x = abs(ai_x - p_x);
+	int dist_y = abs(ai_y - p_y);
+
+	if (p_y != ai_y && dist_x > T_SIZE / 4)
+		MoveTowardTarget(ai_x, p_y);
+	else
+		MoveTowardTarget(p_x, ai_y);
 }
 void AI::MoveUp()
 {
@@ -289,6 +333,32 @@ bool AI::SeePlayer(Player &p)
 				break;
 		}
 	}
+	return false;
+}
+bool AI::InRange(Player &p)
+{
+	int p_x = p.GetXPosition();
+	int p_y = p.GetYPosition();
+
+	if (p_x == ai_x)
+	{
+		// Check North
+		if (p_y < ai_y && p_y >= ai_y - (range * T_SIZE))
+			return true;
+		// Check South
+		if (p_y > ai_y && p_y <= ai_y + (range * T_SIZE))
+			return true;
+	}
+	if (p_y == ai_y)
+	{
+		// Check West
+		if (p_x < ai_x && p_x >= ai_x - (range * T_SIZE))
+			return true;
+		// Check East
+		if (p_x > ai_x && p_x <= ai_x + (range * T_SIZE))
+			return true;
+	}
+
 	return false;
 }
 //
@@ -451,18 +521,86 @@ bool AI::CollideWithPlayer(Player &p)
 	return false;
 }
 //
+// Checks to see if the AI's projectile collides with the player.
+//
+bool AI::ProjectileCollideWithPlayer(Player &p)
+{
+	if (ProjectileInBoundX(p.GetNorthWestXBoundPoint(), p.GetXPosition())
+		&& ProjectileInBoundY(p.GetNorthWestYBoundPoint(), p.GetYPosition()))
+		return true;
+	else if (ProjectileInBoundX(p.GetXPosition(), p.GetNorthEastXBoundPoint())
+		&& ProjectileInBoundY(p.GetNorthEastYBoundPoint(), p.GetYPosition()))
+		return true;
+	else if (ProjectileInBoundX(p.GetSouthWestXBoundPoint(), p.GetXPosition())
+		&& ProjectileInBoundY(p.GetYPosition(), p.GetSouthWestYBoundPoint()))
+		return true;
+	else if (ProjectileInBoundX(p.GetXPosition(), p.GetSouthEastXBoundPoint())
+		&& ProjectileInBoundY(p.GetYPosition(), p.GetSouthEastYBoundPoint()))
+		return true;
+
+	return false;
+}
+//
+// Shoots a projectile in the direction the AI is facing.
+//
+void AI::Shoot()
+{
+	if (!ai_projectile)
+		return;
+
+	proj_active = true;
+	ai_projectile->ResetProjectile();
+
+	if (ai_direction == N)
+	{
+		ai_projectile->SendProjecile(ai_x, ai_y, 0, -1);
+	}
+	else if (ai_direction == S)
+	{
+		ai_projectile->SendProjecile(ai_x, ai_y, 0, 1);
+	}
+	else if (ai_direction == E)
+	{
+		ai_projectile->SendProjecile(ai_x, ai_y, -1, 0);
+	}
+	else if (ai_direction == W)
+	{
+		ai_projectile->SendProjecile(ai_x, ai_y, 1, 0);
+	}
+	else
+	{
+		ai_projectile->SendProjecile(ai_x, ai_y, 0, -1);
+	}
+}
+//
 // Makes the AI face toward the player.
 //
 void AI::FacePlayer(Player &p)
 {
 	if (ai_y > p.GetYPosition())
+	{
 		ai_direction = N;
+		ai_tile.Set_CurRow(3, false);
+		ai_tile.Event_Handler();
+	}
 	else if (ai_y < p.GetYPosition())
+	{
 		ai_direction = S;
+		ai_tile.Set_CurRow(0, false);
+		ai_tile.Event_Handler();
+	}
 	if (ai_x > p.GetXPosition())
+	{
 		ai_direction = W;
+		ai_tile.Set_CurRow(1, false);
+		ai_tile.Event_Handler();
+	}
 	else if (ai_x < p.GetXPosition())
+	{
 		ai_direction = E;
+		ai_tile.Set_CurRow(2, false);
+		ai_tile.Event_Handler();
+	}
 }
 //
 // Checks to see if the given player bound points are within the AI's collusion bound.
@@ -490,6 +628,14 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 			if (health <= 0)
 			{
 				std::cout << "...and is now dead...\n";
+				ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
+				al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
+				if (type == BOSS_MELEE || type == BOSS_RANGER)
+				{
+					std::cout << "Boss defeated!\n";
+					ai_ev.user.type = CUSTOM_EVENT_ID(AI_BOSS_KILLED_EVENT);
+					al_emit_user_event(&ai_boss_event_killed, &ai_ev, NULL);
+				}
 				state = DEAD;
 			}
 		}
@@ -512,6 +658,10 @@ void AI::Draw()
 	// Draw the AI's sprite
 	ai_tile.Draw((ai_x - bound_x / 2), (ai_y - bound_y / 2));
 
+	// Draw the AI's projectile
+	if (ai_projectile && proj_active)
+		ai_projectile->Draw();
+
     // For debugging purposes, draw magenta circles showing the path the AI created to a target position
 	// The circles are located at the center of each tile
 	for (std::vector<PathNode*>::reverse_iterator it = path.rbegin(); it != path.rend(); it++)
@@ -520,8 +670,14 @@ void AI::Draw()
 //
 // The AI in action.
 //
-void AI::ProcessAI(Player &player)
+void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
+	ai_ev = ev;
+	if (ai_ev.type != ALLEGRO_EVENT_TIMER)
+		return;
+
+	ProcessProjectile(player);
+
 	if (state == IDLE)
 	{
 		if (SeePlayer(player))
@@ -538,17 +694,27 @@ void AI::ProcessAI(Player &player)
 			FindPath(l_x / T_SIZE, l_y / T_SIZE);
 			std::cout << "The AI lost sight of you, and is now heading towards your last known location...\n";
 		}
-		else
+		else if (type == MELEE)
 		{
 			l_x = player.GetXPosition();
 			l_y = player.GetYPosition();
 			if (CollideWithPlayer(player))
 			{
 				state = ATTACK;
-				tick_delay = TICK_DELAY_MAX;
-				std::cout << "The AI is attacking you...\n";
+				std::cout << "The Melee AI is attacking you...\n";
 			}
 			MoveTowardTarget(l_x, l_y);
+		}
+		else if (type == RANGER)
+		{
+			l_x = player.GetXPosition();
+			l_y = player.GetYPosition();
+			if (InRange(player))
+			{
+				state = ATTACK;
+				std::cout << "The Ranger AI is attacking you...\n";
+			}
+			MoveIntoRange(player);
 		}
 	}
 	else if (state == SEEK)
@@ -569,18 +735,69 @@ void AI::ProcessAI(Player &player)
 	}
 	else if (state == ATTACK)
 	{
-		if (!CollideWithPlayer(player))
-		{
-			state = CHASE;
-			std::cout << "The AI is now chasing you again...\n";
-		}
-		FacePlayer(player);
-		if (tick_delay >= TICK_DELAY_MAX)
-		{
-			DealDamageToPlayer(player, ATK);
-			std::cout << "Dealing " << ATK << " damage to player...\n";
-			tick_delay = 0;
-		}
+		if (type == MELEE)
+			MeleeAttack(player);
+		else if (type == RANGER)
+			RangerAttack(player);
+	}
+}
+//
+// Process the projectile if the AI is a ranger and the projectile is active.
+//
+void AI::ProcessProjectile(Player &p)
+{
+	if (type != RANGER || !proj_active)
+		return;
+
+	ai_projectile->UpdatePosition();
+	
+	// Stop the projectile if it hits an obstacle
+	if (ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(ai_projectile->GetHitBoxXBoundOne(), ai_projectile->GetHitBoxYBoundOne()))
+		|| ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(ai_projectile->GetHitBoxXBoundTwo(), ai_projectile->GetHitBoxYBoundTwo())))
+		proj_active = false;
+	// Deal damage and stop the projectile if it hits the player
+	else if (ProjectileCollideWithPlayer(p))
+	{
+		DealDamageToPlayer(p, ATK);
+		std::cout << "A projectile dealt " << ATK << " damage to player...\n";
+		proj_active = false;
+	}
+}
+//
+// For melee types, attack the player in close range.
+//
+void AI::MeleeAttack(Player &p)
+{
+	if (!CollideWithPlayer(p))
+	{
+		state = CHASE;
+		std::cout << "The Melee AI is now chasing you again...\n";
+	}
+	FacePlayer(p);
+	if (tick_delay >= TICK_DELAY_MAX)
+	{
+		DealDamageToPlayer(p, ATK);
+		std::cout << "Dealing " << ATK << " damage to player...\n";
+		tick_delay = 0;
+	}
+	tick_delay++;
+}
+//
+// For ranger types, shoot at the player in sight.
+//
+void AI::RangerAttack(Player &p)
+{
+	if (!InRange(p))
+	{
+		state = CHASE;
+		std::cout << "The Ranger AI is getting in range again...\n";
+	}
+	FacePlayer(p);
+	if (tick_delay < TICK_DELAY_MAX)
 		tick_delay++;
+	if (tick_delay >= TICK_DELAY_MAX)
+	{
+		Shoot();
+		tick_delay = 0;
 	}
 }
