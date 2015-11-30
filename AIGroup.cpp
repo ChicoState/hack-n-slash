@@ -2,8 +2,9 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/16/2015
+// Date: 11/29/2015
 //
+#include "AI.h"
 #include "AIGroup.h"
 
 //
@@ -32,18 +33,6 @@ bool AI_Group::Overlap(AI* ai)
 	return false;
 }
 //
-// Check to see if the given AI overlaps with the player's starting position
-//
-bool AI_Group::OverlapWithPlayerStart(AI* ai)
-{
-	Vec2f pos = ai->GetActiveDungeon()->GetStartPosition();
-
-	if (ai->GetXPosition() == pos.x() && ai->GetYPosition() == pos.y())
-		return true;
-	else
-		return false;
-}
-//
 // Set up the group with a given number of randomly generated AI.
 //
 void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
@@ -52,30 +41,69 @@ void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
 	if (!group.empty())
 		GroupClear();
 
+	dungeon = &d;
+
 	for (int i = 0; i < n; i++)
-		AddRandom(d, image);
+		AddRandom(image);
 }
 //
 // Generate a new AI with random attributes and then add it to the group.
 //
-void AI_Group::AddRandom(DungeonGenerator &d, ALLEGRO_BITMAP *image)
+void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 {
 	AI* ai;
 	std::random_device rd;
-	int id, sight, speed;
- 
+	int id, sight, speed, type, health, ATK;
+
+	type = rd() % 2;                   // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
 	id = rd() % 99999 + 1;             // Get random ID value (up to 5 digits)
 	while (IDExists(id))               // Ensure the ID is unique
 		id = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;              // Sight ranges from 3 to 5
 	speed = rd() % 3 + 2;              // Speed ranges from 2 to 4
-	ai = new AI(e_queue, image, MELEE, sight, speed);  // There's only one AI type for now
-	ai->SetSpawn(d);                   // Set a spawn point
+	health = rd() % 6 + 100;           // Health ranges from 100 to 105
+	ATK = rd() % 4 + 5;                // ATK ranges from 5 to 8
 
-	while (Overlap(ai))      // Ensure the new AI doesn't spawn on top of anyone else
-		ai->SetSpawn(d);
+	if (!type)
+		ai = new AI(e_queue, image, MELEE, sight, speed, health, ATK);
+	else
+		ai = new AI(e_queue, image, RANGER, sight, speed, health, ATK);
+
+	ai->SetSpawn(*dungeon);      // Set a spawn point
+	while (Overlap(ai))          // Ensure the new AI doesn't spawn on top of anyone else
+		ai->SetSpawn(*dungeon);
 
 	group.insert(std::pair<int, AI*>(id, ai));
+}
+//
+// Generate a boss AI for the dungeon
+//
+void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
+{
+	AI* ai;
+	std::random_device rd;
+	int sight, speed, type, health, ATK;
+	BossActive = true;
+
+	type = rd() % 2;                   // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
+	BossID = rd() % 99999 + 1;         // Get random ID value (up to 5 digits)
+	while (IDExists(BossID))           // Ensure the ID is unique
+		BossID = rd() % 99999 + 1;
+	sight = rd() % 3 + 3;              // Sight ranges from 3 to 5
+	speed = rd() % 3 + 2;              // Speed ranges from 2 to 4
+	health = rd() % 11 + 300;          // Health ranges from 300 to 310
+	ATK = rd() % 4 + 10;               // ATK ranges from 10 to 13
+
+	if (!type)
+		ai = new AI(e_queue, image, BOSS_MELEE, sight, speed, health, ATK);
+	else
+		ai = new AI(e_queue, image, BOSS_RANGER, sight, speed, health, ATK);
+
+	ai->SetSpawn(*dungeon);
+	ai->SetXPosition(x);
+	ai->SetYPosition(y);
+
+	group.insert(std::pair<int, AI*>(BossID, ai));
 }
 //
 // Deallocate all AI and clear the container.

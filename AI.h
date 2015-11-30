@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/16/2015
+// Date: 11/29/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -14,13 +14,18 @@
 #include <map>
 #include <cstdlib>
 #include <random>
+
 #include "Player.h"
+#include "AITile.h"
 #include "Vec2.h"
 #include "DungeonGenerator.h"
-#include "PlayerTile.h"
+#include "Projectile.h"
+
+#include "SwordWeapon.h"
+#include "BowWeapon.h"
 
 enum AI_STATE{ IDLE, CHASE, SEEK, ATTACK, DEAD };
-enum AI_TYPE{ MELEE, RANGER };
+enum AI_TYPE{ MELEE, RANGER, BOSS_MELEE, BOSS_RANGER };
 enum AI_FACE{ N, S, W, E };
 
 const int T_SIZE = 128;
@@ -56,18 +61,21 @@ private:
 	AI_STATE state;                                // The AI's current behavior (IDLE, ATTACK, etc.)
 	AI_TYPE type;                                  // The type of AI (MELEE, RANGER, etc)
 	AI_FACE ai_direction;                          // The AI's current facing direction
+	bool proj_active;                              // Is the projectile active?
 	int sight;                                     // How far the AI can see (in number of tiles)
-	int health, ATK, speed;                        // The AI's attribute values
+	int health, ATK, speed, range;                 // The AI's attribute values (note: range is in number of tiles)
 	int tick_delay;                                // For timing so that the AI doesn't attack the player every tick
 	int bound_x, bound_y;                          // x and y bounds for the AI
 	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
 	float l_x, l_y;                                // The coordinates where the player was last seen
-	PlayerTile ai_tile;                            // The AI sprite, using the PlayerTile class
+	AITile ai_tile;                                // The AI sprite, using the PlayerTile class
 	DungeonGenerator *ai_dungeon;                  // Pointer to the dungeon the AI is spawned in
+	Projectile *ai_projectile;                     // The projectile the ranger AI will fire
 	std::vector<PathNode*> path;                   // The current path for the AI to follow
 	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
 	ALLEGRO_EVENT ai_ev;
 	ALLEGRO_EVENT_SOURCE ai_event_killed;
+	ALLEGRO_EVENT_SOURCE ai_boss_event_killed;
 	ALLEGRO_EVENT_QUEUE *ai_ev_queue;
 
 	//
@@ -75,8 +83,12 @@ private:
 	//
 	bool InBoundX(float, float);                   // Check to see if an x bound point is within 2 given values
 	bool InBoundY(float, float);                   // Check to see if a y bound point is within 2 given values
+	bool ProjectileInBoundX(float, float);         // Check to see if the projectile's x bound is within 2 given values
+	bool ProjectileInBoundY(float, float);         // Check to see if the projectile's y bound is within 2 given values
+	bool InRange(Player &);
 	void MoveAlongPath();                          // Move along a path, if it exists, created in AI::FindPath
 	void MoveTowardTarget(int, int);               // Move toward the specifed coordinates
+	void MoveIntoRange(Player &);                  // Get into range
 	void MoveUp();                                 // Move up
 	void MoveDown();                               // Move down
 	void MoveLeft();                               // Move left
@@ -84,8 +96,14 @@ private:
 	void CleanPath();                              // Deallocates all PathNodes created in AI::FindPath (Takes out the garbage)
 	void FacePlayer(Player &p);                    // Makes the AI face towards the player
 	bool CollideWithPlayer(Player &p);             // Checks to see if it the AI collides with the player
-	void DealDamageToPlayer(Player &p, int v) { p.DealDamage(v); }
+	bool ProjectileCollideWithPlayer(Player &);    // Checks to see if the projectile collides with the player
+	void Shoot();                                  // Makes the AI shoot a projectile
+	void DealDamageToPlayer(Player &p, int v) { p.DealDamage(v); }  // Deal melee damage to player
 	void TakeDamage(int v) { health -= v; }
+	// Helper functions for ProcessAI
+	void ProcessProjectile(Player &);
+	void MeleeAttack(Player &);
+	void RangerAttack(Player &);
 	// These one line functions return the bound points of the AI at particular locations
 	int GetXNorthBoundPoint() { return ai_x; }
 	int GetYNorthBoundPoint() { return (ai_y - (bound_y / 2)); }
@@ -107,8 +125,8 @@ public:
 	//
 	// Public functions
 	//
-	AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp);
-	~AI() { CleanPath(); }                         // Gotta prevent memory leaks :P
+	AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK);
+	~AI() { CleanPath(); delete ai_projectile; }   // Gotta prevent memory leaks :P
 	bool CollusionBlock(int, int);                 // Detect collusion between player's bounds and the AI's bounds
 	void WeaponHit(int, int, int);                 // Detect collusion between the weapon and the AI
 	void Draw();                                   // Draw the AI to the screen
@@ -124,5 +142,4 @@ public:
 	void SetYPosition(float y) { ai_y = y; }
 	DungeonGenerator* GetActiveDungeon() { return ai_dungeon; }
 };
-
 #endif
