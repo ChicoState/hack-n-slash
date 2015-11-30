@@ -70,8 +70,15 @@ int TerrainTile::Event_Handler(ALLEGRO_EVENT &EV)
 			//emit the event source that the projectile has moved
 			EV.user.type = CUSTOM_EVENT_ID(TERRAINTILE_TRIGGER_EVENT);
 			EV.user.data1 = (intptr_t)m_TriggerType;
+			EV.user.data2 = (intptr_t)m_PosX;
+			EV.user.data3 = (intptr_t)m_PosY;
 			al_emit_user_event(&m_TerrainTriggerEvent, &EV, NULL);
 		}
+	}
+	else if (m_TriggerType == TR_BOSS && EV.type == BOSS_KILLED_EVENT)
+	{
+		m_TriggerType == TR_RETURN;
+		m_StartFrameX += 1;
 	}
 }
 

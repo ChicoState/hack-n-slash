@@ -67,3 +67,13 @@ void TerrainObject_Manager::SpawnObjectRandom(Vec2i Pos, int ChanceToSpawn)
 		SpawnObject(Vec2i(Pos.x(), Pos.y()), STR);
 	}
 }
+
+void TerrainObject_Manager::ResetObjectManager()
+{
+	for (int i = 0; i < m_Objects.size(); i++)
+	{
+		delete m_Objects[i];
+	}
+
+	m_Objects.clear();
+}

@@ -41,6 +41,9 @@ public:
 	//Given a Position (in pixels), and a type. spawns a pickup object of that type
 	void SpawnObject(Vec2i, PICKUP_TYPES);
 	
+	//Useful function for reseting the Object Manager
+	void ResetObjectManager();
+
 	void Draw();
 	int Event_Handler(ALLEGRO_EVENT&);
 

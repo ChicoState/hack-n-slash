@@ -64,7 +64,7 @@ void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 	SetStartPosition();
 	SetBossPortalSpawn();
 
-	InitMap(MainDisplay);	
+	InitMap(MainDisplay);
 }
 
 void DungeonGenerator::PrintCurrentMap()
@@ -610,6 +610,22 @@ void DungeonGenerator::Draw()
 void DungeonGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 {
 	m_Map->Event_Handler(EV);
+
+	if (EV.type == TERRAINTILE_TRIGGER_EVENT)
+	{
+		if ((TRIGGER)EV.user.data1 == TR_BOSS)
+		{
+			int X = EV.user.data2;
+			int Y = EV.user.data3;
+
+			EV.user.type = CUSTOM_EVENT_ID(SPAWN_BOSS_EVENT);
+			EV.user.data1 = (intptr_t)X;
+			EV.user.data2 = (intptr_t)Y;
+			al_emit_user_event(&m_SpawnBossEvent, &EV, NULL);
+
+			std::cout << "PosX: " << X << " PosY: " << Y;
+		}
+	}
 }
 
 void DungeonGenerator::SetStartPosition()

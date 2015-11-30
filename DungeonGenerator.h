@@ -57,6 +57,7 @@ class DungeonGenerator
 {
 private:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //Allegro Event Queue
+	ALLEGRO_EVENT_SOURCE m_SpawnBossEvent;
 
 	TerrainMap *m_Map; //The "Graphical" 2D Array containing all the Tiles the dungeon is made of
 
@@ -97,6 +98,10 @@ public:
 
 		m_Level = 1;
 		m_CurrentRegion = -1;
+
+		al_init_user_event_source(&m_SpawnBossEvent);
+		al_register_event_source(m_EventQueue, &m_SpawnBossEvent);
+
 	}
 	~DungeonGenerator()
 	{

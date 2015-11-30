@@ -19,6 +19,11 @@ void TerrainLayer::Event_Handler(ALLEGRO_EVENT &EV)
 	for (int i = 0; i < m_TriggerTiles.size(); i++)
 	{
 		m_TriggerTiles[i]->Event_Handler(EV);
+
+		if (m_TriggerTiles[i]->Get_TriggerType() == TR_RETURN && EV.type == BOSS_KILLED_EVENT)
+		{
+			CreateBitmap(NULL);
+		}
 	}
 }
 

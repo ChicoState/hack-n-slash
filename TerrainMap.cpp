@@ -78,7 +78,7 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 	{
 		if ((TRIGGER)EV.user.data1 == TR_BOSS)
 		{
-			std::cout << "BOSS!!!" << std::endl;
+			
 		}
 		else if ((TRIGGER)EV.user.data1 == TR_LOOT)
 		{
@@ -91,8 +91,7 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 					m_InfoLayer[Pos.x()][Pos.y()] = NULL;
 					m_Map[i]->CreateBitmap(NULL);
 					CreatePickupObjects(Pos);
-				}
-					
+				}					
 			}
 
 		}
