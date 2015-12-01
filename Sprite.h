@@ -69,6 +69,12 @@ public:
 	int Get_TileWidth(){ return m_FrameWidth; }
 	int Get_TileHeight(){ return m_FrameHeight; }
 	bool Get_Collidable() { return m_Collidable; }
+	int Get_CurRow(){ return m_CurRow; }
+	int Get_CurColumn(){ return m_CurColumn; }
+	int Get_TilesWide(){ return m_MaxFramesX; }
+	int Get_TilesHigh(){ return m_MaxFramesY; }
+
+	ALLEGRO_BITMAP *Get_Image(){ return m_Image; }
 
 	void Set_CurRow(int Row, bool ResetCurColumn = true);
 	void Set_ImageAlpha(int, int, int);

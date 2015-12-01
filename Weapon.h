@@ -21,13 +21,9 @@ public:
 	virtual void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon sprite to the screen
 	virtual void Attack(); //!Attacks with the weapon to make it active
 	void ResetWeapon(); //!Resets the weapon to a non active state
-<<<<<<< HEAD
 	void IncreaseRangedAttackTime(); //increases the attack time for the weapon pertaining to projectile time
 
 	bool IsRangedWeapon(); //!Returns whether or not the weapon is ranged
-=======
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	bool IsActive(); //!Returns whether or not the weapon is active
 	int GetXBound(); //!Gets and returns the weapon x bound
 	int GetYBound(); //!Gets and returns the weapon y bound
@@ -57,10 +53,7 @@ protected:
 	int m_YBound; //the y bound of the weapon
 	bool m_IsRangedWeapon; //true if the weapon is a ranged weapon else false
 	float m_AttackTime; //the attack time of the weapon how long it stays active in seconds
-<<<<<<< HEAD
 	float m_RangedAttackIncreaseIncrement; //the incrememnt to which to ranged attack time will increase
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	float m_Damage; //the damage a weapon does
 
 	Projectile* m_Projectile; //vector of projectiles spawned by a ranged weapon

@@ -14,8 +14,8 @@ class Display
 
 private:
 	
-	const int m_ScreenWidth = 1280;
-	const int m_ScreenHeight = 720;
+	const int m_ScreenWidth = 1920;
+	const int m_ScreenHeight = 1080;
 
 	ALLEGRO_DISPLAY		*m_Display;
 	ALLEGRO_EVENT_QUEUE *m_EventQueue;

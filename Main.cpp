@@ -38,7 +38,6 @@ int main(void)
 	const int FPS = 60;
 
 	//Allegro variables---------------------------------
-	ALLEGRO_EVENT ev;
 	ALLEGRO_EVENT_QUEUE *Event_Queue = NULL;
 	ALLEGRO_TIMER *Timer = NULL;
 	
@@ -57,10 +56,14 @@ int main(void)
 	ALLEGRO_BITMAP *PlayerImage = al_load_bitmap("Player_Sprite.png");
 	ALLEGRO_BITMAP *BowImage = al_load_bitmap("Bow_Sprite.png");
 	ALLEGRO_BITMAP *SwordImage = al_load_bitmap("Sword_Sprite.png");
+	ALLEGRO_BITMAP *StartImage = al_load_bitmap("Start_Screen.jpg");
+	ALLEGRO_BITMAP *GameOverImage = al_load_bitmap("GameOver_Screen.jpg");
+
+	bool StartScreen = true; //start screen while loop bool
 
 	Player MainPlayer(Event_Queue);
 	Camera MainCamera(Event_Queue);
-	AI_Group TestAIGroup;  // Instance of an AI_Group
+	AI_Group TestAIGroup(Event_Queue);  // Instance of an AI_Group
 
 	TerrainGenerator Terrain(1);
 	Terrain.generateTerrain();
@@ -71,8 +74,8 @@ int main(void)
 	MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 	MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 
-	TestAIGroup.RandomSetup(4, Dungeon, AIImage);  // Generates 4 AI with random attributes in the group. Their spawn points will also be set randomly.
-	TestAIGroup.GetPathToPlayer(MainPlayer);  // For testing, generate a path to the player's start position from each AI
+	TestAIGroup.RandomSetup(30, Dungeon, AIImage);  // Generates 4 AI with random attributes in the group. Their spawn points will also be set randomly.
+	//TestAIGroup.GetPathToPlayer(MainPlayer);  // For testing, generate a path to the player's start position from each AI
 
 
 	ALLEGRO_EVENT_SOURCE ProjectileEvent;
@@ -85,22 +88,58 @@ int main(void)
 	
 
 	al_start_timer(Timer);
+	
 	//Main game loop------------------------------------
 	while (!MainUtility.Get_GameOver())
 	{
+		while (StartScreen)
+		{
+			//allegro event and queue
+			ALLEGRO_EVENT ev;
+			al_wait_for_event(Event_Queue, &ev);
+
+			//if space pressed end start screen
+			if (ev.keyboard.keycode == ALLEGRO_KEY_SPACE)
+			{
+				StartScreen = false;
+			}
+
+			if (al_is_event_queue_empty(Event_Queue))
+			{
+				//draw title image
+				al_draw_bitmap(StartImage, 0, 0, NULL);
+
+				//Draw display last
+				MainDisplay.Draw();
+			}
+		}
+
+		ALLEGRO_EVENT ev;
 		al_wait_for_event(Event_Queue, &ev);
 		
 		MainPlayer.EventHandler(ev, MainCamera.GetMouseXWorldCoordinate(), MainCamera.GetMouseYWorldCoordinate());
+		TestAIGroup.EventHandler(ev);
 		TestAIGroup.ProcessAll(ev, MainPlayer);  // Process each AI in the group
 		MainCamera.EventHandler(ev, MainPlayer.GetXPosition(), MainPlayer.GetYPosition());
 		MainDisplay.Event_Handler(ev); 
 		Dungeon.Event_Handler(ev);
 		
+		//Current Dungeon complete move on to the next one
+		if (ev.type == DUNGEON_COMPLETE_EVENT)
+		{
+			Dungeon.GenerateDungeon(MainDisplay);
+			TestAIGroup.RandomSetup(30, Dungeon, AIImage);
+			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
+			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
+		}
+
 		// Collide with AI
 		if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne()))
 			MainPlayer.MovementCollidingBoundOne();
 		if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo()))
 			MainPlayer.MovementCollidingBoundTwo();
+		
 		// Hit the AI
 		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundOne(), MainPlayer.GetWeaponHitBoxYBoundOne(), MainPlayer.GetWeaponDamage());
 		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundTwo(), MainPlayer.GetWeaponHitBoxYBoundTwo(), MainPlayer.GetWeaponDamage());
@@ -111,13 +150,54 @@ int main(void)
 			MainPlayer.MovementCollidingBoundTwo();
 
 
+		if (MainPlayer.IsDead())
+		{
+			MainCamera.ResetTranslate();
+
+			bool GameOverScreen = true; //bool for game over screen sequence
+			while (GameOverScreen)
+			{
+				//allegro event and queue
+				ALLEGRO_EVENT ev;
+				al_wait_for_event(Event_Queue, &ev);
+
+				//if space pressed end start screen
+				if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+				{
+					GameOverScreen = false;
+				}
+
+				if (al_is_event_queue_empty(Event_Queue))
+				{
+					//draw title image
+					al_draw_bitmap(GameOverImage, 0, 0, NULL);
+
+					//Draw display last
+					MainDisplay.Draw();
+				}
+			}
+
+
+			MainPlayer.ResetPlayer();
+			Dungeon.Set_DungeonLevel(1);
+			Dungeon.GenerateDungeon(MainDisplay);
+			TestAIGroup.RandomSetup(30, Dungeon, AIImage);
+			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
+			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
+			
+			StartScreen = true;
+		}
+
 		//Code Dealing with drawing to the screen goes within this if statement
 		if (al_is_event_queue_empty(Event_Queue))
 		{
-			Dungeon.Draw();
+			Dungeon.Draw(1);
 			MainPlayer.DrawPlayer();
-			//Terrain.draw();
 			TestAIGroup.DrawAll();  // Draw all AI (magenta squares). Their generated paths will also be drawn (small magenta circles).
+			Dungeon.Draw(0);
+			//Terrain.draw();
+			
 			
 			//Draw display last
 			MainDisplay.Draw();

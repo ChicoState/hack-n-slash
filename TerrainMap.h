@@ -51,14 +51,15 @@ public:
 	void InitInfoLayer();
 	void AddLayer(TerrainLayer*, bool);
 	void UpdateInfoLayer(int);
-	
+
+
 	bool CheckMapCollision(Vec2f);
 
 	void Event_Handler(ALLEGRO_EVENT&);
-	void Draw();
+	void Draw(bool);
 
 private:
-
+	void ClearFog(Vec2i, int);
 	void CreatePickupObjects(Vec2i);
 
 };

@@ -25,11 +25,8 @@
 //		int AnimFPS - the fps for the animated tile
 Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
 {
-<<<<<<< HEAD
 	m_RangedAttackIncreaseIncrement = 0.5f;
 
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	//initialize member variables
 	m_EventQueue = InputEventQueue;
 	m_AlEvent = InputAlEvent;
@@ -46,7 +43,6 @@ Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent
 	m_Damage = InputDamage;
 	m_DamageModifier = 1;
 	m_Projectile = NULL;
-<<<<<<< HEAD
 }
 
 //Destructor for the weapon class
@@ -55,16 +51,6 @@ Weapon::~Weapon()
 	delete m_Projectile;
 }
 
-=======
-}
-
-//Destructor for the weapon class
-Weapon::~Weapon()
-{
-	delete m_Projectile;
-}
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 //!Handles allegro events for the weapon class
 void Weapon::EventHandler()
 {
@@ -111,18 +97,12 @@ void Weapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
-<<<<<<< HEAD
 	//keep track of last coordinates
 	m_LastDrawnXPosition = DrawXCoordinate;
 	m_LastDrawnYPosition = DrawYCoordinate;
 
 	//set draw direction
 
-=======
-	m_LastDrawnXPosition = DrawXCoordinate;
-	m_LastDrawnYPosition = DrawYCoordinate;
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(XDirection = 0 && YDirection == -1)
 	{
 		m_LastDrawnDirection = Direction(North);
@@ -147,7 +127,6 @@ void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int 
 	{
 		m_LastDrawnDirection = Direction(North);
 	}
-<<<<<<< HEAD
 }
 
 //!Resets the weapon to a non active state
@@ -182,25 +161,6 @@ bool Weapon::IsActive()
 	return m_IsActive;
 }
 
-=======
-}
-
-//!Resets the weapon to a non active state
-void Weapon::ResetWeapon()
-{
-	m_IsActive = false;
-	m_CurrentAttackCount = 0;
-}
-
-//!Returns whether or not the weapon is active
-//Out- 
-//		bool - true if the weapon is active else false
-bool Weapon::IsActive()
-{
-	return m_IsActive;
-}
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 //!Attacks with the weapon to make it active
 void Weapon::Attack()
 {
@@ -208,10 +168,7 @@ void Weapon::Attack()
 	m_IsActive = true;
 	m_CurrentAttackCount = 0;
 
-<<<<<<< HEAD
 	//if a ranged weapon
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(m_IsRangedWeapon)
 	{
 		//reset current projectile
@@ -220,11 +177,8 @@ void Weapon::Attack()
 			m_Projectile->ResetProjectile();
 		}
 		
-<<<<<<< HEAD
 		//send projectile in correct direction
 
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 		if(m_Projectile != NULL)
 		{
 			if(m_LastDrawnDirection == Direction(North))
@@ -276,11 +230,8 @@ int Weapon::GetYBound()
 //		int - x bound of the weapon/projectile hitbox
 int Weapon::GetHitBoxXBoundOne()
 {
-<<<<<<< HEAD
 	//if the weapon is active get its hitbox from last drawn location
 
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(m_IsActive)
 	{
 		if(m_IsRangedWeapon)
@@ -329,7 +280,6 @@ int Weapon::GetHitBoxXBoundOne()
 	{
 		return 0;
 	}
-<<<<<<< HEAD
 }
 
 //!Gets and returns the weapon/projectile first hitbox y bound (will always be top left in direction)
@@ -503,184 +453,12 @@ int Weapon::GetHitBoxYBoundTwo()
 	}
 }
 
-=======
-}
-
-//!Gets and returns the weapon/projectile first hitbox y bound (will always be top left in direction)
-//Out - 
-//		int - y bound of the weapon/projectile hitbox
-int Weapon::GetHitBoxYBoundOne()
-{
-	if(m_IsActive)
-	{
-		if(m_IsRangedWeapon)
-		{
-			if(m_Projectile != NULL)
-			{
-				return m_Projectile->GetHitBoxYBoundOne();
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-
-		else
-		{
-			if(m_LastDrawnDirection == Direction(North))
-			{
-				return (m_LastDrawnYPosition - (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(South))
-			{
-				return (m_LastDrawnYPosition + (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(East))
-			{
-				return (m_LastDrawnYPosition - (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(West))
-			{
-				return (m_LastDrawnYPosition + (m_YBound / 2));
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-	}
-
-	else
-	{
-		return 0;
-	}
-}
-
-//!Gets and returns the weapon/projectile second hitbox x bound (will always be bottom right in direction)
-//Out - 
-//		int - x bound of the weapon/projectile hitbox
-int Weapon::GetHitBoxXBoundTwo()
-{
-	if(m_IsActive)
-	{
-		if(m_IsRangedWeapon)
-		{
-			if(m_Projectile != NULL)
-			{
-				return m_Projectile->GetHitBoxXBoundTwo();
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-
-		else
-		{
-			if(m_LastDrawnDirection == Direction(North))
-			{
-				return (m_LastDrawnXPosition + (m_XBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(South))
-			{
-				return (m_LastDrawnXPosition - (m_XBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(East))
-			{
-				return (m_LastDrawnXPosition - (m_XBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(West))
-			{
-				return (m_LastDrawnXPosition + (m_XBound / 2));
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-	}
-
-	else
-	{
-		return 0;
-	}
-}
-
-//!Gets and returns the weapon/projectile second hitbox y bound (will always be bottom right in direction)
-//Out - 
-//		int - y bound of the weapon/projectile hitbox
-int Weapon::GetHitBoxYBoundTwo()
-{
-	if(m_IsActive)
-	{
-		if(m_IsRangedWeapon)
-		{
-			if(m_Projectile != NULL)
-			{
-				return m_Projectile->GetHitBoxYBoundTwo();
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-
-		else
-		{
-			if(m_LastDrawnDirection == Direction(North))
-			{
-				return (m_LastDrawnYPosition + (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(South))
-			{
-				return (m_LastDrawnYPosition - (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(East))
-			{
-				return (m_LastDrawnYPosition + (m_YBound / 2));
-			}
-
-			else if(m_LastDrawnDirection == Direction(West))
-			{
-				return (m_LastDrawnYPosition - (m_YBound / 2));
-			}
-
-			else
-			{
-				return 0;
-			}
-		}
-	}
-
-	else
-	{
-		return 0;
-	}
-}
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 //!Gets and returns the current projectile of the weapon
 //Out - 
 //		Projectile* - the current projectile of the weapon
 Projectile* Weapon::GetProjectile()
 {
-<<<<<<< HEAD
 	//if its a ranged weapon return the projectile else return nothing
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(m_IsRangedWeapon)
 	{
 		return m_Projectile;
@@ -697,10 +475,7 @@ Projectile* Weapon::GetProjectile()
 //		float - the damage the weapon deals
 float Weapon::GetDamage()
 {
-<<<<<<< HEAD
 	//get the weapon damage depending on the weapon modifier
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(m_IsActive)
 	{
 		return (m_Damage * m_DamageModifier);

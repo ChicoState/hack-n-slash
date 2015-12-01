@@ -38,7 +38,7 @@ ALLEGRO_DISPLAY *Display::Get_Display()
 void Display::Draw()
 {
 	al_flip_display();
-	al_clear_to_color(al_map_rgb(0, 0, 0));
+	al_clear_to_color(al_map_rgb(22, 18, 17));
 }
 
 void Display::SetDisplayAsTarget()

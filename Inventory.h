@@ -17,10 +17,7 @@ public:
 	Inventory(); //!Constructor for the inventory class
 	~Inventory(); //!Deconstructor for the inventory class
 	void AddWeapon(Weapon* InputWeapon); //!Adds a weapon to the inventory
-<<<<<<< HEAD
 	void IncreaseRangedWeaponsAttackTime(); //increases the attack time for the ranged weapons pertaining to projectile time
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 
 	Weapon* GetWeaponFromSlot(int InputWeaponSlot); //!Gets and returns a weapon from a specific slot in the inventory
 	Weapon* GetNextCycledWeapon(); //!Gets and returns the next weapon in the inventory after the currently selected weapon

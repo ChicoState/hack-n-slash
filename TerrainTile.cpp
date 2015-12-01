@@ -27,6 +27,10 @@ void TerrainTile::Draw()
 		{
 			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(0, 0, 255));
 		}
+		else if (m_TileType == Fog)
+		{
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(50, 46, 45));
+		}
 	}
 	else if (m_Animated == true)
 	{
@@ -60,6 +64,18 @@ int TerrainTile::Event_Handler(ALLEGRO_EVENT &EV)
 			RetireTile();
 		}
 	}
+	if (m_TriggerType == TR_FOG && EV.type == PLAYERPOSITION_EVENT)
+	{
+		
+		int PlayerX = EV.user.data1;
+		int PlayerY = EV.user.data2;
+
+		if (CheckCollision(Vec2f(PlayerX, PlayerY)))
+		{
+			EmitEvent(EV);
+		}
+		
+	}
 	else if (m_TriggerType == TR_BOSS && EV.type == PLAYERPOSITION_EVENT)
 	{
 		int PlayerX = EV.user.data1;
@@ -67,18 +83,25 @@ int TerrainTile::Event_Handler(ALLEGRO_EVENT &EV)
 
 		if (CheckCollision(Vec2f(PlayerX, PlayerY)))
 		{
-			//emit the event source that the projectile has moved
-			EV.user.type = CUSTOM_EVENT_ID(TERRAINTILE_TRIGGER_EVENT);
-			EV.user.data1 = (intptr_t)m_TriggerType;
-			EV.user.data2 = (intptr_t)m_PosX;
-			EV.user.data3 = (intptr_t)m_PosY;
-			al_emit_user_event(&m_TerrainTriggerEvent, &EV, NULL);
+			EmitEvent(EV);
 		}
 	}
 	else if (m_TriggerType == TR_BOSS && EV.type == BOSS_KILLED_EVENT)
 	{
-		m_TriggerType == TR_RETURN;
+		m_TriggerType = TR_RETURN;
 		m_StartFrameX += 1;
+	}
+	else if (m_TriggerType == TR_RETURN && EV.type == PLAYERPOSITION_EVENT)
+	{
+		int PlayerX = EV.user.data1;
+		int PlayerY = EV.user.data2;
+
+		if (CheckCollision(Vec2f(PlayerX, PlayerY)))
+		{
+			//emit the event source that the projectile has moved
+			EV.user.type = CUSTOM_EVENT_ID(DUNGEON_COMPLETE_EVENT);
+			al_emit_user_event(&m_TerrainTriggerEvent, &EV, NULL);
+		}
 	}
 }
 
@@ -101,4 +124,14 @@ bool TerrainTile::CheckCollision(Vec2f Pos)
 		return true;
 	}
 	return false;
+}
+
+void TerrainTile::EmitEvent(ALLEGRO_EVENT& EV)
+{
+	//emit the event source that the projectile has moved
+	EV.user.type = CUSTOM_EVENT_ID(TERRAINTILE_TRIGGER_EVENT);
+	EV.user.data1 = (intptr_t)m_TriggerType;
+	EV.user.data2 = (intptr_t)m_PosX;
+	EV.user.data3 = (intptr_t)m_PosY;
+	al_emit_user_event(&m_TerrainTriggerEvent, &EV, NULL);
 }

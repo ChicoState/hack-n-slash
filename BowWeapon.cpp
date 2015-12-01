@@ -6,19 +6,11 @@
 
 //!The constructor for the Bow weapon
 //In - 
-<<<<<<< HEAD
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) :
 				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 0.25f, 6),
 				m_BowWeaponTile(0, 0, 80, 76, true, true, false, true, 6)
-=======
-//		ALLEGROEVENT& InputAlEvent - the allegro event of the game
-//		ALLEGRO_BITMAP *SpriteImage - the sprite image of the Bow weapon
-BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, ALLEGRO_BITMAP *SpriteImage) :
-				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 4, 6),
-				m_BowWeaponTile(SpriteImage, 0, 0, 80, 76, true, true, false, true, 6)
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 {
 	m_ProjectileXBound = 16;
 	m_ProjectileYBound = 16;
@@ -42,70 +34,54 @@ BowWeapon::~BowWeapon()
 //!Handles allegro events for the Bow weapon class
 void BowWeapon::EventHandler()
 {
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	//if the weapon is active watch the active timer
+	if(m_IsActive)
 	{
-		//if the weapon is active watch the active timer
-		if(m_IsActive)
+		if(m_OnActive)
 		{
-			if(m_OnActive)
-			{
-				//emit the event source that the projectile has moved
-				m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
-				m_AlEvent.user.data1 = (intptr_t)m_Projectile;
-				al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
-				m_OnActive = false;
-			}
+			//emit the event source that the projectile has moved
+			m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
+			m_AlEvent.user.data1 = (intptr_t)m_Projectile;
+			al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
+			m_OnActive = false;
+		}
 
-			//if the active timer is reached
-			if(m_CurrentAttackCount >= m_AttackTime || m_Projectile->IsAtRestingPosition())
-			{
-				//make weapon unactive and reset timer
-				m_IsActive = false;
-				m_CurrentAttackCount = 0;
-<<<<<<< HEAD
-				//m_OnActive = true;
-=======
-				m_OnActive = true;
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
+		//if the active timer is reached
+		if(m_CurrentAttackCount >= m_AttackTime || m_Projectile->IsAtRestingPosition())
+		{
+			//make weapon unactive and reset timer
+			m_IsActive = false;
+			m_CurrentAttackCount = 0;
+			//m_OnActive = true;
 
-				if(m_IsRangedWeapon)
+			if(m_IsRangedWeapon)
+			{
+				if(m_Projectile != NULL)
 				{
-					if(m_Projectile != NULL)
-					{
-						m_Projectile->ResetProjectile();
-					}
+					m_Projectile->ResetProjectile();
 				}
 			}
+		}
 
-			else
+		else
+		{
+			//iterate the timer
+			m_CurrentAttackCount++;
+
+			//Update the weapon sprite tile
+			m_BowWeaponTile.Event_Handler();
+
+			//move the projectile if a ranged weapon
+			if(m_IsRangedWeapon)
 			{
-				//iterate the timer
-				m_CurrentAttackCount++;
-
-				//Update the weapon sprite tile
-				m_BowWeaponTile.Event_Handler();
-
-				//move the projectile if a ranged weapon
-				if(m_IsRangedWeapon)
+				if(m_Projectile != NULL)
 				{
-					if(m_Projectile != NULL)
-					{
-						m_Projectile->UpdatePosition();
-					}
+					m_Projectile->UpdatePosition();
 				}
 			}
 		}
 	}
-<<<<<<< HEAD
-=======
-	
-	if(m_AlEvent.type == PROJECTILE_EVENT)
-	{
-		Projectile* yes = (Projectile*)m_AlEvent.user.data1;
-		printf("%i", yes->GetHitBoxXBoundOne());
-	}
-	
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
+
 }
 
 //!Handles drawing for the weapon class
@@ -116,18 +92,12 @@ void BowWeapon::EventHandler()
 //		int YDirection - the y direction relative to the player/AI using the weapon to draw at (use graph coordinates to calculate (Ex. 0, 1 is North or Up))
 void BowWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection)
 {
-<<<<<<< HEAD
 	//keep track of last coordinates
 	m_LastDrawnXPosition = DrawXCoordinate;
 	m_LastDrawnYPosition = DrawYCoordinate;
 
 	//set draw direction
 
-=======
-	m_LastDrawnXPosition = DrawXCoordinate;
-	m_LastDrawnYPosition = DrawYCoordinate;
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	if(XDirection == 0 && YDirection == -1)
 	{
 		m_LastDrawnDirection = Direction(North);
@@ -153,10 +123,7 @@ void BowWeapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, i
 		m_LastDrawnDirection = Direction(North);
 	}
 
-<<<<<<< HEAD
 	//draw sprite
-=======
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	m_BowWeaponTile.Draw(DrawXCoordinate, DrawYCoordinate, XDirection, YDirection, m_IsActive);
 
 	//if active draw the projectile

@@ -12,21 +12,16 @@
 class PlayerTile : public Sprite
 {
 public:
-<<<<<<< HEAD
 	PlayerTile(int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //!Constructor for the playertile class
 	int Event_Handler(); //!Overloaded event handler from Sprite class
-	void Draw(int InputPlayerXPosition, int InputPlayerYPosition, bool SwordActive, bool BowActive); //!Overloaded draw function from Sprite class
-=======
-	PlayerTile(ALLEGRO_BITMAP *SpriteImage, int InputPlayerXPosition, int InputPlayerYPosition, int FrameWidth, int FrameHeight,
-		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //!Constructor for the playertile class
-	int Event_Handler(); //!Overloaded event handler from Sprite class
-	void Draw(int InputPlayerXPosition, int InputPlayerYPosition); //!Overloaded draw function from Sprite class
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
+	void Draw(int InputPlayerXPosition, int InputPlayerYPosition, bool SwordActive, bool BowActive, bool BowNewActivation); //!Overloaded draw function from Sprite class
 
 private:
 	Sprite m_SwordSprite; //sprite for the sword weapon and attack
 	Sprite m_BowSprite; //the sprite for the bow weapon and attack
+
+	bool m_BowDrawActive; //true if the bow is active in animation and should be drawn else false
 };
 
 #endif

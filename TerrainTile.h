@@ -9,8 +9,8 @@
 #include "Sprite.h"
 
 //Terrain Tile types. More to be added later!
-enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water };
-enum TRIGGER{TR_NONE = -1, TR_SPIKE, TR_BOSS, TR_LOOT, TR_RETURN};
+enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water, Fog };
+enum TRIGGER{TR_NONE = -1, TR_SPIKE, TR_BOSS, TR_LOOT, TR_RETURN, TR_FOG};
 
 //A single Tile that makes up the terrain.
 class TerrainTile : public Sprite
@@ -78,6 +78,9 @@ public:
 	void RetireTile();
 	virtual void Draw();
 	virtual int Event_Handler(ALLEGRO_EVENT&);
+
+private:
+	void EmitEvent(ALLEGRO_EVENT&);
 };
 
 

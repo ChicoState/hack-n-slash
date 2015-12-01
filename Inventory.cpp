@@ -67,17 +67,6 @@ Weapon* Inventory::GetWeaponFromSlot(int InputWeaponSlot)
 //		Weapon* - the weapon in the next inventory slot from the currently selected weapon
 Weapon* Inventory::GetNextCycledWeapon()
 {
-<<<<<<< HEAD
-=======
-	/*
-	//if there is only one weapon in the inventory no need to switch
-	if(m_WeaponInventory.size() == 1)
-	{
-		return NULL;
-	}
-	*/
-
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	//if the next weapon is within the inventory indexes
 	if((m_LastWeaponSelected + 1) <= (m_WeaponInventory.size() - 1))
 	{
@@ -87,7 +76,6 @@ Weapon* Inventory::GetNextCycledWeapon()
 		m_LastWeaponSelected++;
 
 		return m_WeaponInventory[(m_LastWeaponSelected)];
-<<<<<<< HEAD
 	}
 
 	//reset to the first index if the next index is greater than the vector size
@@ -119,23 +107,5 @@ void Inventory::IncreaseRangedWeaponsAttackTime()
 				m_WeaponInventory[count]->IncreaseRangedAttackTime();
 			}
 		}
-=======
-	}
-
-	//reset to the first index if the next index is greater than the vector size
-	else if(m_LastWeaponSelected == (m_WeaponInventory.size() - 1))
-	{
-		//reset the previous weapon asked for
-		m_WeaponInventory[m_LastWeaponSelected]->ResetWeapon();
-
-		//keep track of the currently selected weapon and return the weapon asked for
-		m_LastWeaponSelected = 0;
-		return m_WeaponInventory[m_LastWeaponSelected];
-	}
-
-	else
-	{
-		return NULL;
->>>>>>> b717b7fd3314e05f4e93e3e059cd35a8412fdc31
 	}
 }

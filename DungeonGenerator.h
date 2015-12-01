@@ -39,7 +39,7 @@ public:
 	{}
 
 	bool ContainsPoint(int x, int y) {
-		return !(x < m_X || y < m_Y || x > m_Width || y > m_Height);
+		return !(x < m_X || y < m_Y || x > Get_X2() || y > Get_Y2());
 	}
 
 	int Get_X2() { return m_X + m_Width; }
@@ -80,8 +80,8 @@ private:
 	int m_WindingPercent; //A percentage for how windy the maze sections should be
 
 	const int cm_TileSize = 128; //The size, in pixels, of each tile in the dungeon
-	const int cm_DungeonWidth = 51; //The width of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
-	const int cm_DungeonHeight = 31; //The height of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
+	int m_DungeonWidth = 51; //The width of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
+	int m_DungeonHeight = 31; //The height of the dungeon. For now it is const for testing, this will be a random size later. Note: Size must be odd number
 
 	Player *m_MainPlayer;
 
@@ -119,6 +119,9 @@ public:
 	std::list<Rect> Get_Rooms() { return m_Rooms; }
 
 	Vec2f GetStartPosition() { return Vec2f(m_StartPosition.x() * cm_TileSize, m_StartPosition.y() * cm_TileSize); }
+	
+	int Get_DungeonWidth(){ return m_DungeonWidth; }
+	int Get_DungeonHeight(){ return m_DungeonHeight; }
 
 	int Get_DungeonLevel() { return m_Level; }
 	void Set_DungeonLevel(int Level) { m_Level = Level; }
@@ -126,7 +129,7 @@ public:
 	void GenerateDungeon(Display&);
 
 	void Event_Handler(ALLEGRO_EVENT &EV);
-	void Draw();
+	void Draw(bool PrePlayerDraw);
 
 private:
 	
@@ -146,6 +149,8 @@ private:
 	void SetBossPortalSpawn();
 	void InitMap(Display&);
 	void DecorateMap(Display&);
+	void CreateFog(Display&);
+	void WallOffBossRoom();
 
 	TerrainTile MakeWall(Vec2i);
 	TerrainTile MakeDoor(Vec2i);

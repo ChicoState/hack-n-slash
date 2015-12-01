@@ -15,9 +15,9 @@ bool Streamline = true; //Not used currently
 
 void DungeonGenerator::GenerateDungeonVars()
 {
-	m_NumRoomTries = Random(150, 250); //The number of times a room will be created and tried to be randomly placed inside the dungeon.
+	m_NumRoomTries = Random(100, 200); //The number of times a room will be created and tried to be randomly placed inside the dungeon.
 	m_ExtraConnectorChance = Random(3,6); //An extra chance for doors to be created
-	m_RoomExtraSize = Random(1,3); //An additional size to be applied to rooms
+	m_RoomExtraSize = Random(3,6); //An additional size to be applied to rooms
 	m_WindingPercent = Random(45,70); //A percentage for how windy the maze sections should be
 }
 
@@ -37,14 +37,14 @@ void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 		m_Map = NULL;
 	}
 
-	m_Dungeon.resize(cm_DungeonWidth, std::vector<TILE>(cm_DungeonHeight, Wall));
-	m_Regions.resize(cm_DungeonWidth, std::vector<int>(cm_DungeonHeight, m_CurrentRegion));
+	m_Dungeon.resize(m_DungeonWidth, std::vector<TILE>(m_DungeonHeight, Wall));
+	m_Regions.resize(m_DungeonWidth, std::vector<int>(m_DungeonHeight, m_CurrentRegion));
 	
 	AddRooms();
 
-	for (int x = 1; x < cm_DungeonWidth; x += 2)
+	for (int x = 1; x < m_DungeonWidth; x += 2)
 	{
-		for (int y = 1; y < cm_DungeonHeight; y += 2)
+		for (int y = 1; y < m_DungeonHeight; y += 2)
 		{
 			if (Get_Tile(Vec2i(x, y)) != Wall)
 			{
@@ -65,11 +65,13 @@ void DungeonGenerator::GenerateDungeon(Display &MainDisplay)
 	SetBossPortalSpawn();
 
 	InitMap(MainDisplay);
+	DecorateMap(MainDisplay);
+	CreateFog(MainDisplay);
 }
 
 void DungeonGenerator::PrintCurrentMap()
 {
-	for (int y = 0; y < cm_DungeonHeight; y++)
+	for (int y = 0; y < m_DungeonHeight; y++)
 	{
 		for (int x = 0; x < m_Dungeon.size(); x++)
 		{
@@ -94,9 +96,9 @@ void DungeonGenerator::connectRegions()
 {
 	std::map<std::vector<int>, std::unordered_set<int>> connectorRegions;
 	
-	for (int ix = 1; ix < cm_DungeonWidth - 1; ix++)
+	for (int ix = 1; ix < m_DungeonWidth - 1; ix++)
 	{
-		for (int iy = 1; iy < cm_DungeonHeight - 1; iy++)
+		for (int iy = 1; iy < m_DungeonHeight - 1; iy++)
 		{
 			Vec2i Pos(ix, iy);
 			if (Get_Tile(Pos) != Wall)
@@ -236,9 +238,9 @@ void DungeonGenerator::RemoveDeadEnds()
 	{
 		Done = true;
 
-		for (int ix = 1; ix < cm_DungeonWidth - 1; ix++)
+		for (int ix = 1; ix < m_DungeonWidth - 1; ix++)
 		{
-			for (int iy = 1; iy < cm_DungeonHeight - 1; iy++)
+			for (int iy = 1; iy < m_DungeonHeight - 1; iy++)
 			{
 				Vec2i Pos(ix, iy);
 
@@ -357,8 +359,8 @@ void DungeonGenerator::AddRooms()
 			height += Rectangularity;
 		}
 
-		int x = Random(0, (cm_DungeonWidth - width) / 2) * 2 + 1;
-		int y = Random(0, (cm_DungeonHeight - height) / 2) * 2 + 1;
+		int x = Random(0, (m_DungeonWidth - width) / 2) * 2 + 1;
+		int y = Random(0, (m_DungeonHeight - height) / 2) * 2 + 1;
 
 		Rect TempRoom(x, y, width, height);
 
@@ -374,7 +376,7 @@ void DungeonGenerator::AddRooms()
 
 		if (overlaps) continue;
 
-		if (x + width > cm_DungeonWidth || y + height > cm_DungeonHeight)
+		if (x + width > m_DungeonWidth || y + height > m_DungeonHeight)
 		{
 			std::cout << "room generation error" << std::endl;
 		}
@@ -399,7 +401,7 @@ bool DungeonGenerator::CanCarve(Vec2i Pos, Vec2i Direction)
 {
 	Vec2i iv2 = Pos + Direction * 3;
 
-	Rect Bounds(0, 0, cm_DungeonWidth, cm_DungeonHeight);
+	Rect Bounds(0, 0, m_DungeonWidth, m_DungeonHeight);
 
 	if (!Bounds.ContainsPoint(iv2.x(), iv2.y())) return 0;
 
@@ -418,7 +420,7 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 {
 	
 	std::vector<std::vector<TerrainTile>> Layer;
-	Layer.resize(cm_DungeonWidth, std::vector<TerrainTile>(cm_DungeonHeight, TerrainTile(NULL, 0, 0, Floor, cm_TileSize, cm_TileSize)));
+	Layer.resize(m_DungeonWidth, std::vector<TerrainTile>(m_DungeonHeight, TerrainTile(NULL, 0, 0, Floor, cm_TileSize, cm_TileSize)));
 
 	TILE CurTileType = Blank;
 
@@ -454,15 +456,15 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 			Layer[x][0] = TerrainTile(m_DungeonTiles, x * cm_TileSize, 0 * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 0, 0); //a standard wall is placed 
 		}
 
-		CurTileType = Get_Tile(Vec2i(x, cm_DungeonHeight - 2));
+		CurTileType = Get_Tile(Vec2i(x, m_DungeonHeight - 2));
 
 		if (CurTileType == Floor || CurTileType == Door)
 		{
-			Layer[x][cm_DungeonHeight - 1] = TerrainTile(m_DungeonTiles, x * cm_TileSize, (cm_DungeonHeight - 1) * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 3, 0); //top wall border is placed
+			Layer[x][m_DungeonHeight - 1] = TerrainTile(m_DungeonTiles, x * cm_TileSize, (m_DungeonHeight - 1) * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 3, 0); //top wall border is placed
 		}
 	}
 
-	for (int y = 0; y < cm_DungeonHeight; y++)
+	for (int y = 0; y < m_DungeonHeight; y++)
 	{
 		CurTileType = Get_Tile(Vec2i(1, y));
 
@@ -471,25 +473,23 @@ void DungeonGenerator::InitMap(Display &MainDisplay)
 			Layer[0][y] = TerrainTile(m_DungeonTiles, 0 * cm_TileSize, y * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 4, 0); //right wall border is placed
 		}
 
-		CurTileType = Get_Tile(Vec2i(cm_DungeonWidth - 2, y));
+		CurTileType = Get_Tile(Vec2i(m_DungeonWidth - 2, y));
 
 		if (CurTileType == Floor || CurTileType == Door)
 		{
-			Layer[cm_DungeonWidth - 1][y] = TerrainTile(m_DungeonTiles, (cm_DungeonWidth - 1) * cm_TileSize, y * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 5, 0); //left wall border is placed
+			Layer[m_DungeonWidth - 1][y] = TerrainTile(m_DungeonTiles, (m_DungeonWidth - 1) * cm_TileSize, y * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true, 5, 0); //left wall border is placed
 		}
 	}
 
 	TerrainLayer *Temp = new TerrainLayer(Layer);
 	Temp->CreateBitmap(&MainDisplay);
 	m_Map = new TerrainMap(m_EventQueue, Temp, m_MainPlayer);
-	
-	DecorateMap(MainDisplay);
 }
 
 void DungeonGenerator::DecorateMap(Display &MainDisplay)
 {
 	std::vector<std::vector<TerrainTile>> Layer;
-	Layer.resize(cm_DungeonWidth, std::vector<TerrainTile>(cm_DungeonHeight, TerrainTile(NULL, 0, 0, Blank, cm_TileSize, cm_TileSize)));
+	Layer.resize(m_DungeonWidth, std::vector<TerrainTile>(m_DungeonHeight, TerrainTile(NULL, 0, 0, Blank, cm_TileSize, cm_TileSize)));
 
 	TILE CurTileType = Blank;
 
@@ -520,13 +520,47 @@ void DungeonGenerator::DecorateMap(Display &MainDisplay)
 	m_Map->AddLayer(Temp, 1);
 }
 
+void DungeonGenerator::CreateFog(Display &MainDisplay)
+{
+	std::vector<std::vector<TerrainTile>> Layer;
+	Layer.resize(m_DungeonWidth, std::vector<TerrainTile>(m_DungeonHeight, TerrainTile(NULL, 0, 0, Blank, cm_TileSize, cm_TileSize)));
+
+	std::vector<Rect> Rooms;
+
+	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
+	{
+		if (it->ContainsPoint(m_StartPosition.x(), m_StartPosition.y()))
+		{
+			continue;
+		}
+
+		Rooms.push_back(*it);
+	}
+
+	for (int i = 0; i < Rooms.size(); i++)
+	{
+		for (int x = Rooms[i].Get_X1(); x < Rooms[i].Get_X2(); x++)
+		{
+			for (int y = Rooms[i].Get_Y1(); y < Rooms[i].Get_Y2(); y++)
+			{
+				Layer[x][y] = TerrainTile(NULL, x * cm_TileSize, y * cm_TileSize, Fog, cm_TileSize, cm_TileSize, false, 0, 0, 1, TR_FOG, m_EventQueue);
+			}
+		}
+	}
+
+
+	TerrainLayer *Temp = new TerrainLayer(Layer, 0);
+	Temp->CreateBitmap(&MainDisplay);
+	m_Map->AddLayer(Temp, 1);
+}
+
 TerrainTile DungeonGenerator::MakeWall(Vec2i Pos)
 {
 	bool Left = false;
 	bool Right = false;
 	bool Top = false;
 
-	if (Pos.x() == 0 || Pos.y() == 0 || Pos.x() == cm_DungeonWidth - 1 || Pos.y() == cm_DungeonHeight - 1)
+	if (Pos.x() == 0 || Pos.y() == 0 || Pos.x() == m_DungeonWidth - 1 || Pos.y() == m_DungeonHeight - 1)
 	{
 		return TerrainTile(NULL, Pos.x() * cm_TileSize, Pos.y() * cm_TileSize, Wall, cm_TileSize, cm_TileSize, true);
 	}
@@ -592,16 +626,16 @@ TerrainTile DungeonGenerator::MakeWall(Vec2i Pos)
 }
 TerrainTile DungeonGenerator::MakeDoor(Vec2i Pos)
 {
-	return TerrainTile(m_DungeonTiles, Pos.x() * cm_TileSize, Pos.y() * cm_TileSize, Wall, cm_TileSize, cm_TileSize, false, 7);
+	return TerrainTile(m_DungeonTiles, Pos.x() * cm_TileSize, Pos.y() * cm_TileSize, Door, cm_TileSize, cm_TileSize, false, 7);
 }
 TerrainTile DungeonGenerator::MakeFloor(Vec2i Pos)
 {
-	return TerrainTile(m_DungeonTiles, Pos.x() * cm_TileSize, Pos.y() * cm_TileSize, Wall, cm_TileSize, cm_TileSize, false, 7);
+	return TerrainTile(m_DungeonTiles, Pos.x() * cm_TileSize, Pos.y() * cm_TileSize, Floor, cm_TileSize, cm_TileSize, false, 7);
 }
 
-void DungeonGenerator::Draw()
+void DungeonGenerator::Draw(bool PrePlayerDraw)
 {
-	m_Map->Draw();
+	m_Map->Draw(PrePlayerDraw);
 	
 	//al_draw_filled_circle(m_BossPortal.x() * cm_TileSize, m_BossPortal.y() * cm_TileSize, 5, al_map_rgb(255, 255, 255));
 	//al_draw_filled_circle(m_BossPortal.x() * cm_TileSize, m_BossPortal.y() * cm_TileSize, 5, al_map_rgb(255, 0, 0));
@@ -618,13 +652,17 @@ void DungeonGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 			int X = EV.user.data2;
 			int Y = EV.user.data3;
 
+			WallOffBossRoom();
+
 			EV.user.type = CUSTOM_EVENT_ID(SPAWN_BOSS_EVENT);
 			EV.user.data1 = (intptr_t)X;
 			EV.user.data2 = (intptr_t)Y;
 			al_emit_user_event(&m_SpawnBossEvent, &EV, NULL);
-
-			std::cout << "PosX: " << X << " PosY: " << Y;
 		}
+	}
+	else if (EV.type == DUNGEON_COMPLETE_EVENT)
+	{
+		m_Level++;
 	}
 }
 
@@ -632,7 +670,7 @@ void DungeonGenerator::SetStartPosition()
 {
 	std::vector<Rect> TempRooms;
 	
-	Rect TempRoom(cm_DungeonWidth, cm_DungeonHeight, 1, 1);
+	Rect TempRoom(m_DungeonWidth, m_DungeonHeight, 1, 1);
 
 	//Find the room furthest to the left of the screen
 	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
@@ -722,4 +760,59 @@ void DungeonGenerator::SetBossPortalSpawn()
 	TempRoom = TempRooms[Random(0, TempRooms.size())];
 
 	m_BossPortal = Vec2f(Random(TempRoom.Get_X1() + 1, TempRoom.Get_X2() - 1), Random(TempRoom.Get_Y1() + 1, TempRoom.Get_Y2() - 1));
+}
+
+void DungeonGenerator::WallOffBossRoom()
+{
+	Rect BossRoom(0,0,0,0);
+
+	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
+	{
+		if (it->ContainsPoint(m_BossPortal.x(), m_BossPortal.y()))
+		{
+			BossRoom = *it;
+			break;
+		}
+	}
+
+	for (int x = BossRoom.Get_X1(); x <= BossRoom.Get_X2(); x++)
+	{	
+		if (BossRoom.Get_Y1() - 1 > 0)
+		{
+			if (m_Map->Get_Layer(0)->Get_Tile(Vec2i(x, BossRoom.Get_Y1() - 1)).Get_TileType() == Door)
+			{
+				m_Map->Get_Layer(0)->Set_Tile(Vec2i(x, BossRoom.Get_Y1() - 1), MakeWall(Vec2i(x, BossRoom.Get_Y1() - 1)));
+			}
+		}
+
+		if (BossRoom.Get_Y2() < m_DungeonHeight)
+		{
+			if (m_Map->Get_Layer(0)->Get_Tile(Vec2i(x, BossRoom.Get_Y2())).Get_TileType() == Door)
+			{
+				m_Map->Get_Layer(0)->Set_Tile(Vec2i(x, BossRoom.Get_Y2()), MakeWall(Vec2i(x, BossRoom.Get_Y2() + 1)));
+			}
+		}
+	}
+
+	for (int y = BossRoom.Get_Y1(); y <= BossRoom.Get_Y2(); y++)
+	{
+		if (BossRoom.Get_X1() - 1 > 0)
+		{
+			if (m_Map->Get_Layer(0)->Get_Tile(Vec2i(BossRoom.Get_X1() - 1, y)).Get_TileType() == Door)
+			{
+				m_Map->Get_Layer(0)->Set_Tile(Vec2i(BossRoom.Get_X1() - 1, y), MakeWall(Vec2i(BossRoom.Get_X1() - 1, y)));
+			}
+		}
+
+		if (BossRoom.Get_X2() < m_DungeonWidth)
+		{
+			if (m_Map->Get_Layer(0)->Get_Tile(Vec2i(BossRoom.Get_X2(), y)).Get_TileType() == Door)
+			{
+				m_Map->Get_Layer(0)->Set_Tile(Vec2i(BossRoom.Get_X2(), y), MakeWall(Vec2i(BossRoom.Get_X2() + 1, y)));
+			}
+		}
+	}
+
+	m_Map->UpdateInfoLayer(0);
+	m_Map->Get_Layer(0)->CreateBitmap(NULL);
 }
