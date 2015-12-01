@@ -2,7 +2,7 @@
 // File: AIGroup.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/29/2015
+// Date: 12/1/2015
 //
 #ifndef __AIGROUP_H__
 #define __AIGROUP_H__

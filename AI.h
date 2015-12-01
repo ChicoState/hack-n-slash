@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/29/2015
+// Date: 12/1/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -20,6 +20,7 @@
 #include "Vec2.h"
 #include "DungeonGenerator.h"
 #include "Projectile.h"
+#include "TerrainGenerator.h"
 
 #include "SwordWeapon.h"
 #include "BowWeapon.h"
@@ -29,7 +30,10 @@ enum AI_TYPE{ MELEE, RANGER, BOSS_MELEE, BOSS_RANGER };
 enum AI_FACE{ N, S, W, E };
 
 const int T_SIZE = 128;
-const int TICK_DELAY_MAX = 100;
+const int TICK_DELAY_MAX = 90;
+// Special Tick Delays reserved for boss AI
+const int TICK_DELAY_SPECIAL_MIN = 100;
+const int TICK_DELAY_SPECIAL_MAX = 120;
 
 //
 // This class is for pathfinding.
@@ -62,9 +66,11 @@ private:
 	AI_TYPE type;                                  // The type of AI (MELEE, RANGER, etc)
 	AI_FACE ai_direction;                          // The AI's current facing direction
 	bool proj_active;                              // Is the projectile active?
+	bool buff_active;                              // Special bool reserved for the boss AI.
 	int sight;                                     // How far the AI can see (in number of tiles)
 	int health, ATK, speed, range;                 // The AI's attribute values (note: range is in number of tiles)
 	int tick_delay;                                // For timing so that the AI doesn't attack the player every tick
+	int special_tick_delay;                        // For timing with bosses
 	int bound_x, bound_y;                          // x and y bounds for the AI
 	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
 	float l_x, l_y;                                // The coordinates where the player was last seen
@@ -73,6 +79,7 @@ private:
 	Projectile *ai_projectile;                     // The projectile the ranger AI will fire
 	std::vector<PathNode*> path;                   // The current path for the AI to follow
 	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
+	TerrainObject_Manager drops;                   // Use for dropping pickups upon death
 	ALLEGRO_EVENT ai_ev;
 	ALLEGRO_EVENT_SOURCE ai_event_killed;
 	ALLEGRO_EVENT_SOURCE ai_boss_event_killed;
@@ -98,13 +105,20 @@ private:
 	bool CollideWithPlayer(Player &p);             // Checks to see if it the AI collides with the player
 	bool ProjectileCollideWithPlayer(Player &);    // Checks to see if the projectile collides with the player
 	void Shoot();                                  // Makes the AI shoot a projectile
-	void DealDamageToPlayer(Player &p, int v) { p.DealDamage(v); }  // Deal melee damage to player
-	void TakeDamage(int v) { health -= v; }
 	// Helper functions for ProcessAI
 	void ProcessProjectile(Player &);
 	void MeleeAttack(Player &);
 	void RangerAttack(Player &);
-	// These one line functions return the bound points of the AI at particular locations
+	void ProcessBossBuff();
+	// One line functions
+	void DealDamageToPlayer(Player &p, int v) { p.DealDamage(v); }  // Deal melee damage to player
+	void TakeDamage(int v) { health -= v; }
+	// Special functions for bosses
+	void EnableMeleeBossBuff(int b) { speed += 5; ATK += b; }       // Boost the speed and ATK of melee bosses
+	void DisableMeleeBossBuff(int b) { speed -= 5; ATK -= b; }      // Disable buff of melee bosses
+	void EnableRangerBossBuff() { speed -= 1; ATK *= 2; }           // Penalize speed of ranger bosses, but double their ATK
+	void DisableRangerBossBuff() { speed += 1; ATK /= 2; }          // Disable buff of ranger bosses
+	// Other one line functions that return the bound points of the AI at particular locations
 	int GetXNorthBoundPoint() { return ai_x; }
 	int GetYNorthBoundPoint() { return (ai_y - (bound_y / 2)); }
 	int GetXSouthBoundPoint() { return ai_x; }
@@ -133,6 +147,7 @@ public:
 	void SetSpawn(DungeonGenerator &);             // Set a random spawn point and then set the ai_dungeon pointer
 	void FindPath(int, int);                       // Find the shortest path to the given target coordinates
 	bool SeePlayer(Player &);                      // Check if the AI can see the player
+	void EventHandler(ALLEGRO_EVENT &);            // Event handler for the AI
 	void ProcessAI(ALLEGRO_EVENT &, Player &);     // Process the AI
 	int GetState() { return state; }
 	int GetType() { return type; }

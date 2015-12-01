@@ -2,7 +2,7 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/29/2015
+// Date: 12/1/2015
 //
 #include "AI.h"
 #include "AIGroup.h"
@@ -18,6 +18,22 @@ bool AI_Group::IDExists(int id)
 			return true;
 	}
 	return false;
+}
+//
+// Event handler
+//
+void AI_Group::EventHandler(ALLEGRO_EVENT &ev)
+{
+	if (ev.type == SPAWN_BOSS_EVENT && !BossActive)
+	{
+		ALLEGRO_BITMAP *image = al_load_bitmap("AI_Boss.png");
+		SpawnBoss(image, ev.user.data1, ev.user.data2);
+	}
+	else if (ev.type == PLAYERPOSITION_EVENT)
+	{
+		for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
+			(it->second)->EventHandler(ev);
+	}
 }
 //
 // Check to see if the given AI overlaps with anyone else in the group
@@ -41,6 +57,7 @@ void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
 	if (!group.empty())
 		GroupClear();
 
+	BossActive = false;
 	dungeon = &d;
 
 	for (int i = 0; i < n; i++)
@@ -54,15 +71,16 @@ void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 	AI* ai;
 	std::random_device rd;
 	int id, sight, speed, type, health, ATK;
+	int lv = dungeon->Get_DungeonLevel();
 
-	type = rd() % 2;                   // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
-	id = rd() % 99999 + 1;             // Get random ID value (up to 5 digits)
-	while (IDExists(id))               // Ensure the ID is unique
+	type = rd() % 2;                           // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
+	id = rd() % 99999 + 1;                     // Get random ID value (up to 5 digits)
+	while (IDExists(id))                       // Ensure the ID is unique
 		id = rd() % 99999 + 1;
-	sight = rd() % 3 + 3;              // Sight ranges from 3 to 5
-	speed = rd() % 3 + 2;              // Speed ranges from 2 to 4
-	health = rd() % 6 + 100;           // Health ranges from 100 to 105
-	ATK = rd() % 4 + 5;                // ATK ranges from 5 to 8
+	sight = rd() % 3 + 3;                      // Sight ranges from 3 to 5
+	speed = rd() % 3 + 3;                      // Speed ranges from 3 to 5
+	health = rd() % 6 + 100 + (20 * (lv - 1)); // Health ranges from 100 to 105 (values get higher by 20 per level as dungeon level increases)
+	ATK = rd() % 4 + 5 + (2 * (lv - 1));       // ATK ranges from 5 to 8 (values get higher by 2 per level as dungeon level increases)
 
 	if (!type)
 		ai = new AI(e_queue, image, MELEE, sight, speed, health, ATK);
@@ -83,16 +101,17 @@ void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
 	AI* ai;
 	std::random_device rd;
 	int sight, speed, type, health, ATK;
+	int lv = dungeon->Get_DungeonLevel();
 	BossActive = true;
 
-	type = rd() % 2;                   // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
-	BossID = rd() % 99999 + 1;         // Get random ID value (up to 5 digits)
-	while (IDExists(BossID))           // Ensure the ID is unique
+	type = rd() % 2;                             // Randomly pick either 0 or 1 (0 = Melee, 1 = Ranger)
+	BossID = rd() % 99999 + 1;                   // Get random ID value (up to 5 digits)
+	while (IDExists(BossID))                     // Ensure the ID is unique
 		BossID = rd() % 99999 + 1;
-	sight = rd() % 3 + 3;              // Sight ranges from 3 to 5
-	speed = rd() % 3 + 2;              // Speed ranges from 2 to 4
-	health = rd() % 11 + 300;          // Health ranges from 300 to 310
-	ATK = rd() % 4 + 10;               // ATK ranges from 10 to 13
+	sight = rd() % 3 + 3;                        // Sight ranges from 3 to 5
+	speed = rd() % 3 + 2;                        // Speed ranges from 2 to 4
+	health = rd() % 11 + 300 + (50 * (lv - 1));  // Health ranges from 300 to 310 (values get higher by 50 per level as dungeon level increases)
+	ATK = rd() % 4 + 10 + (5 * (lv - 1));        // ATK ranges from 10 to 13 (values get higher by 5 per level as dungeon level increases)
 
 	if (!type)
 		ai = new AI(e_queue, image, BOSS_MELEE, sight, speed, health, ATK);
@@ -136,12 +155,7 @@ void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 void AI_Group::DrawAll()
 {
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-	{
-		// Ignore dead AI
-		if ((it->second)->GetState() == DEAD)
-			continue;
 		(it->second)->Draw();
-	}
 }
 //
 // Make everyone in the group find a path to the player.

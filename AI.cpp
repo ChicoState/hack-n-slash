@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/29/2015
+// Date: 12/1/2015
 //
 #include "AI.h"
 
@@ -37,17 +37,22 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 // AI Constructor
 //
 AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK)
-	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2),
-	tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(N), ai_dungeon(NULL),
+	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2), proj_active(false),
+	tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(S), drops(ev_queue), ai_dungeon(NULL),
 	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
 {
 	if (type == BOSS_MELEE || type == BOSS_RANGER)
 	{
 		al_init_user_event_source(&ai_boss_event_killed);
 		al_register_event_source(ai_ev_queue, &ai_boss_event_killed);
+		special_tick_delay = 0;
+		buff_active = false;
 	}
-	al_init_user_event_source(&ai_event_killed);
-	al_register_event_source(ai_ev_queue, &ai_event_killed);
+	else
+	{
+		al_init_user_event_source(&ai_event_killed);
+		al_register_event_source(ai_ev_queue, &ai_event_killed);
+	}
 
 	if (type == RANGER || type == BOSS_RANGER)
 	{
@@ -149,8 +154,6 @@ bool AI::ProjectileInBoundY(float v1, float v2)
 //
 void AI::SetSpawn(DungeonGenerator &dungeon)
 {
-	// NOTE: At the moment, the dungeon size (width and height) is constant.
-	// This will change later
 	const int D_WIDTH = 51;         // Dungeon width
 	const int D_HEIGHT = 31;        // Dungeon height
 
@@ -378,8 +381,6 @@ void AI::FindPath(int t_x, int t_y)
 	int f_lowest;
 	int g_tentative;
 
-	// NOTE: At the moment, the dungeon size (width and height) is constant.
-	// This will change later
 	const int D_WIDTH = 51;         // Dungeon width
 	const int D_HEIGHT = 31;        // Dungeon height
 	int g_score[D_WIDTH][D_HEIGHT];
@@ -552,25 +553,15 @@ void AI::Shoot()
 	ai_projectile->ResetProjectile();
 
 	if (ai_direction == N)
-	{
 		ai_projectile->SendProjecile(ai_x, ai_y, 0, -1);
-	}
 	else if (ai_direction == S)
-	{
 		ai_projectile->SendProjecile(ai_x, ai_y, 0, 1);
-	}
 	else if (ai_direction == E)
-	{
 		ai_projectile->SendProjecile(ai_x, ai_y, -1, 0);
-	}
 	else if (ai_direction == W)
-	{
 		ai_projectile->SendProjecile(ai_x, ai_y, 1, 0);
-	}
 	else
-	{
 		ai_projectile->SendProjecile(ai_x, ai_y, 0, -1);
-	}
 }
 //
 // Makes the AI face toward the player.
@@ -616,7 +607,7 @@ bool AI::CollusionBlock(int pb_x, int pb_y)
 }
 //
 // Checks to see if the given weapon bound points are within the AI's collusion bound.
-// Deals damage to the AI if it is.
+// Deals damage to the AI if it is. If the AI's health drops to 0 or below, it dies.
 //
 void AI::WeaponHit(int w_x, int w_y, int w_d)
 {
@@ -627,15 +618,19 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 			std::cout << "The AI took " << w_d << " damage...\n";
 			if (health <= 0)
 			{
-				std::cout << "...and is now dead...\n";
-				ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
-				al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
 				if (type == BOSS_MELEE || type == BOSS_RANGER)
 				{
-					std::cout << "Boss defeated!\n";
-					ai_ev.user.type = CUSTOM_EVENT_ID(AI_BOSS_KILLED_EVENT);
+					std::cout << "...and is now dead. You defeated the boss!\n";
+					ai_ev.user.type = CUSTOM_EVENT_ID(BOSS_KILLED_EVENT);
 					al_emit_user_event(&ai_boss_event_killed, &ai_ev, NULL);
 				}
+				else
+				{
+					std::cout << "...and is now dead...\n";
+					ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
+					al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
+				}
+				drops.SpawnObjectRandom(Vec2i(ai_x, ai_y), 100);
 				state = DEAD;
 			}
 		}
@@ -645,15 +640,10 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 //
 void AI::Draw()
 {
-	// A small red circle indicates where the AI is facing
-	if (ai_direction == N)
-		al_draw_filled_circle(ai_x, ai_y - (bound_y / 2), 2, al_map_rgb(255, 0, 0));
-	else if (ai_direction == S)
-		al_draw_filled_circle(ai_x, ai_y + (bound_y / 2), 2, al_map_rgb(255, 0, 0));
-	else if (ai_direction == W)
-		al_draw_filled_circle(ai_x - (bound_x / 2), ai_y, 2, al_map_rgb(255, 0, 0));
-	else if (ai_direction == E)
-		al_draw_filled_circle(ai_x + (bound_x / 2), ai_y, 2, al_map_rgb(255, 0, 0));
+	// Draw the pickup drop (even when the AI is dead)
+	drops.Draw();
+	if (state == DEAD)
+		return;
 
 	// Draw the AI's sprite
 	ai_tile.Draw((ai_x - bound_x / 2), (ai_y - bound_y / 2));
@@ -668,15 +658,30 @@ void AI::Draw()
 		al_draw_filled_circle((*it)->X() * T_SIZE + (T_SIZE / 2), (*it)->Y() * T_SIZE + (T_SIZE / 2), 5, al_map_rgb(255, 0, 255));
 }
 //
+// The event handler for events besides ALLEGRO_EVENT_TIMER. This is useful for items that have
+// been dropped after the AI died.
+//
+void AI::EventHandler(ALLEGRO_EVENT &ev)
+{
+	drops.Event_Handler(ev);
+}
+//
 // The AI in action.
 //
 void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
-	ai_ev = ev;
-	if (ai_ev.type != ALLEGRO_EVENT_TIMER)
+	if (ev.type != ALLEGRO_EVENT_TIMER)
 		return;
-
+	
+	ai_ev = ev;
 	ProcessProjectile(player);
+
+	if (type == DEAD)
+		return;
+	
+	// Process buffs for bosses
+	if (type == BOSS_MELEE || type == BOSS_RANGER)
+		ProcessBossBuff();
 
 	if (state == IDLE)
 	{
@@ -693,11 +698,12 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			state = SEEK;
 			FindPath(l_x / T_SIZE, l_y / T_SIZE);
 			std::cout << "The AI lost sight of you, and is now heading towards your last known location...\n";
+			return;
 		}
-		else if (type == MELEE)
+		l_x = player.GetXPosition();
+		l_y = player.GetYPosition();
+		if (type == MELEE || type == BOSS_MELEE)
 		{
-			l_x = player.GetXPosition();
-			l_y = player.GetYPosition();
 			if (CollideWithPlayer(player))
 			{
 				state = ATTACK;
@@ -705,10 +711,8 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			}
 			MoveTowardTarget(l_x, l_y);
 		}
-		else if (type == RANGER)
+		else if (type == RANGER || type == BOSS_RANGER)
 		{
-			l_x = player.GetXPosition();
-			l_y = player.GetYPosition();
 			if (InRange(player))
 			{
 				state = ATTACK;
@@ -735,18 +739,60 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 	}
 	else if (state == ATTACK)
 	{
-		if (type == MELEE)
+		if (type == MELEE || type == BOSS_MELEE)
 			MeleeAttack(player);
-		else if (type == RANGER)
+		else if (type == RANGER || type == BOSS_RANGER)
 			RangerAttack(player);
 	}
 }
 //
-// Process the projectile if the AI is a ranger and the projectile is active.
+// For bosses, use a special tick delay variable to determine when to activate or deactivate
+// certain buffs.
+//
+void AI::ProcessBossBuff()
+{
+	if (type == BOSS_MELEE)
+	{
+		if (!buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MAX)
+		{
+			EnableMeleeBossBuff(5);
+			std::cout << "Boss buff activated!\n";
+			buff_active = true;
+			special_tick_delay = 0;
+		}
+		else if (buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MIN)
+		{
+			DisableMeleeBossBuff(5);
+			std::cout << "Boss buff deactivated...\n";
+			buff_active = false;
+			special_tick_delay = 0;
+		}
+	}
+	else if (type == BOSS_RANGER)
+	{
+		if (!buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MAX)
+		{
+			EnableRangerBossBuff();
+			std::cout << "Boss buff activated!\n";
+			buff_active = true;
+			special_tick_delay = 0;
+		}
+		else if (buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MIN)
+		{
+			DisableRangerBossBuff();
+			std::cout << "Boss buff deactivated...\n";
+			buff_active = false;
+			special_tick_delay = 0;
+		}
+	}
+	special_tick_delay++;
+}
+//
+// Process the projectile if the the projectile is active.
 //
 void AI::ProcessProjectile(Player &p)
 {
-	if (type != RANGER || !proj_active)
+	if (!proj_active)
 		return;
 
 	ai_projectile->UpdatePosition();
@@ -793,8 +839,7 @@ void AI::RangerAttack(Player &p)
 		std::cout << "The Ranger AI is getting in range again...\n";
 	}
 	FacePlayer(p);
-	if (tick_delay < TICK_DELAY_MAX)
-		tick_delay++;
+	tick_delay++;
 	if (tick_delay >= TICK_DELAY_MAX)
 	{
 		Shoot();
