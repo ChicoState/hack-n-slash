@@ -21,6 +21,7 @@ private:
 	int BossID;                        // ID of the active boss
 	bool IDExists(int);                // Checks the container to see if the specified ID exists
 	bool Overlap(AI*);                 // Check to see if an AI overlaps with any other AI in the group
+	bool OverlapWithPlayerStart(AI*);  // Check to see if an AI overlaps with the player's starting position
 	ALLEGRO_EVENT_QUEUE *e_queue;      // Event queue to use when adding AI
 	DungeonGenerator *dungeon;         // Pointer to the dungeon the group will be in
 public:

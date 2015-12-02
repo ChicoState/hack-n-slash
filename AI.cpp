@@ -38,7 +38,7 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 //
 AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK)
 	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2), proj_active(false),
-	tick_delay(TICK_DELAY_MAX), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(S), drops(ev_queue), ai_dungeon(NULL),
+	tick_delay(TICK_DELAY_MAX), tick_hit_delay(HIT_DELAY), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(S), drops(ev_queue), ai_dungeon(NULL),
 	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
 {
 	if (type == BOSS_MELEE || type == BOSS_RANGER)
@@ -614,24 +614,28 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 	if (w_x >= GetXWestBoundPoint() && w_x <= GetXEastBoundPoint())
 		if (w_y >= GetYNorthBoundPoint() && w_y <= GetYSouthBoundPoint())
 		{
-			TakeDamage(w_d);
-			std::cout << "The AI took " << w_d << " damage...\n";
-			if (health <= 0)
+			if (tick_hit_delay >= HIT_DELAY)
 			{
-				if (type == BOSS_MELEE || type == BOSS_RANGER)
+				tick_hit_delay = 0;
+				TakeDamage(w_d);
+				std::cout << "The AI took " << w_d << " damage...\n";
+				if (health <= 0)
 				{
-					std::cout << "...and is now dead. You defeated the boss!\n";
-					ai_ev.user.type = CUSTOM_EVENT_ID(BOSS_KILLED_EVENT);
-					al_emit_user_event(&ai_boss_event_killed, &ai_ev, NULL);
+					if (type == BOSS_MELEE || type == BOSS_RANGER)
+					{
+						std::cout << "...and is now dead. You defeated the boss!\n";
+						ai_ev.user.type = CUSTOM_EVENT_ID(BOSS_KILLED_EVENT);
+						al_emit_user_event(&ai_boss_event_killed, &ai_ev, NULL);
+					}
+					else
+					{
+						std::cout << "...and is now dead...\n";
+						ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
+						al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
+					}
+					drops.SpawnObjectRandom(Vec2i(ai_x, ai_y), 100);
+					state = DEAD;
 				}
-				else
-				{
-					std::cout << "...and is now dead...\n";
-					ai_ev.user.type = CUSTOM_EVENT_ID(AI_KILLED_EVENT);
-					al_emit_user_event(&ai_event_killed, &ai_ev, NULL);
-				}
-				drops.SpawnObjectRandom(Vec2i(ai_x, ai_y), 100);
-				state = DEAD;
 			}
 		}
 }
@@ -670,6 +674,7 @@ void AI::EventHandler(ALLEGRO_EVENT &ev)
 //
 void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
+	tick_hit_delay++;
 	if (ev.type != ALLEGRO_EVENT_TIMER)
 		return;
 	

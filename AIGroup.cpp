@@ -49,6 +49,18 @@ bool AI_Group::Overlap(AI* ai)
 	return false;
 }
 //
+// Check to see if the given AI overlaps with the player's starting position
+//
+bool AI_Group::OverlapWithPlayerStart(AI* ai)
+{
+	Vec2f pos = ai->GetActiveDungeon()->GetStartPosition();
+
+	if (ai->GetXPosition() == pos.x() && ai->GetYPosition() == pos.y())
+		return true;
+	else
+		return false;
+}
+//
 // Set up the group with a given number of randomly generated AI.
 //
 void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
@@ -79,7 +91,7 @@ void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 		id = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                      // Sight ranges from 3 to 5
 	speed = rd() % 3 + 3;                      // Speed ranges from 3 to 5
-	health = rd() % 6 + 100 + (20 * (lv - 1)); // Health ranges from 100 to 105 (values get higher by 20 per level as dungeon level increases)
+	health = rd() % 6 + 50 + (20 * (lv - 1)); // Health ranges from 50 to 55 (values get higher by 20 per level as dungeon level increases)
 	ATK = rd() % 4 + 5 + (2 * (lv - 1));       // ATK ranges from 5 to 8 (values get higher by 2 per level as dungeon level increases)
 
 	if (!type)
@@ -88,7 +100,7 @@ void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 		ai = new AI(e_queue, image, RANGER, sight, speed, health, ATK);
 
 	ai->SetSpawn(*dungeon);      // Set a spawn point
-	while (Overlap(ai))          // Ensure the new AI doesn't spawn on top of anyone else
+	while (Overlap(ai) || OverlapWithPlayerStart(ai))    // Ensure the new AI doesn't spawn on top of anyone else
 		ai->SetSpawn(*dungeon);
 
 	group.insert(std::pair<int, AI*>(id, ai));
@@ -110,7 +122,7 @@ void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
 		BossID = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                        // Sight ranges from 3 to 5
 	speed = rd() % 3 + 2;                        // Speed ranges from 2 to 4
-	health = rd() % 11 + 300 + (50 * (lv - 1));  // Health ranges from 300 to 310 (values get higher by 50 per level as dungeon level increases)
+	health = rd() % 11 + 200 + (50 * (lv - 1));  // Health ranges from 200 to 210 (values get higher by 50 per level as dungeon level increases)
 	ATK = rd() % 4 + 10 + (5 * (lv - 1));        // ATK ranges from 10 to 13 (values get higher by 5 per level as dungeon level increases)
 
 	if (!type)

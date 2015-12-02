@@ -31,9 +31,10 @@ enum AI_FACE{ N, S, W, E };
 
 const int T_SIZE = 128;
 const int TICK_DELAY_MAX = 90;
+const int HIT_DELAY = 60;
 // Special Tick Delays reserved for boss AI
-const int TICK_DELAY_SPECIAL_MIN = 100;
-const int TICK_DELAY_SPECIAL_MAX = 120;
+const int TICK_DELAY_SPECIAL_MIN = 150;
+const int TICK_DELAY_SPECIAL_MAX = 200;
 
 //
 // This class is for pathfinding.
@@ -66,10 +67,11 @@ private:
 	AI_TYPE type;                                  // The type of AI (MELEE, RANGER, etc)
 	AI_FACE ai_direction;                          // The AI's current facing direction
 	bool proj_active;                              // Is the projectile active?
+	bool delay_hit;                                // Bool for ensuring that the AI gets hit one at a time
 	bool buff_active;                              // Special bool reserved for the boss AI.
 	int sight;                                     // How far the AI can see (in number of tiles)
 	int health, ATK, speed, range;                 // The AI's attribute values (note: range is in number of tiles)
-	int tick_delay;                                // For timing so that the AI doesn't attack the player every tick
+	int tick_delay, tick_hit_delay;                // For timing purposes
 	int special_tick_delay;                        // For timing with bosses
 	int bound_x, bound_y;                          // x and y bounds for the AI
 	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
