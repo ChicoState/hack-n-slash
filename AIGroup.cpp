@@ -91,7 +91,7 @@ void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 		id = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                      // Sight ranges from 3 to 5
 	speed = rd() % 3 + 3;                      // Speed ranges from 3 to 5
-	health = rd() % 6 + 50 + (20 * (lv - 1)); // Health ranges from 50 to 55 (values get higher by 20 per level as dungeon level increases)
+	health = rd() % 5 + 18 + (20 * (lv - 1));  // Health ranges from 18 to 22 (values get higher by 20 per level as dungeon level increases)
 	ATK = rd() % 4 + 5 + (2 * (lv - 1));       // ATK ranges from 5 to 8 (values get higher by 2 per level as dungeon level increases)
 
 	if (!type)
@@ -122,7 +122,7 @@ void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
 		BossID = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                        // Sight ranges from 3 to 5
 	speed = rd() % 3 + 2;                        // Speed ranges from 2 to 4
-	health = rd() % 11 + 200 + (50 * (lv - 1));  // Health ranges from 200 to 210 (values get higher by 50 per level as dungeon level increases)
+	health = rd() % 11 + 40 + (50 * (lv - 1));   // Health ranges from 40 to 50 (values get higher by 50 per level as dungeon level increases)
 	ATK = rd() % 4 + 10 + (5 * (lv - 1));        // ATK ranges from 10 to 13 (values get higher by 5 per level as dungeon level increases)
 
 	if (!type)
