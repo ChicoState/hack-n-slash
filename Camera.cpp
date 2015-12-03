@@ -65,6 +65,14 @@ void Camera::UpdateTransform()
 	al_use_transform(&CameraTransform);
 }
 
+//Resets the transform/translate position of the camera to regular screen space
+void Camera::ResetTranslate()
+{
+	//reset the transform and translation of the camera
+	al_identity_transform(&CameraTransform);
+	al_use_transform(&CameraTransform);
+}
+
 //!Gets and returns the mouse x world coordinate translated from the screen coordinate
 float Camera::GetMouseXWorldCoordinate()
 {

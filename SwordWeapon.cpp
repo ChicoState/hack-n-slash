@@ -9,7 +9,7 @@
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue = the allegro event queue of the game
 //		ALLEGROEVENT& InputAlEvent - the allegro event of the game
 SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent) : 
-				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 0.5, 10),
+				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 0.2, 10),
 				m_SwordWeaponTile(0, 0, 70, 70, true, true, false, true, 6)
 {
 	m_OnActive = true;
@@ -28,32 +28,30 @@ SwordWeapon::~SwordWeapon()
 //!Handles allegro events for the sword weapon class
 void SwordWeapon::EventHandler()
 {
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	//if the weapon is active watch the active timer
+	if(m_IsActive)
 	{
-		//if the weapon is active watch the active timer
-		if(m_IsActive)
+		//emit the event source that the projectile has moved
+		m_AlEvent.user.type = CUSTOM_EVENT_ID(MELEEATTACK_EVENT);
+		al_emit_user_event(&m_SwordActiveEventSource, &m_AlEvent, NULL);
+		m_OnActive = false;
+
+		//Update the weapon sprite tile
+		m_SwordWeaponTile.Event_Handler();
+
+		//iterate the timer
+		m_CurrentAttackCount++;
+
+		//if the active timer is reached
+		if(m_CurrentAttackCount >= m_AttackTime)
 		{
-			//emit the event source that the projectile has moved
-			m_AlEvent.user.type = CUSTOM_EVENT_ID(MELEEATTACK_EVENT);
-			al_emit_user_event(&m_SwordActiveEventSource, &m_AlEvent, NULL);
-			m_OnActive = false;
-
-			//Update the weapon sprite tile
-			m_SwordWeaponTile.Event_Handler();
-
-			//iterate the timer
-			m_CurrentAttackCount++;
-
-			//if the active timer is reached
-			if(m_CurrentAttackCount >= m_AttackTime)
-			{
-				//make weapon unactive and reset timer
-				m_IsActive = false;
-				m_CurrentAttackCount = 0;
-				m_OnActive = true;
-			}
+			//make weapon unactive and reset timer
+			m_IsActive = false;
+			m_CurrentAttackCount = 0;
+			m_OnActive = true;
 		}
 	}
+	
 }
 
 //!Handles drawing for the weapon class

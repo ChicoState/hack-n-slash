@@ -16,9 +16,10 @@ public:
 	Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the camera class
 	//Handles all the functions for the camera that need to be called every update
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, float PlayerYPosition); 
+	void ResetTranslate(); //Resets the transform/translate position of the camera to regular screen space
+
 	float GetCameraXPosition(); //Gets and returns the cameras x position
 	float GetCameraYPosition(); //Gets and returns the cameras y position
-
 	float GetMouseXWorldCoordinate(); //!Gets and returns the mouse x world coordinate translated from the screen coordinate
 	float GetMouseYWorldCoordinate(); //!Gets and returns the mouse y world coordinate translated from the screen coordinate
 

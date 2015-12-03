@@ -61,6 +61,7 @@ Player::Player(ALLEGRO_EVENT_QUEUE* InputEventQueue)
 	m_LockedYPosition = 0;
 	m_CanAttack = true;
 	m_IsDead = false;
+	m_NewRangedWeaponActivation = false;
 
 	m_SpeedPowerUp = false;
 	m_SpeedPowerUpTimer = 0;
@@ -107,26 +108,46 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 	if(m_AlEvent.type == AI_KILLED_EVENT)
 	{
 		GiveExperience();
+		m_ScoreCalculator.AddEnemyKilledScore();
 	}
 
-	if(m_AlEvent.type == FOODPICKUP_EVENT)
+	if(m_AlEvent.type == BOSS_KILLED_EVENT)
 	{
-		HealPlayer();
+		GiveExperience();
+		GiveExperience();
+		GiveExperience();
+		GiveExperience();
+		GiveExperience();
+		m_ScoreCalculator.AddBossKilledScore();
 	}
 
-	if(m_AlEvent.type == SPEEDPICKUP_EVENT)
+	//check for pickup event
+
+	if (InputAlEvent.type == PICKUP_EVENT)
 	{
-		m_SpeedPowerUp = true;
-		m_SpeedPowerUpTimer = 0;
-		m_MovementSpeed = m_SpeedPowerUpSpeed;
-	}
+		//get pickup event type
+		PICKUP_TYPES Type = (PICKUP_TYPES)InputAlEvent.user.data1;
 
-	if(m_AlEvent.type == STRENGTHPICKUP_EVENT)
-	{
-		m_StrengthPowerUp = true;
-		m_StrengthPowerUpTimer = 0;
-	}
+		//check for pickup event type
 
+		if (Type == FOOD)
+		{
+			HealPlayer();
+		}
+
+		if (Type == SPEED)
+		{
+			m_SpeedPowerUp = true;
+			m_SpeedPowerUpTimer = 0;
+			m_MovementSpeed = m_SpeedPowerUpSpeed;
+		}
+
+		if (Type == STR)
+		{
+			m_StrengthPowerUp = true;
+			m_StrengthPowerUpTimer = 0;
+		}
+	}
 	//check timers for power ups
 
 	if(m_SpeedPowerUp)
@@ -164,12 +185,22 @@ void Player::DrawPlayer()
 	//draw the player sprite and change depending on weapon
 	if(m_ActiveWeapon->IsRangedWeapon())
 	{
-		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), false, m_ActiveWeapon->IsActive());
+		//if its a new ranged weapon activation
+		if(m_NewRangedWeaponActivation)
+		{
+			m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), false, m_ActiveWeapon->IsActive(), true);
+			m_NewRangedWeaponActivation = false;
+		}
+
+		else
+		{
+			m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), false, m_ActiveWeapon->IsActive(), false);
+		}
 	}
 
 	else
 	{
-		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), m_ActiveWeapon->IsActive(), false);
+		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), m_ActiveWeapon->IsActive(), false, false);
 	}
 
 	//check weapon
@@ -194,8 +225,9 @@ void Player::DrawPlayer()
 	}
 
 	//draw health box
-	al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 320) + 25, al_map_rgb(0, 0, 0), 40);
+	//al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 320) + 25, al_map_rgb(0, 0, 0), 40);
 
+	/*
 	//draw health
 	std::string HealthNumber = std::to_string(m_CurrentHealth);
 	std::string FullHealthText = "Health: ";
@@ -209,6 +241,7 @@ void Player::DrawPlayer()
 	FullLevelText.append(LevelNumber);
 	char const *LevelChar = FullLevelText.c_str();
 	al_draw_text(font28, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 325, ALLEGRO_ALIGN_CENTER, LevelChar);
+	*/
 
 	//draw experience up
 	if(m_DrawExperienceUp)
@@ -221,7 +254,7 @@ void Player::DrawPlayer()
 			std::string FullExperienceText = "XP+ ";
 			FullExperienceText.append(ExperienceNumber);
 			char const *ExperienceChar = FullExperienceText.c_str();
-			al_draw_text(font16, al_map_rgb(50, 50, 0), m_XPosition, m_YPosition - 50 - (m_DrawExperienceUpTimer), ALLEGRO_ALIGN_CENTER, ExperienceChar);
+			al_draw_text(font16, al_map_rgb(241, 92, 34), m_XPosition, m_YPosition - 50 - (m_DrawExperienceUpTimer), ALLEGRO_ALIGN_CENTER, ExperienceChar);
 		}
 
 		else
@@ -240,7 +273,7 @@ void Player::DrawPlayer()
 		{
 			std::string FullLevelUpText = "LEVEL UP";
 			char const *LevelUpChar = FullLevelUpText.c_str();
-			al_draw_text(font28, al_map_rgb(50, 50, 0), m_XPosition, m_YPosition - 50 - (m_DrawLevelUpTimer), ALLEGRO_ALIGN_CENTER, LevelUpChar);
+			al_draw_text(font28, al_map_rgb(0, 86, 46), m_XPosition, m_YPosition - 50 - (m_DrawLevelUpTimer), ALLEGRO_ALIGN_CENTER, LevelUpChar);
 		}
 
 		else
@@ -253,7 +286,7 @@ void Player::DrawPlayer()
 	//draw strangth powerup color change
 	if(m_StrengthPowerUp)
 	{
-		al_draw_filled_ellipse(m_XPosition, m_YPosition + 5, m_XPosition, m_YPosition - 5, al_map_rgba(50, 50, 0, 30));
+		al_draw_filled_circle(m_XPosition, m_YPosition, 40, al_map_rgba(50, 50, 0, 30));
 	}
 
 
@@ -435,6 +468,11 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			{
 				m_ActiveWeapon->Attack();
 				m_CanAttack = false;
+
+				if(m_ActiveWeapon->IsRangedWeapon())
+				{
+					m_NewRangedWeaponActivation = true;
+				}
 			}
 			break;
 
@@ -1265,6 +1303,24 @@ float Player::GetWeaponDamage()
 	{
 		return (m_ActiveWeapon->GetDamage() * m_Level);
 	}
+}
+
+//!Gets and returns the current player score
+//Out
+//		int - the final calculated player score
+int Player::GetCurrentScore()
+{
+	return m_ScoreCalculator.GetCurrentPlayerScore();
+}
+
+//!Gets and returns the final player score calculated with the timer
+//In - 
+//		const ALLEGRO_TIMER* InputTimer - the input timer of the game
+//Out
+//		int - the final calculated player score
+int Player::GetFinalTimedScore(const ALLEGRO_TIMER* InputTimer)
+{
+	return m_ScoreCalculator.CalculateTimedScore(InputTimer);
 }
 
 //!Sets the x position of the player

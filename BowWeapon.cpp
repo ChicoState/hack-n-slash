@@ -34,56 +34,54 @@ BowWeapon::~BowWeapon()
 //!Handles allegro events for the Bow weapon class
 void BowWeapon::EventHandler()
 {
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	//if the weapon is active watch the active timer
+	if(m_IsActive)
 	{
-		//if the weapon is active watch the active timer
-		if(m_IsActive)
+		if(m_OnActive)
 		{
-			if(m_OnActive)
-			{
-				//emit the event source that the projectile has moved
-				m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
-				m_AlEvent.user.data1 = (intptr_t)m_Projectile;
-				al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
-				m_OnActive = false;
-			}
+			//emit the event source that the projectile has moved
+			m_AlEvent.user.type = CUSTOM_EVENT_ID(PROJECTILE_EVENT);
+			m_AlEvent.user.data1 = (intptr_t)m_Projectile;
+			al_emit_user_event(&m_ProjectileEventSource, &m_AlEvent, NULL);
+			m_OnActive = false;
+		}
 
-			//if the active timer is reached
-			if(m_CurrentAttackCount >= m_AttackTime || m_Projectile->IsAtRestingPosition())
-			{
-				//make weapon unactive and reset timer
-				m_IsActive = false;
-				m_CurrentAttackCount = 0;
-				//m_OnActive = true;
+		//if the active timer is reached
+		if(m_CurrentAttackCount >= m_AttackTime || m_Projectile->IsAtRestingPosition())
+		{
+			//make weapon unactive and reset timer
+			m_IsActive = false;
+			m_CurrentAttackCount = 0;
+			//m_OnActive = true;
 
-				if(m_IsRangedWeapon)
+			if(m_IsRangedWeapon)
+			{
+				if(m_Projectile != NULL)
 				{
-					if(m_Projectile != NULL)
-					{
-						m_Projectile->ResetProjectile();
-					}
+					m_Projectile->ResetProjectile();
 				}
 			}
+		}
 
-			else
+		else
+		{
+			//iterate the timer
+			m_CurrentAttackCount++;
+
+			//Update the weapon sprite tile
+			m_BowWeaponTile.Event_Handler();
+
+			//move the projectile if a ranged weapon
+			if(m_IsRangedWeapon)
 			{
-				//iterate the timer
-				m_CurrentAttackCount++;
-
-				//Update the weapon sprite tile
-				m_BowWeaponTile.Event_Handler();
-
-				//move the projectile if a ranged weapon
-				if(m_IsRangedWeapon)
+				if(m_Projectile != NULL)
 				{
-					if(m_Projectile != NULL)
-					{
-						m_Projectile->UpdatePosition();
-					}
+					m_Projectile->UpdatePosition();
 				}
 			}
 		}
 	}
+
 }
 
 //!Handles drawing for the weapon class

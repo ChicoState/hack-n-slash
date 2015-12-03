@@ -11,14 +11,21 @@
 #include "PickupObjectTile.h"
 #include "Utility.h"
 
+enum PICKUP_TYPES
+{
+	FOOD = 1,
+	SPEED,
+	STR
+};
+
 class PickupObject
 {
 public:
-	PickupObject(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int SpawnXPosition, int SpawnYPosition, int FrameWidth, int FrameHeight,
+	PickupObject(ALLEGRO_BITMAP *SpriteImage, ALLEGRO_EVENT_QUEUE* InputEventQueue, int SpawnXPosition, int SpawnYPosition, int FrameWidth, int FrameHeight,
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //Constructor for the PickupObject class
-	void EventHandler(); //Event handler for the PickupObject class
+	virtual void EventHandler(ALLEGRO_EVENT&) = 0; //Event handler for the PickupObject class
 	void Draw(); //Draws the PickupObject
-	virtual void DeletePickup(); //Calls delete on the pickup for it to execute its ending statements
+	void DeletePickup(); //Calls delete on the pickup for it to execute its ending statements
 	virtual bool IsPickupDead(); //Returns whether or not the pickup item has been picked up and should be deleted
 
 	int GetXBound(); //Gets and returns the X Bound
@@ -28,13 +35,14 @@ public:
 
 protected:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the pickupobject class
-	ALLEGRO_EVENT m_AlEvent; //the event variable for the pickup object class
 
 	int m_XBound; //the x bound
 	int m_YBound; //the y bound
 	int m_XPosition; //x position of the object
 	int m_YPosition; //y position of the object
 	bool m_IsDead; //true if the pickup has been picked up and should be destroyed else false
+
+	ALLEGRO_EVENT_SOURCE m_PickupEvent;
 
 private:
 	PickupObjectTile m_SpriteImage; //Sprite image for the pickup object
