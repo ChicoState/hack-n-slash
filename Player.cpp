@@ -816,7 +816,7 @@ void Player::GiveExperience()
 
 	//calculate the current levels max experience
 	//if the current experience is above the max experience level up the player
-	if(m_Experience >= ((m_Level * m_ExperienceMultiplier) * 4))
+	if(m_Experience >= ((m_Level * m_ExperienceMultiplier) * 8))
 	{
 		//carry over any extra experience
 		m_Experience = m_Experience - (m_Level * m_ExperienceMultiplier);
@@ -890,6 +890,7 @@ void Player::ResetPlayer()
 	m_Experience = 0;
 	m_MaxHealth = m_BaseMaxHealth;
 	m_CurrentHealth = m_MaxHealth;
+	m_ScoreCalculator.ResetScore();
 }
 
 //Returns whether or not the player is dead
@@ -1296,12 +1297,12 @@ float Player::GetWeaponDamage()
 
 	if(m_StrengthPowerUp)
 	{
-		return ((m_ActiveWeapon->GetDamage() * m_Level) * m_StrengthPowerupMultiplier);
+		return (((m_ActiveWeapon->GetDamage() + m_Level) * 2) * m_StrengthPowerupMultiplier);
 	}
 
 	else
 	{
-		return (m_ActiveWeapon->GetDamage() * m_Level);
+		return ((m_ActiveWeapon->GetDamage() + m_Level) * 2);
 	}
 }
 

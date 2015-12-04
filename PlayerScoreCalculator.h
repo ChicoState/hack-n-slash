@@ -18,6 +18,7 @@ public:
 	void AddEnemyKilledScore(); //Adds score to the player for a defeated enemy
 	void AddBossKilledScore();//Adds score to the player for a defeated boss
 	int CalculateTimedScore(const ALLEGRO_TIMER* InputTimer); //Calculates the player score according to the timed calculation
+	void ResetScore(); //Resets the player score
 
 	int GetCurrentPlayerScore(); //!Gets and returns the current score of the player
 

@@ -60,6 +60,13 @@ int PlayerScoreCalculator::CalculateTimedScore(const ALLEGRO_TIMER* InputTimer)
 	return CalculatedScore;
 }
 
+//Resets the player score
+void PlayerScoreCalculator::ResetScore()
+{
+	//reset the player score
+	m_CurrentPlayerScore = 0;
+}
+
 //!Gets and returns the current score of the player
 //Out
 //		int - the current player score
