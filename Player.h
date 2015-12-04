@@ -77,6 +77,7 @@ public:
 	int GetWeaponHitBoxXBoundTwo(); //!Gets and returns the current weapon's second active hit box x bound
 	int GetWeaponHitBoxYBoundTwo(); //!Gets and returns the current weapon's second active hit box y bound
 	Projectile* GetWeaponProjectile(); //!Gets and returns the current weapon's projectile if it is a ranged weapon
+	int GetCurrentLevel(); //Gets and returns the current player level
 	int GetCurrentHealth(); //Gets and returns the player's current health
 	float GetWeaponDamage(); //!Gets and returns the current weapon's damage
 	int GetCurrentScore(); //!Gets and returns the current player score

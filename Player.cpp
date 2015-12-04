@@ -1280,6 +1280,14 @@ Projectile* Player::GetWeaponProjectile()
 	return m_ActiveWeapon->GetProjectile();
 }
 
+//Gets and returns the player's current level
+//Out - 
+//		float - the player's current level
+int Player::GetCurrentLevel()
+{
+	return m_Level;
+}
+
 //Gets and returns the player's current health
 //Out - 
 //		float - the player's current health
