@@ -2,16 +2,18 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 12/1/2015
+// Date: 12/4/2015
 //
 #include "AI.h"
 
-#define INF 999999999  // This is used for the pathfinding algorithm
+#define INF 999999999
 
 //
-// Copied from DungeonGenerator.cpp. This will be useful for setting a random
-// spawn point for the AI. Added seed_modify to quickly ensure values like
-// the AI's spawn coordinates and ID are unique.
+// The function that returns a random number between 2 given numbers.
+//
+// @Return - The random number between RandomAmount1 and RandomAmount2
+// @Param RandomAmount1 - Lower range of the random number
+// @Param RandomAmount2 - Upper range of the random number
 //
 int randomize(int RandomAmount1, int RandomAmount2)
 {
@@ -21,8 +23,13 @@ int randomize(int RandomAmount1, int RandomAmount2)
 	return Number;
 }
 //
-// Searches a given vector of pointers to see if any one of them point to
+// The function that searches a given vector of pointers to see if any one of them point to
 // a PathNode with the specified coordinates.
+//
+// @Return - True if there's a pointer to the PathNode with the specified coordinates, false otherwise
+// @Param x - Specified x coordinate
+// @Param y - Specified y coordinate
+// @Param vect - Vector to check
 //
 bool InVector(int x, int y, std::vector<PathNode*> vect)
 {
@@ -34,13 +41,22 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 	return false;
 }
 //
-// AI Constructor
+// The AI Constructor
+//
+// @Param ev_queue - Pointer to the event queue
+// @Param SpriteImage - Pointer to the bitmap image to be used as the AI's sprite
+// @Param t - Specified AI type
+// @Param si - Specified AI sight
+// @Param sp - Specified AI speed
+// @Param he - Specified AI health
+// @Param AK - Specified AI ATK
 //
 AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK)
 	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2), proj_active(false),
 	tick_delay(TICK_DELAY_MAX), tick_hit_delay(HIT_DELAY), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(S), drops(ev_queue), ai_dungeon(NULL),
 	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
 {
+	// Register ai_boss_event_killed for bosses
 	if (type == BOSS_MELEE || type == BOSS_RANGER)
 	{
 		al_init_user_event_source(&ai_boss_event_killed);
@@ -48,12 +64,14 @@ AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, in
 		special_tick_delay = 0;
 		buff_active = false;
 	}
+	// Register ai_event_killed for regular AI
 	else
 	{
 		al_init_user_event_source(&ai_event_killed);
 		al_register_event_source(ai_ev_queue, &ai_event_killed);
 	}
 
+	// Construct a projectile object for rangers
 	if (type == RANGER || type == BOSS_RANGER)
 	{
 		int m_ProjectileXBound = 16;
@@ -66,8 +84,12 @@ AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, in
 		ai_projectile = NULL;
 }
 //
-// Checks to see if any of the AI's x bound points are within the player's
-// bound area. Returns true if it is, false otherwise.
+// The function that checks to see if any of the AI's x bound points are within the player's
+// bound area.
+//
+// @Return - True if v1 and v2 are in bound, false otherwise
+// @Param v1 - Player's bound point edge
+// @Param v2 - Player's bound point edge
 //
 bool AI::InBoundX(float v1, float v2)
 {
@@ -90,8 +112,12 @@ bool AI::InBoundX(float v1, float v2)
 	return false;
 }
 //
-// Checks to see if any of the AI's y bound points are within the player's
-// bound area. Returns true if it is, false otherwise.
+// The function that checks to see if any of the AI's y bound points are within the player's
+// bound area.
+//
+// @Return - True if v1 and v2 are in bound, false otherwise
+// @Param v1 - Player's bound point edge
+// @Param v2 - Player's bound point edge
 //
 bool AI::InBoundY(float v1, float v2)
 {
@@ -114,8 +140,12 @@ bool AI::InBoundY(float v1, float v2)
 	return false;
 }
 //
-// Checks to see if any of the projectile's x bound points are within the player's
-// bound area. Returns true if it is, false otherwise.
+// The function that checks to see if any of the projectile's x bound points are within the player's
+// bound area.
+//
+// @Return - True if v1 and v2 are in bound, false otherwise
+// @Param v1 - Player's bound point edge
+// @Param v2 - Player's bound point edge
 //
 bool AI::ProjectileInBoundX(float v1, float v2)
 {
@@ -130,8 +160,12 @@ bool AI::ProjectileInBoundX(float v1, float v2)
 	return false;
 }
 //
-// Checks to see if any of the projectile's y bound points are within the player's
-// bound area. Returns true if it is, false otherwise.
+// The function that checks to see if any of the projectile's y bound points are within the player's
+// bound area.
+//
+// @Return - True if v1 and v2 are in bound, false otherwise
+// @Param v1 - Player's bound point edge
+// @Param v2 - Player's bound point edge
 //
 bool AI::ProjectileInBoundY(float v1, float v2)
 {
@@ -146,11 +180,11 @@ bool AI::ProjectileInBoundY(float v1, float v2)
 	return false;
 }
 //
-// Set a random spawn point in a given dungeon. Most of the code here is
-// based off of the code in DungeonGenerator::SetStartPosition that sets
-// the player's starting position in the dungeon. This function MUST be executed
-// first before the AI can be used because the ai_dungeon pointer has to
-// be set.
+// This function randomly sets the AI's spawn point in the specified dungeon.
+// This function MUST be executed first before using the AI since this function
+// sets the AI's dungeon pointer.
+//
+// @Param dungeon - The dungeon where the AI will spawn
 //
 void AI::SetSpawn(DungeonGenerator &dungeon)
 {
@@ -178,36 +212,46 @@ void AI::SetSpawn(DungeonGenerator &dungeon)
 	ai_dungeon = &dungeon;
 }
 //
-// Move along the path to the target that has been found in AI::FindPath. The AI will move
-// along the center of each tile.
+// This function makes the AI move along the path to the target that has been found in AI::FindPath.
+// The AI will move along the center of each tile.
 //
 void AI::MoveAlongPath()
 {
 	PathNode* p_node;
 
+	// Do nothing if there's no path
 	if (path.empty())
 		return;
 	else
 	{
+		// Get the PathNode from the back of the path vector
 		p_node = path.back();
+		// If the AI makes it to the middle of the tile specified by the current PathNode, pop it and get the next node
 		if (ai_x == p_node->X() * T_SIZE + (T_SIZE / 2) && ai_y == p_node->Y() * T_SIZE + (T_SIZE / 2))
 		{
 			path.pop_back();
+			// If the path vector becomes empty, the AI has reached the end of the path
 			if (path.empty())
 				return;
 			p_node = path.back();
 		}
+		// Move towards the middle of the tile specified by the current PathNode
 		MoveTowardTarget(p_node->X() * T_SIZE + (T_SIZE / 2), p_node->Y() * T_SIZE + (T_SIZE / 2));
 	}
 }
 //
-// Move toward the given coordinates.
+// This function makes the AI move toward the given coordinates.
+//
+// @Param t_x - Target x coordinate
+// @Param t_y - Target y coordinate
 //
 void AI::MoveTowardTarget(int t_x, int t_y)
 {
 	if (ai_y > t_y)
 	{
 		MoveUp();
+		// The nested if branches are useful whenever the AI's
+		// speed makes the AI move right past the target coordinates
 		if (ai_y < t_y)
 			ai_y = t_y;
 	}
@@ -230,18 +274,37 @@ void AI::MoveTowardTarget(int t_x, int t_y)
 			ai_x = t_x;
 	}
 }
+//
+// This function makes the AI move into a position where the player is in
+// a straight line of the AI's sight and the AI is close enough.
+//
+// @Param p - The player in question
+//
 void AI::MoveIntoRange(Player &p)
 {
 	int p_x = p.GetXPosition();
 	int p_y = p.GetYPosition();
+	int ai_x_prev = ai_x;
+	int ai_y_prev = ai_y;
 	int dist_x = abs(ai_x - p_x);
 	int dist_y = abs(ai_y - p_y);
 
 	if (p_y != ai_y && dist_x > T_SIZE / 4)
+	{
 		MoveTowardTarget(ai_x, p_y);
+		if (ai_x == ai_x_prev)
+			MoveTowardTarget(p_x, ai_y);
+	}
 	else
+	{
 		MoveTowardTarget(p_x, ai_y);
+		if (ai_y == ai_y_prev)
+			MoveTowardTarget(ai_x, p_y);
+	}
 }
+//
+// This function makes the AI move up if it can. It also updates the facing direction and sprite.
+//
 void AI::MoveUp()
 {
 	ai_direction = N;
@@ -252,6 +315,9 @@ void AI::MoveUp()
 		ai_tile.Event_Handler();
 	}
 }
+//
+// This function makes the AI move down if it can. It also updates the facing direction and sprite.
+//
 void AI::MoveDown()
 {
 	ai_direction = S;
@@ -262,6 +328,9 @@ void AI::MoveDown()
 		ai_tile.Event_Handler();
 	}
 }
+//
+// This function makes the AI move left if it can. It also updates the facing direction and sprite.
+//
 void AI::MoveLeft()
 {
 	ai_direction = W;
@@ -272,6 +341,9 @@ void AI::MoveLeft()
 		ai_tile.Event_Handler();
 	}
 }
+//
+// This function makes the AI move right if it can. It also updates the facing direction and sprite.
+//
 void AI::MoveRight()
 {
 	ai_direction = E;
@@ -283,7 +355,11 @@ void AI::MoveRight()
 	}
 }
 //
-// Check to see if the AI can see the player. Returns true if it can, false otherwise.
+// This function checks to see if the AI can see the player. It searches
+// the tiles around the AI and within sight.
+//
+// @Return - True if the AI sees the player, false otherwise
+// @Param p - The player in question
 //
 bool AI::SeePlayer(Player &p)
 {
@@ -338,6 +414,13 @@ bool AI::SeePlayer(Player &p)
 	}
 	return false;
 }
+//
+// This function checks to see if the AI is in a position where the player is in
+// a straight line of the AI's sight and the AI is close enough.
+//
+// @Return - True if the player is within range, false otherwise
+// @Param p - The player in question
+//
 bool AI::InRange(Player &p)
 {
 	int p_x = p.GetXPosition();
@@ -365,9 +448,12 @@ bool AI::InRange(Player &p)
 	return false;
 }
 //
-// Using the A* pathfinding algorithm, the AI will find the shortest path from its
-// current position to the specified coordinates. The said path will be stored in the AI's
-// path stack.
+// This function makes the AI find the shortest path from its current position to
+// the specified coordinates. The said path will be stored in the AI's path stack.
+// This function uses the A* Pathfinding algorithm.
+//
+// @Param t_x - Target x coordinate (relative to the dungeon)
+// @Param t_y - Target y coordinate (relative to the dungeon)
 //
 void AI::FindPath(int t_x, int t_y)
 {
@@ -377,7 +463,7 @@ void AI::FindPath(int t_x, int t_y)
 	std::vector<PathNode*> open_vector;
 	std::vector<PathNode*> closed_vector;
 	std::vector<PathNode*>::reverse_iterator p_it;
-	PathNode* cur_node;
+	PathNode* cur_node = NULL;
 	int f_lowest;
 	int g_tentative;
 
@@ -487,7 +573,8 @@ void AI::FindPath(int t_x, int t_y)
 	}
 }
 //
-// Deallocates all PathNodes created in AI::FindPath and clears all vectors. Gotta prevent memory leaks :P
+// This function deallocates all PathNodes created in AI::FindPath and clears all vectors.
+// Gotta prevent memory leaks.
 //
 void AI::CleanPath()
 {
@@ -497,7 +584,10 @@ void AI::CleanPath()
 	path.clear();
 }
 //
-// Checks to see if the AI collides with the player. Returns true if it does, false otherwise.
+// This function checks to see if the AI collides with the player.
+//
+// @Return - True if the AI collides with the player, false otherwise
+// @Param p - The player in question
 //
 bool AI::CollideWithPlayer(Player &p)
 {
@@ -522,7 +612,10 @@ bool AI::CollideWithPlayer(Player &p)
 	return false;
 }
 //
-// Checks to see if the AI's projectile collides with the player.
+// This function checks to see if the AI's projectile collides with the player.
+//
+// @Return - True if the projectile collides with the player, false otherwise
+// @Param p - The player in question
 //
 bool AI::ProjectileCollideWithPlayer(Player &p)
 {
@@ -542,7 +635,7 @@ bool AI::ProjectileCollideWithPlayer(Player &p)
 	return false;
 }
 //
-// Shoots a projectile in the direction the AI is facing.
+// This function shoots a projectile in the direction the AI is currently facing.
 //
 void AI::Shoot()
 {
@@ -564,7 +657,9 @@ void AI::Shoot()
 		ai_projectile->SendProjecile(ai_x, ai_y, 0, -1);
 }
 //
-// Makes the AI face toward the player.
+// This function makes the AI face toward the player.
+//
+// @Param p - The player in question
 //
 void AI::FacePlayer(Player &p)
 {
@@ -594,8 +689,11 @@ void AI::FacePlayer(Player &p)
 	}
 }
 //
-// Checks to see if the given player bound points are within the AI's collusion bound.
-// Returns true if they do, false otherwise.
+// This function checks to see if the given player bound points are within the AI's collusion bound.
+//
+// @Return - True if the bound points are within the AI's collusion bound, false otherwise
+// @Param pb_x - The player's x bound point
+// @Param pb_y - The player's y bound point
 //
 bool AI::CollusionBlock(int pb_x, int pb_y)
 {
@@ -606,14 +704,20 @@ bool AI::CollusionBlock(int pb_x, int pb_y)
 	return false;
 }
 //
-// Checks to see if the given weapon bound points are within the AI's collusion bound.
+// This function checks to see if the given weapon bound points are within the AI's collusion bound.
 // Deals damage to the AI if it is. If the AI's health drops to 0 or below, it dies.
+//
+// @Param w_x - The weapons's x bound point
+// @Param w_y - The weapons's y bound point
+// @Param w_d - The damage the weapon deals
 //
 void AI::WeaponHit(int w_x, int w_y, int w_d)
 {
 	if (w_x >= GetXWestBoundPoint() && w_x <= GetXEastBoundPoint())
 		if (w_y >= GetYNorthBoundPoint() && w_y <= GetYSouthBoundPoint())
 		{
+			// The tick_hit_delay prevents the AI from taking damage every tick of one attack
+			// It gets incremented in ProcessAI
 			if (tick_hit_delay >= HIT_DELAY)
 			{
 				tick_hit_delay = 0;
@@ -640,12 +744,14 @@ void AI::WeaponHit(int w_x, int w_y, int w_d)
 		}
 }
 //
-// Draw the AI to the screen.
+// This function draws the AI to the screen.
 //
 void AI::Draw()
 {
 	// Draw the pickup drop (even when the AI is dead)
 	drops.Draw();
+	
+	// Do not draw dead AI
 	if (state == DEAD)
 		return;
 
@@ -665,12 +771,17 @@ void AI::Draw()
 // The event handler for events besides ALLEGRO_EVENT_TIMER. This is useful for items that have
 // been dropped after the AI died.
 //
+// @Param ev - Allegro event variable
+//
 void AI::EventHandler(ALLEGRO_EVENT &ev)
 {
 	drops.Event_Handler(ev);
 }
 //
-// The AI in action.
+// This function is where the AI gets processed.
+//
+// @Param ev - Allegro event variable
+// @Param player - The player the AI will deal with
 //
 void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
@@ -678,9 +789,10 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 	if (ev.type != ALLEGRO_EVENT_TIMER)
 		return;
 	
-	ai_ev = ev;
+	ai_ev = ev;  // Update ai_ev
 	ProcessProjectile(player);
 
+	// Do not process dead AI
 	if (type == DEAD)
 		return;
 	
@@ -688,6 +800,8 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 	if (type == BOSS_MELEE || type == BOSS_RANGER)
 		ProcessBossBuff();
 
+	// Idle AI do nothing but check to see if it can see the player
+	// The state will change to CHASE when it sees the player
 	if (state == IDLE)
 	{
 		if (SeePlayer(player))
@@ -696,6 +810,12 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			std::cout << "The AI sees you...\n";
 		}
 	}
+	// In this state, the AI will chase the player. The melee AI will move toward
+	// the player and then switch its state to ATTCK when it collides with the player.
+	// The ranger AI will move into a position where it can shoot the player, and then
+	// change its state to ATTACK. When it loses sight of the player, it will form
+	// a path to the coordinates where the player was last seen and then change
+	// its state to SEEK.
 	else if (state == CHASE)
 	{
 		if (!SeePlayer(player))
@@ -705,6 +825,7 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			std::cout << "The AI lost sight of you, and is now heading towards your last known location...\n";
 			return;
 		}
+		// Record the player's current position while chasing
 		l_x = player.GetXPosition();
 		l_y = player.GetYPosition();
 		if (type == MELEE || type == BOSS_MELEE)
@@ -726,6 +847,10 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			MoveIntoRange(player);
 		}
 	}
+	// In this state, the AI will move along the path it formed after chasing the player.
+	// When it happens to see the player while in this state, the AI will clear the path
+	// and then switch its state back to CHASE. When the AI reaches the end of the path without
+	// seeing the player, it will change its state to IDLE.
 	else if (state == SEEK)
 	{
 		if (SeePlayer(player))
@@ -742,6 +867,8 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			std::cout << "The AI is now IDLE again...\n";
 		}
 	}
+	// This state is where the AI will execute the helper functions for attacking the player.
+	// The state will get changed in those functions.
 	else if (state == ATTACK)
 	{
 		if (type == MELEE || type == BOSS_MELEE)
@@ -751,13 +878,14 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 	}
 }
 //
-// For bosses, use a special tick delay variable to determine when to activate or deactivate
-// certain buffs.
+// Bosses use a special tick delay variable to determine when to toggle
+// certain buffs. This function takes care of that.
 //
 void AI::ProcessBossBuff()
 {
 	if (type == BOSS_MELEE)
 	{
+		// Activate buff
 		if (!buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MAX)
 		{
 			EnableMeleeBossBuff(5);
@@ -765,6 +893,7 @@ void AI::ProcessBossBuff()
 			buff_active = true;
 			special_tick_delay = 0;
 		}
+		// Deactivate buff
 		else if (buff_active && special_tick_delay >= TICK_DELAY_SPECIAL_MIN)
 		{
 			DisableMeleeBossBuff(5);
@@ -793,7 +922,9 @@ void AI::ProcessBossBuff()
 	special_tick_delay++;
 }
 //
-// Process the projectile if the the projectile is active.
+// This function processes the projectile if the the projectile is active.
+//
+// @Param p - The player the projectile will deal with
 //
 void AI::ProcessProjectile(Player &p)
 {
@@ -815,7 +946,9 @@ void AI::ProcessProjectile(Player &p)
 	}
 }
 //
-// For melee types, attack the player in close range.
+// This function makes the melee AI attack the player in close range.
+//
+// @Param p - The player the AI will deal with
 //
 void AI::MeleeAttack(Player &p)
 {
@@ -825,16 +958,19 @@ void AI::MeleeAttack(Player &p)
 		std::cout << "The Melee AI is now chasing you again...\n";
 	}
 	FacePlayer(p);
+	tick_delay++;
+	// The delays will keep the AI from attacking the player every tick
 	if (tick_delay >= TICK_DELAY_MAX)
 	{
 		DealDamageToPlayer(p, ATK);
 		std::cout << "Dealing " << ATK << " damage to player...\n";
 		tick_delay = 0;
 	}
-	tick_delay++;
 }
 //
-// For ranger types, shoot at the player in sight.
+// This function makes the ranger AI shoot at the player in range.
+//
+// @Param p - The player the AI will deal with
 //
 void AI::RangerAttack(Player &p)
 {
