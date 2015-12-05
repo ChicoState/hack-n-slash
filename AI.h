@@ -78,11 +78,9 @@ private:
 	Projectile *ai_projectile;                     // Pointer to the projectile the ranger AI will fire
 	std::vector<PathNode*> path;                   // The current path for the AI to follow
 	std::vector<PathNode*> garbage;                // Use for deallocating all PathNodes when the AI no longer needs the path
-	TerrainObject_Manager drops;                   // Use for dropping pickups upon death
 	ALLEGRO_EVENT ai_ev;                           // Allegro event variable
 	ALLEGRO_EVENT_SOURCE ai_event_killed, ai_boss_event_killed;  // Custom allegro event sources
 	ALLEGRO_EVENT_QUEUE *ai_ev_queue;              // Allegro event queue
-
 	//
 	// Private functions
 	//
@@ -145,7 +143,6 @@ public:
 	void SetSpawn(DungeonGenerator &);             // Set a random spawn point and then set the ai_dungeon pointer
 	void FindPath(int, int);                       // Find the shortest path to the given target coordinates (using A*)
 	bool SeePlayer(Player &);                      // Check to see if the AI can see the player
-	void EventHandler(ALLEGRO_EVENT &);            // Event handler for the AI
 	void ProcessAI(ALLEGRO_EVENT &, Player &);     // Process the AI
 	int GetState() { return state; }               // Return the AI's current state
 	int GetType() { return type; }                 // Return the AI's type

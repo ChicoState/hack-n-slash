@@ -12,7 +12,7 @@
 //
 // @Param e_q - Pointer to the event queue to be used for this group
 //
-AI_Group::AI_Group(ALLEGRO_EVENT_QUEUE* e_q) : e_queue(e_q), BossActive(false)
+AI_Group::AI_Group(ALLEGRO_EVENT_QUEUE* e_q) : e_queue(e_q), drops(e_q), BossActive(false)
 {
 	melee_sprite = al_load_bitmap("AI_Melee.png");
 	ranger_sprite = al_load_bitmap("AI_Ranger.png");
@@ -44,12 +44,12 @@ void AI_Group::EventHandler(ALLEGRO_EVENT &ev)
 	// Spawn the boss when SPAWN_BOSS_EVENT emits. Only one boss is allowed per group.
 	if (ev.type == SPAWN_BOSS_EVENT && !BossActive)
 		SpawnBoss(ev.user.data1, ev.user.data2);
-	// For handling pickups the AI will drop on death
+	// Spawn a pickup when an AI is killed
+	else if (ev.type == AI_KILLED_EVENT || ev.type == BOSS_KILLED_EVENT)
+		drops.SpawnObjectRandom(Vec2i(ev.user.data1, ev.user.data2), 100);
+	// Handler for pickups
 	else if (ev.type == PLAYERPOSITION_EVENT)
-	{
-		for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-			(it->second)->EventHandler(ev);
-	}
+		drops.Event_Handler(ev);
 }
 //
 // This function checks to see if the given AI overlaps with anyone else in the group.
@@ -81,6 +81,22 @@ bool AI_Group::OverlapWithPlayerStart(AI* ai)
 		return true;
 	else
 		return false;
+}
+//
+// This function sets a random spawn point for an AI without overlapping with the player's starting
+// position and any other AI in the group
+//
+// @Param ai - Pointer to the AI in question
+//
+void AI_Group::SetRandomSpawn(AI* ai)
+{
+	ai->SetSpawn(*dungeon);  // Set a spawn point
+	// If the AI overlaps with another AI or the player's starting position, move it away from it.
+	if (Overlap(ai) || OverlapWithPlayerStart(ai))
+	{
+		ai->SetXPosition(ai->GetXPosition() + Random(0, T_SIZE));
+		ai->SetYPosition(ai->GetYPosition() + Random(0, T_SIZE));
+	}
 }
 //
 // This function sets up the group with a given number of randomly generated AI. This function also sets the
@@ -125,10 +141,7 @@ void AI_Group::AddRandom()
 	else
 		ai = new AI(e_queue, ranger_sprite, RANGER, sight, speed, health, ATK);
 
-	ai->SetSpawn(*dungeon);                              // Set a spawn point
-	while (Overlap(ai) || OverlapWithPlayerStart(ai))    // Ensure the new AI doesn't spawn on top of anyone else
-		ai->SetSpawn(*dungeon);
-
+	SetRandomSpawn(ai);
 	group.insert(std::pair<int, AI*>(id, ai));
 }
 //
@@ -194,10 +207,12 @@ void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 	}
 }
 //
-// This function draws everyone in the group on the screen.
+// This function draws everyone in the group on the screen. It also draws all
+// pickups.
 //
 void AI_Group::DrawAll()
 {
+	drops.Draw();
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
 		(it->second)->Draw();
 }
