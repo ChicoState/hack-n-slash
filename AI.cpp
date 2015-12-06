@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 12/4/2015
+// Date: 12/6/2015
 //
 #include "AI.h"
 
@@ -52,9 +52,9 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 // @Param AK - Specified AI ATK
 //
 AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, int si, int sp, int he, int AK)
-	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2), proj_active(false),
+	: ai_ev_queue(ev_queue), state(IDLE), type(t), sight(si), speed(sp), health(he), ATK(AK), range(2), proj_active(false), melee_draw(false),
 	tick_delay(TICK_DELAY_MAX), tick_hit_delay(HIT_DELAY), ai_x(0), ai_y(0), bound_x(48), bound_y(64), ai_direction(S), ai_dungeon(NULL),
-	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6)
+	ai_tile(SpriteImage, 0, 0, bound_x, bound_y, true, true, false, true, 6), ai_melee_tile(0, 0, 48, 64, true, true, false, true, 6)
 {
 	// Register ai_boss_event_killed for bosses
 	if (type == BOSS_MELEE || type == BOSS_RANGER)
@@ -759,6 +759,11 @@ void AI::Draw()
 	// Draw the AI's sprite
 	ai_tile.Draw((ai_x - bound_x / 2), (ai_y - bound_y / 2));
 
+	// For Melee AI, draw the AI's melee sprite (a fireball)
+	if (type == MELEE || type == BOSS_MELEE)
+		if (melee_draw == true)
+			DrawMelee();
+
 	// Draw the AI's projectile
 	if (ai_projectile && proj_active)
 		ai_projectile->Draw();
@@ -769,6 +774,20 @@ void AI::Draw()
 		al_draw_filled_circle((*it)->X() * T_SIZE + (T_SIZE / 2), (*it)->Y() * T_SIZE + (T_SIZE / 2), 5, al_map_rgb(255, 0, 255));
 }
 //
+// This function draws the melee AI's weapon sprite (a fireball) in a particular direction.
+//
+void AI::DrawMelee()
+{
+	if (ai_direction == N)
+		ai_melee_tile.Draw(ai_x, (ai_y - bound_y / 2), 0, -1, true);
+	else if (ai_direction == S)
+		ai_melee_tile.Draw(ai_x, (ai_y + bound_y / 2), 0, 1, true);
+	else if (ai_direction == W)
+		ai_melee_tile.Draw((ai_x - bound_x / 2), ai_y, -1, 0, true);
+	else if (ai_direction == E)
+		ai_melee_tile.Draw((ai_x + bound_x / 2), ai_y, 1, 0, true);
+}
+//
 // This function is where the AI gets processed.
 //
 // @Param ev - Allegro event variable
@@ -777,6 +796,7 @@ void AI::Draw()
 void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 {
 	tick_hit_delay++;
+
 	if (ev.type != ALLEGRO_EVENT_TIMER)
 		return;
 	
@@ -946,14 +966,20 @@ void AI::MeleeAttack(Player &p)
 	if (!CollideWithPlayer(p))
 	{
 		state = CHASE;
+		melee_draw = false;
 		std::cout << "The Melee AI is now chasing you again...\n";
+		return;
 	}
 	FacePlayer(p);
 	tick_delay++;
+	// Only draw the fireball for half of TICK_DELAY_MAX
+	if (tick_delay >= TICK_DELAY_MAX / 2)
+		melee_draw = false;
 	// The delays will keep the AI from attacking the player every tick
 	if (tick_delay >= TICK_DELAY_MAX)
 	{
 		DealDamageToPlayer(p, ATK);
+		melee_draw = true;
 		std::cout << "Dealing " << ATK << " damage to player...\n";
 		tick_delay = 0;
 	}
@@ -969,6 +995,7 @@ void AI::RangerAttack(Player &p)
 	{
 		state = CHASE;
 		std::cout << "The Ranger AI is getting in range again...\n";
+		return;
 	}
 	FacePlayer(p);
 	tick_delay++;

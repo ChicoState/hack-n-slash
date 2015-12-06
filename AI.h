@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 12/4/2015
+// Date: 12/6/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -20,6 +20,7 @@
 #include "DungeonGenerator.h"
 #include "Projectile.h"
 #include "TerrainGenerator.h"
+#include "AIMeleeTile.h"
 
 // Constants
 #define T_SIZE 128
@@ -65,6 +66,7 @@ private:
 	AI_FACE ai_direction;                          // The AI's current facing direction
 	bool proj_active;                              // Bool that tells whether the projectile is active or not
 	bool delay_hit;                                // Bool for ensuring that the AI gets hit one at a time
+	bool melee_draw;                               // Bool for determining when to draw the AIMeleeTile
 	bool buff_active;                              // Special bool for the boss AI (For temporary buffs)
 	int sight;                                     // How far the AI can see (in number of tiles)
 	int health, ATK, speed, range;                 // The AI's attribute values (note: range is in number of tiles)
@@ -74,6 +76,7 @@ private:
 	float ai_x, ai_y;                              // The coordinates of the AI's position relative to the display
 	float l_x, l_y;                                // The coordinates where the player was last seen
 	AITile ai_tile;                                // The AI sprite
+	AIMeleeTile ai_melee_tile;                     // The sprite to be used when a melee AI attacks the player
 	DungeonGenerator *ai_dungeon;                  // Pointer to the dungeon the AI is spawned in
 	Projectile *ai_projectile;                     // Pointer to the projectile the ranger AI will fire
 	std::vector<PathNode*> path;                   // The current path for the AI to follow
@@ -101,6 +104,8 @@ private:
 	bool CollideWithPlayer(Player &p);             // Check to see if it the AI collides with the player
 	bool ProjectileCollideWithPlayer(Player &);    // Check to see if the projectile collides with the player
 	void Shoot();                                  // Makes the AI shoot a projectile
+	// Helper function for Draw
+	void DrawMelee();                              // Draw the melee weapon sprite
 	// Helper functions for ProcessAI
 	void ProcessProjectile(Player &);              // Process the projectile (if it is active)
 	void MeleeAttack(Player &);                    // Melee AI calls this function in ATTACK mode
