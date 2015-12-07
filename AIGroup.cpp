@@ -2,13 +2,28 @@
 // File: AIGroup.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 11/30/2015
+// Date: 12/4/2015
 //
 #include "AI.h"
 #include "AIGroup.h"
 
 //
-// Check the container to see if the specified ID exists in the container.
+// This AI_Group constructor.
+//
+// @Param e_q - Pointer to the event queue to be used for this group
+//
+AI_Group::AI_Group(ALLEGRO_EVENT_QUEUE* e_q) : e_queue(e_q), drops(e_q), BossActive(false)
+{
+	melee_sprite = al_load_bitmap("AI_Melee.png");
+	ranger_sprite = al_load_bitmap("AI_Ranger.png");
+	boss_melee_sprite = al_load_bitmap("AI_Boss_Melee.png");
+	boss_ranger_sprite = al_load_bitmap("AI_Boss_Ranger.png");
+}
+//
+// This function checks the container to see if the specified ID exists in the container.
+//
+// @Return: True if the id exists, false otherwise
+// @Param id - The ID to check
 //
 bool AI_Group::IDExists(int id)
 {
@@ -20,23 +35,28 @@ bool AI_Group::IDExists(int id)
 	return false;
 }
 //
-// Event handler
+// The event handler for the group.
+//
+// @Param ev - Allegro event variable
 //
 void AI_Group::EventHandler(ALLEGRO_EVENT &ev)
 {
+	// Handler for pickups
+	drops.Event_Handler(ev);
+
+
+	// Spawn the boss when SPAWN_BOSS_EVENT emits. Only one boss is allowed per group.
 	if (ev.type == SPAWN_BOSS_EVENT && !BossActive)
-	{
-		ALLEGRO_BITMAP *image = al_load_bitmap("AI_Boss.png");
-		SpawnBoss(image, ev.user.data1, ev.user.data2);
-	}
-	else if (ev.type == PLAYERPOSITION_EVENT)
-	{
-		for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-			(it->second)->EventHandler(ev);
-	}
+		SpawnBoss(ev.user.data1, ev.user.data2);
+	// Spawn a pickup when an AI is killed
+	else if (ev.type == AI_KILLED_EVENT || ev.type == BOSS_KILLED_EVENT)
+		drops.SpawnObjectRandom(Vec2i(ev.user.data1, ev.user.data2), 25);
 }
 //
-// Check to see if the given AI overlaps with anyone else in the group
+// This function checks to see if the given AI overlaps with anyone else in the group.
+//
+// @Return - True if the AI overlaps with another AI in the group, false otherwise
+// @Param ai - Pointer to the AI used to check the container for overlap
 //
 bool AI_Group::Overlap(AI* ai)
 {
@@ -49,9 +69,44 @@ bool AI_Group::Overlap(AI* ai)
 	return false;
 }
 //
-// Set up the group with a given number of randomly generated AI.
+// This function checks to see if the given AI overlaps with the player's starting position.
 //
-void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
+// @Return - True if the ai overlaps with the player's starting position in the dungeon, false otherwise
+// @Param ai - Pointer to the AI used to check for overlap
+//
+bool AI_Group::OverlapWithPlayerStart(AI* ai)
+{
+	Vec2f pos = ai->GetActiveDungeon()->GetStartPosition();
+
+	if (ai->GetXPosition() == pos.x() && ai->GetYPosition() == pos.y())
+		return true;
+	else
+		return false;
+}
+//
+// This function sets a random spawn point for an AI without overlapping with the player's starting
+// position and any other AI in the group
+//
+// @Param ai - Pointer to the AI in question
+//
+void AI_Group::SetRandomSpawn(AI* ai)
+{
+	ai->SetSpawn(*dungeon);  // Set a spawn point
+	// If the AI overlaps with another AI or the player's starting position, move it away from it.
+	if (Overlap(ai) || OverlapWithPlayerStart(ai))
+	{
+		ai->SetXPosition(ai->GetXPosition() + Random(0, T_SIZE));
+		ai->SetYPosition(ai->GetYPosition() + Random(0, T_SIZE));
+	}
+}
+//
+// This function sets up the group with a given number of randomly generated AI. This function also sets the
+// group's dungeon pointer, meaning this function MUST be called first before calling AddRandom or SpawnBoss.
+//
+// @Param n - The number of AI to spawn
+// @Param d - The dungeon where the AI will be spawned
+//
+void AI_Group::RandomSetup(int n, DungeonGenerator &d)
 {
 	// If the group is not empty, clear it first
 	if (!group.empty())
@@ -61,12 +116,12 @@ void AI_Group::RandomSetup(int n, DungeonGenerator &d, ALLEGRO_BITMAP *image)
 	dungeon = &d;
 
 	for (int i = 0; i < n; i++)
-		AddRandom(image);
+		AddRandom();
 }
 //
-// Generate a new AI with random attributes and then add it to the group.
+// This function generates a new AI with random attributes and then adds it to the group.
 //
-void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
+void AI_Group::AddRandom()
 {
 	AI* ai;
 	std::random_device rd;
@@ -78,25 +133,25 @@ void AI_Group::AddRandom(ALLEGRO_BITMAP *image)
 	while (IDExists(id))                       // Ensure the ID is unique
 		id = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                      // Sight ranges from 3 to 5
-	speed = rd() % 3 + 2;                      // Speed ranges from 2 to 4
-	health = rd() % 6 + 100 + (20 * (lv - 1)); // Health ranges from 100 to 105 (values get higher by 20 per level as dungeon level increases)
+	speed = rd() % 3 + 3;                      // Speed ranges from 3 to 5
+	health = rd() % 5 + 18 + ((15 + Random(1, (lv + 6))) * (lv - 1)); // Health ranges from 50 to 55 (values get higher by 20 per level as dungeon level increases)
 	ATK = rd() % 4 + 5 + (2 * (lv - 1));       // ATK ranges from 5 to 8 (values get higher by 2 per level as dungeon level increases)
 
 	if (!type)
-		ai = new AI(e_queue, image, MELEE, sight, speed, health, ATK);
+		ai = new AI(e_queue, melee_sprite, MELEE, sight, speed, health, ATK);
 	else
-		ai = new AI(e_queue, image, RANGER, sight, speed, health, ATK);
+		ai = new AI(e_queue, ranger_sprite, RANGER, sight, speed, health, ATK);
 
-	ai->SetSpawn(*dungeon);      // Set a spawn point
-	while (Overlap(ai))          // Ensure the new AI doesn't spawn on top of anyone else
-		ai->SetSpawn(*dungeon);
-
+	SetRandomSpawn(ai);
 	group.insert(std::pair<int, AI*>(id, ai));
 }
 //
-// Generate a boss AI for the dungeon
+// This function generates a boss AI for the dungeon at specified coordinates.
 //
-void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
+// @Param x - x coordinate of the spawn point
+// @Param y - y coordinate of the spawn point
+//
+void AI_Group::SpawnBoss(int x, int y)
 {
 	AI* ai;
 	std::random_device rd;
@@ -110,13 +165,13 @@ void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
 		BossID = rd() % 99999 + 1;
 	sight = rd() % 3 + 3;                        // Sight ranges from 3 to 5
 	speed = rd() % 3 + 2;                        // Speed ranges from 2 to 4
-	health = rd() % 11 + 300 + (50 * (lv - 1));  // Health ranges from 300 to 310 (values get higher by 50 per level as dungeon level increases)
+	health = rd() % 11 + 40 + (30 * (lv - 1));   // Health ranges from 40 to 50 (values get higher by 30 per level as dungeon level increases)
 	ATK = rd() % 4 + 10 + (5 * (lv - 1));        // ATK ranges from 10 to 13 (values get higher by 5 per level as dungeon level increases)
 
 	if (!type)
-		ai = new AI(e_queue, image, BOSS_MELEE, sight, speed, health, ATK);
+		ai = new AI(e_queue, boss_melee_sprite, BOSS_MELEE, sight, speed, health, ATK);
 	else
-		ai = new AI(e_queue, image, BOSS_RANGER, sight, speed, health, ATK);
+		ai = new AI(e_queue, boss_ranger_sprite, BOSS_RANGER, sight, speed, health, ATK);
 
 	ai->SetSpawn(*dungeon);
 	ai->SetXPosition(x);
@@ -125,7 +180,7 @@ void AI_Group::SpawnBoss(ALLEGRO_BITMAP *image, int x, int y)
 	group.insert(std::pair<int, AI*>(BossID, ai));
 }
 //
-// Deallocate all AI and clear the container.
+// This function deallocates all AI and clear the container.
 //
 void AI_Group::GroupClear()
 {
@@ -134,7 +189,10 @@ void AI_Group::GroupClear()
 	group.clear();
 }
 //
-// Process all AI in the group.
+// This function processes all AI in the group.
+//
+// @Param ev - Allegro event variable
+// @Param p - The player each AI will deal with
 //
 void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 {
@@ -150,25 +208,22 @@ void AI_Group::ProcessAll(ALLEGRO_EVENT &ev, Player &p)
 	}
 }
 //
-// Draw everyone in the group onto the screen.
+// This function draws everyone in the group on the screen. It also draws all
+// pickups.
 //
 void AI_Group::DrawAll()
 {
+	drops.Draw();
 	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
 		(it->second)->Draw();
 }
 //
-// Make everyone in the group find a path to the player.
-// This is here for testing purposes, and may be removed later.
-//
-void AI_Group::GetPathToPlayer(Player &p)
-{
-	for (std::map<int, AI*>::iterator it = group.begin(); it != group.end(); it++)
-		(it->second)->FindPath(p.GetXPosition()/T_SIZE, p.GetYPosition()/T_SIZE);
-}
-//
-// Check to see if the player's bound points are colliding with any of the AI in the group near
+// This function checks to see if the player's bound points are colliding with any of the AI in the group near
 // the player.
+//
+// @Return - True if there's collusion, false otherwise
+// @Param pb_x - The player's x bound point
+// @Param pb_y - The player's y bound point
 //
 bool AI_Group::CollideWithAI(int pb_x, int pb_y)
 {
@@ -184,7 +239,11 @@ bool AI_Group::CollideWithAI(int pb_x, int pb_y)
 	return false;
 }
 //
-// Similar to the above function, but with weapon bound points and damage.
+// This function makes active weapons hit each AI that collide with the weapon's bound points.
+//
+// @Param w_x - The weapon's x bound point
+// @Param w_y - The weapon's y bound point
+// @Param w_d - The amount of damage the weapon deals
 //
 void AI_Group::HitAI(int w_x, int w_y, int w_d)
 {

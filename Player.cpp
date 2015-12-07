@@ -22,7 +22,7 @@ Player::Player(ALLEGRO_EVENT_QUEUE* InputEventQueue)
 
 	//initialize the member variables
 	m_CurrentGameScale = 1;
-	m_ExperienceMultiplier = 100;
+	m_ExperienceMultiplier = 35;
 	m_BaseMaxHealth = 100;
 	m_MaxHealthIncrement = 20;
 	m_SpeedPowerUpSpeed = 12;
@@ -1305,12 +1305,12 @@ float Player::GetWeaponDamage()
 
 	if(m_StrengthPowerUp)
 	{
-		return (((m_ActiveWeapon->GetDamage() + m_Level) * 2) * m_StrengthPowerupMultiplier);
+		return (((m_ActiveWeapon->GetDamage() + m_Level) + (m_Level * 2)) * m_StrengthPowerupMultiplier);
 	}
 
 	else
 	{
-		return ((m_ActiveWeapon->GetDamage() + m_Level) * 2);
+		return ((m_ActiveWeapon->GetDamage() + m_Level) + (m_Level * 2));
 	}
 }
 

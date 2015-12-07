@@ -53,7 +53,7 @@ int main(void)
 	ALLEGRO_BITMAP *GameOverImage = al_load_bitmap("GameOver_Screen.jpg");
 
 	Player MainPlayer(Event_Queue);
-	Camera MainCamera(Event_Queue);
+	Camera MainCamera(Event_Queue, MainDisplay.Get_ScreenWidth(), MainDisplay.Get_ScreenHeight());
 	AI_Group TestAIGroup(Event_Queue);  // Instance of an AI_Group
 	GUILayer MainGUILayer(MainDisplay.Get_ScreenWidth(), MainDisplay.Get_ScreenHeight());
 
@@ -63,7 +63,7 @@ int main(void)
 	MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 	MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 
-	TestAIGroup.RandomSetup(NumberOfAI, Dungeon, AIImage);  // Generates 4 AI with random attributes in the group. Their spawn points will also be set randomly.
+	TestAIGroup.RandomSetup(NumberOfAI, Dungeon);  // Generates AI with random attributes in the group. Their spawn points will also be set randomly.
 	
 	al_register_event_source(Event_Queue, al_get_timer_event_source(Timer));
 	al_register_event_source(Event_Queue, al_get_keyboard_event_source());
@@ -115,7 +115,7 @@ int main(void)
 		{
 			al_stop_timer(Timer); //Pause the timer while all the new level loads
 			Dungeon.GenerateDungeon(MainDisplay);
-			TestAIGroup.RandomSetup(30, Dungeon, AIImage);
+			TestAIGroup.RandomSetup(30, Dungeon);
 			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
@@ -176,7 +176,7 @@ int main(void)
 			MainPlayer.ResetPlayer();
 			Dungeon.Set_DungeonLevel(1);
 			Dungeon.GenerateDungeon(MainDisplay);
-			TestAIGroup.RandomSetup(NumberOfAI += Random(2,5), Dungeon, AIImage);
+			TestAIGroup.RandomSetup(NumberOfAI += Random(2,5), Dungeon);
 			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());

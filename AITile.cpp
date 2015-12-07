@@ -1,3 +1,12 @@
+//
+// File: AITile.cpp
+// Author: James Beller (Original class written by Scott Backer)
+// Group: Hack-'n-Slash
+// Date: 12/4/2015
+//
+// Note: This source file and the header file, AITile.h, are copied from Scott's
+// PlayerTile files with a couple minor changes.
+//
 #include "AITile.h"
 
 #include <allegro5\allegro_primitives.h>
