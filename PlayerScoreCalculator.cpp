@@ -45,7 +45,7 @@ int PlayerScoreCalculator::CalculateTimedScore(const ALLEGRO_TIMER* InputTimer, 
 	int TimerTime = (al_get_timer_count(InputTimer) / 60);
 
 	//calculate the final score
-	int CalculatedScore = m_CurrentPlayerScore + (TimerTime / CurrentGameScale);
+	int CalculatedScore = m_CurrentPlayerScore - (TimerTime / CurrentGameScale);
 
 	if(CalculatedScore < 0)
 	{
