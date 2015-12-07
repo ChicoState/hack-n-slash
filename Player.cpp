@@ -224,25 +224,6 @@ void Player::DrawPlayer()
 		m_ActiveWeapon->Draw(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 	}
 
-	//draw health box
-	//al_draw_rectangle(m_XPosition - 620, m_YPosition + 315, (m_XPosition - 550) + 70, (m_YPosition + 320) + 25, al_map_rgb(0, 0, 0), 40);
-
-	/*
-	//draw health
-	std::string HealthNumber = std::to_string(m_CurrentHealth);
-	std::string FullHealthText = "Health: ";
-	FullHealthText.append(HealthNumber);
-	char const *HealthChar = FullHealthText.c_str();
-	al_draw_text(font28, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 295, ALLEGRO_ALIGN_CENTER, HealthChar);
-
-	//draw level
-	std::string LevelNumber = std::to_string(m_Level);
-	std::string FullLevelText = "Level: ";
-	FullLevelText.append(LevelNumber);
-	char const *LevelChar = FullLevelText.c_str();
-	al_draw_text(font28, al_map_rgb(150, 255, 0), m_XPosition - 550, m_YPosition + 325, ALLEGRO_ALIGN_CENTER, LevelChar);
-	*/
-
 	//draw experience up
 	if(m_DrawExperienceUp)
 	{
@@ -291,7 +272,7 @@ void Player::DrawPlayer()
 
 
 	/*
-	//draw the bound points
+	//draw the hit bound points
 	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
 	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
 	al_draw_pixel(GetXSouthBoundPoint(), GetYSouthBoundPoint(), al_map_rgb(0, 0, 255));
@@ -312,6 +293,9 @@ void Player::DrawPlayer()
 }
 
 //!Handles movement for the player character each update
+//In - 
+//		float InputMouseXWorldPosition - the converted mouse x position into world position
+//		float InputMouseYWorldPosition - the converted mouse y position into world position
 void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
 	Weapon* TempReturnedWeapon = NULL; //used when retrieving a new weapon from the inventory
@@ -330,6 +314,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 	CheckCollision();
 
 	/*
+	//Mouse Movement
 	//if a mouse button was pressed
 	if(m_AlEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
 	{
@@ -353,14 +338,11 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 	{
 		//Depending on the keyboard move direction pressed call its function
 
-		/*
-		*	It's very important that checking for "W" and "S" are after checking for "A" and "D"
-		*/
-
 		if(m_KeyboardMap["A"])
 		{
 			if(m_CanMoveLeft)
 			{
+				//set moevement is occuring and set moevement direction
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(West);
 				m_PlayerTile.Set_CurRow(3, false);
@@ -372,6 +354,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveRight)
 			{
+				//set moevement is occuring and set moevement direction
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(East);
 				m_PlayerTile.Set_CurRow(2, false);
@@ -383,6 +366,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveUp)
 			{
+				//set moevement is occuring and set moevement direction
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(North);
 				m_PlayerTile.Set_CurRow(1, false);
@@ -394,6 +378,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		{
 			if(m_CanMoveDown)
 			{
+				//set moevement is occuring and set moevement direction
 				m_KeyboardMoving = true;
 				m_CurrentDirection = Direction(South);
 				m_PlayerTile.Set_CurRow(0, false);
@@ -406,6 +391,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = false;
 		}
 
+		//if there is no movement 
 		if(!m_KeyboardMoving && !m_ActiveWeapon->IsActive())
 		{
 			if(m_CurrentDirection == Direction(North))
@@ -558,6 +544,7 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 //!Checks and updates the collision of the player to allow movement directions
 void Player::CheckCollision()
 {
+	//if the player has not changed direction keep the same locked movement
 	if(m_CurrentDirection == m_PreviousLockedDirection)
 	{
 		if(m_CurrentDirection == Direction(North))
@@ -584,10 +571,14 @@ void Player::CheckCollision()
 	//if both collision points are colliding
 	else if(m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
 	{
+		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
 
+		//push player back to their previous position
 		m_XPosition	= m_PreviousXPosition;
 		m_YPosition	= m_PreviousYPosition;
+
+		//lock movement direction depending on hit bounds colliding
 
 		if(m_CurrentDirection == Direction(North))
 		{
@@ -613,7 +604,10 @@ void Player::CheckCollision()
 	//if the first collision point is colliding
 	else if(m_IsCollidingBoundOne && !m_IsCollidingBoundTwo)
 	{		
+		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
+
+		//lock movement direction depending on hit bounds colliding
 
 		if(m_CurrentDirection == Direction(North) && m_KeyboardMap["D"] == true)
 		{
@@ -661,7 +655,10 @@ void Player::CheckCollision()
 	//if the second collision point is colliding
 	else if(!m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
 	{
+		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
+
+		//lock movement direction depending on hit bounds colliding
 
 		if(m_CurrentDirection == Direction(North) && m_KeyboardMap["A"] == true)
 		{
@@ -704,6 +701,7 @@ void Player::CheckCollision()
 		}
 	}
 
+	//else set direction to default
 	else
 	{
 		m_PreviousLockedDirection = Direction(None);
@@ -837,6 +835,7 @@ void Player::AddPlayerLevel()
 	m_MaxHealth += m_MaxHealthIncrement;
 	m_CurrentHealth = m_MaxHealth;
 	m_Inventory.IncreaseRangedWeaponsAttackTime();
+	m_ScoreCalculator.AddLevelUpScore();
 
 	//turn on draw level up
 	m_DrawLevelUpTimer = 0;
@@ -882,6 +881,7 @@ void Player::ResetPlayer()
 	m_DrawLevelUpTimer = 0;
 	m_SpeedPowerUp = false;
 	m_SpeedPowerUpTimer = 0;
+	m_MovementSpeed = m_BaseMovementSpeed;
 	m_StrengthPowerUp = false;
 	m_StrengthPowerUpTimer = 0;
 
@@ -1329,7 +1329,7 @@ int Player::GetCurrentScore()
 //		int - the final calculated player score
 int Player::GetFinalTimedScore(const ALLEGRO_TIMER* InputTimer)
 {
-	return m_ScoreCalculator.CalculateTimedScore(InputTimer);
+	return m_ScoreCalculator.CalculateTimedScore(InputTimer, m_CurrentGameScale);
 }
 
 //!Sets the x position of the player

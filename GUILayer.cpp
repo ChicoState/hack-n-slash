@@ -5,6 +5,9 @@
 #include "GUILayer.h"
 
 //!Constructor for the GUI Layer
+//In - 
+//		int InputScreenWidth - the game screen width
+//		int InputScreenHeight - the game screen height
 GUILayer::GUILayer(int InputScreenWidth, int InputScreenHeight)
 {
 	//set member variables

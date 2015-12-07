@@ -14,10 +14,10 @@ class PlayerScoreCalculator
 {
 public:
 	PlayerScoreCalculator(); //Constructor for the score calculator
-	void EventHandler(ALLEGRO_EVENT& InputAlEvent); //!Handles all the functions for the score calculator that need to be called every update
 	void AddEnemyKilledScore(); //Adds score to the player for a defeated enemy
 	void AddBossKilledScore();//Adds score to the player for a defeated boss
-	int CalculateTimedScore(const ALLEGRO_TIMER* InputTimer); //Calculates the player score according to the timed calculation
+	void AddLevelUpScore(); //Adds score to the player for a level up
+	int CalculateTimedScore(const ALLEGRO_TIMER* InputTimer, int CurrentGameScale); //Calculates the player score according to the timed calculation
 	void ResetScore(); //Resets the player score
 
 	int GetCurrentPlayerScore(); //!Gets and returns the current score of the player
@@ -25,6 +25,7 @@ public:
 private:
 	int m_EnemyScoreIncrement; //the amount to incrmement the score for a killed enemy
 	int m_BossScoreIncrement; //the amount to incrmement score for a killed boss
+	int m_LevelUpScoreIncrement; //the amount to increment score for a level up
 	int m_CurrentPlayerScore; //the current score of the player
 };
 

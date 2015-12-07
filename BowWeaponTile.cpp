@@ -31,6 +31,7 @@ BowWeaponTile::BowWeaponTile(int InputXPosition = 0, int InputYPosition = 0, int
 //!Overloaded event handler from Sprite class
 int BowWeaponTile::Event_Handler()
 {
+	//updates the sprite
 	Update();
 
 	return 0;

@@ -14,7 +14,6 @@ class BowWeapon : public Weapon
 {
 public:
 	BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent); //!The constructor for the Bow weapon
-	~BowWeapon(); //destructor for the weapon class
 	void BowWeapon::EventHandler(); //Handles events for the Bow weapon class
 	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon to the screen
 

@@ -12,23 +12,18 @@ BowWeapon::BowWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputA
 				Weapon(InputEventQueue, InputAlEvent, 16, 16, true, 0.25f, 6),
 				m_BowWeaponTile(0, 0, 80, 76, true, true, false, true, 6)
 {
+	//set member variables
 	m_ProjectileXBound = 16;
 	m_ProjectileYBound = 16;
 	m_ProjectileSpeed = 12;
 	m_Projectile = new Projectile(m_ProjectileXBound, m_ProjectileYBound, m_ProjectileSpeed, 0, 0, 0, -1);
 	m_Projectile->ResetProjectile();
 	
+	//initilaze member variables
 	m_OnActive = true;
 	
 	al_init_user_event_source(&m_ProjectileEventSource);
 	al_register_event_source(m_EventQueue, &m_ProjectileEventSource);
-}
-
-//Destructor for the weapon class
-BowWeapon::~BowWeapon()
-{
-	//al_unregister_event_source(m_EventQueue, &m_ProjectileEventSource);
-	//al_destroy_user_event_source(&m_ProjectileEventSource);
 }
 
 //!Handles allegro events for the Bow weapon class
@@ -37,6 +32,7 @@ void BowWeapon::EventHandler()
 	//if the weapon is active watch the active timer
 	if(m_IsActive)
 	{
+		//if it is the weapons first active frame
 		if(m_OnActive)
 		{
 			//emit the event source that the projectile has moved
@@ -54,6 +50,7 @@ void BowWeapon::EventHandler()
 			m_CurrentAttackCount = 0;
 			//m_OnActive = true;
 
+			//reset projectile
 			if(m_IsRangedWeapon)
 			{
 				if(m_Projectile != NULL)

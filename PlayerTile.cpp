@@ -30,12 +30,14 @@ PlayerTile::PlayerTile(int InputPlayerXPosition, int InputPlayerYPosition, int F
 	m_SwordSprite.Set_ImageAlpha(0, 128, 128);
 	m_BowSprite.Set_ImageAlpha(0, 128, 128);
 
+	//initialize member variables
 	m_BowDrawActive = false;
 }
 
 //!Overloaded event handler from Sprite class
 int PlayerTile::Event_Handler()
 {
+	//update the sprites
 	Update();
 	m_SwordSprite.Update();
 	m_BowSprite.Update();
@@ -52,6 +54,7 @@ int PlayerTile::Event_Handler()
 //		bool BowNewActivation - true if its a new bow shot activation else false
 void PlayerTile::Draw(int InputPlayerXPosition, int InputPlayerYPosition, bool SwordActive, bool BowActive, bool BowNewActivation)
 {
+	//if the bow is active the first frame
 	if(BowNewActivation)
 	{
 		m_BowDrawActive = true;
@@ -60,21 +63,25 @@ void PlayerTile::Draw(int InputPlayerXPosition, int InputPlayerYPosition, bool S
 	//if there is a player tile image draw it at the specified input location
 	if (m_Image != NULL)
 	{
+		//draw sword
 		if(SwordActive)
 		{
 			al_draw_bitmap_region(m_SwordSprite.Get_Image(), m_SwordSprite.Get_CurColumn() * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, InputPlayerXPosition, InputPlayerYPosition, 0);
 		}
 		
+		//draw bow
 		else if(BowActive)
 		{
 			al_draw_bitmap_region(m_BowSprite.Get_Image(), m_BowSprite.Get_CurColumn() * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, InputPlayerXPosition, InputPlayerYPosition, 0);
 
+			//if the bow animation is finished set it to false
 			if(m_BowSprite.Get_CurColumn() == m_BowSprite.Get_TilesWide())
 			{
 				m_BowDrawActive = false;
 			}
 		}
 
+		//else draw no weapon
 		else
 		{
 			al_draw_bitmap_region(m_Image, m_CurColumn * m_FrameWidth, m_CurRow * m_FrameHeight, m_FrameWidth, m_FrameHeight, InputPlayerXPosition, InputPlayerYPosition, 0);

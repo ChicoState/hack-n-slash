@@ -8,28 +8,11 @@
 PlayerScoreCalculator::PlayerScoreCalculator()
 {
 	//initialize member variables
-	m_EnemyScoreIncrement = 10;
-	m_BossScoreIncrement = 100;
+	m_EnemyScoreIncrement = 50;
+	m_BossScoreIncrement = 500;
+	m_LevelUpScoreIncrement = 250;
 
 	m_CurrentPlayerScore = 0;
-}
-
-//!Handles all the functions for the score calculator that need to be called every update
-//In - 
-//		ALLEGRO_EVENT& InputAlEvent - The global event handler for the game
-void PlayerScoreCalculator::EventHandler(ALLEGRO_EVENT& InputAlEvent)
-{
-	//Check custom events
-
-	if(InputAlEvent.type == AI_KILLED_EVENT)
-	{
-		m_CurrentPlayerScore += 10;
-	}
-
-	if(InputAlEvent.type == BOSS_KILLED_EVENT)
-	{
-		m_CurrentPlayerScore += 100;
-	}
 }
 
 //Adds score to the player for a defeated enemy
@@ -44,19 +27,32 @@ void PlayerScoreCalculator::AddBossKilledScore()
 	m_CurrentPlayerScore += m_BossScoreIncrement;
 }
 
+//Adds score to the player for a defeated boss
+void PlayerScoreCalculator::AddLevelUpScore()
+{
+	m_CurrentPlayerScore += m_LevelUpScoreIncrement;
+}
+
 //Calculates the player score according to the timed calculation
 //In - 
 //		int NewXPosition - the new x position for the player
+//		int CurrentGameScale - the current game scale number
 //Out - 
 //		int - the calculated timed score for the player
-int PlayerScoreCalculator::CalculateTimedScore(const ALLEGRO_TIMER* InputTimer)
+int PlayerScoreCalculator::CalculateTimedScore(const ALLEGRO_TIMER* InputTimer, int CurrentGameScale)
 {
 	//get the time in seconds
 	int TimerTime = (al_get_timer_count(InputTimer) / 60);
 
 	//calculate the final score
-	int CalculatedScore = round(100000 / (TimerTime * 0.01)) + m_CurrentPlayerScore;
+	int CalculatedScore = m_CurrentPlayerScore + (TimerTime / CurrentGameScale);
 
+	if(CalculatedScore < 0)
+	{
+		CalculatedScore = 0;
+	}
+
+	//return calculated score
 	return CalculatedScore;
 }
 

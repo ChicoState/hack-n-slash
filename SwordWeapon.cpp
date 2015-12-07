@@ -12,17 +12,11 @@ SwordWeapon::SwordWeapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& In
 				Weapon(InputEventQueue, InputAlEvent, 16, 16, false, 0.2, 10),
 				m_SwordWeaponTile(0, 0, 70, 70, true, true, false, true, 6)
 {
+	//initialize member variables
 	m_OnActive = true;
 
 	al_init_user_event_source(&m_SwordActiveEventSource);
 	al_register_event_source(m_EventQueue, &m_SwordActiveEventSource);
-}
-
-//Destructor for the sword weapon class
-SwordWeapon::~SwordWeapon()
-{
-	//al_unregister_event_source(m_EventQueue, &m_SwordActiveEventSource);
-	//al_destroy_user_event_source(&m_SwordActiveEventSource);
 }
 
 //!Handles allegro events for the sword weapon class

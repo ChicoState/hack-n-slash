@@ -11,7 +11,7 @@
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
 Camera::Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue)
 {
-	//Set input variables to member variables
+	//initialize member variables
 
 	m_MouseXCoordinate = 0;
 	m_MouseYCoordinate = 0;
@@ -30,7 +30,7 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 	//make member event the same as the input event
 	m_AlEvent = InputAlEvent;
 
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
 		//Update the position of the camera
 		UpdatePosition(PlayerXPosition, PlayerYPosition);
