@@ -1,7 +1,4 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/25/15
-//Last update by:	N/A
-//Reason for update:N/A
 
 #ifndef __SPRITE__
 #define __SPRITE__
@@ -59,25 +56,31 @@ public:
 
 	~Sprite()
 	{
-		if (m_Image)
-		{
-			//al_destroy_bitmap(m_Image);
-		}
 	}
+
+	//Basic setters and getters
 
 	bool Get_IsAnimated(){ return m_Animated; }
 	int Get_TileWidth(){ return m_FrameWidth; }
 	int Get_TileHeight(){ return m_FrameHeight; }
 	bool Get_Collidable() { return m_Collidable; }
+	int Get_CurRow(){ return m_CurRow; }
+	int Get_CurColumn(){ return m_CurColumn; }
+	int Get_TilesWide(){ return m_MaxFramesX; }
+	int Get_TilesHigh(){ return m_MaxFramesY; }
+
+	ALLEGRO_BITMAP *Get_Image(){ return m_Image; }
 
 	void Set_CurRow(int Row, bool ResetCurColumn = true);
 	void Set_ImageAlpha(int, int, int);
 
-	virtual void Draw();
+	//Core functions
 
-	virtual void Update();
+	virtual void Draw(); //Draws the sprite
 
-	virtual int Event_Handler(ALLEGRO_EVENT&);
+	virtual void Update(); //Updates the animation of a sprite if it's animtated
+
+	virtual int Event_Handler(ALLEGRO_EVENT&); //handles events
 };
 
 

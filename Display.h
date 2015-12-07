@@ -1,7 +1,4 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/30/15
-//Last update by:	N/A
-//Reason for update:N/A
 #ifndef __DISPLAY__
 #define __DISPLAY__
 
@@ -9,24 +6,25 @@
 
 #include "Utility.h"
 
+//Wrapper class for Allegro Display
 class Display
 {
 
 private:
 	
-	const int m_ScreenWidth = 1280;
-	const int m_ScreenHeight = 720;
+	const int m_ScreenWidth = 1920; //Screen Dimension width
+	const int m_ScreenHeight = 1080;//Screen Dimension height
 
-	ALLEGRO_DISPLAY		*m_Display;
-	ALLEGRO_EVENT_QUEUE *m_EventQueue;
+	ALLEGRO_DISPLAY		*m_Display; //Allegro Display
+	ALLEGRO_EVENT_QUEUE *m_EventQueue; //pointer to main event queue
 	
 public:
 	
 	Display(ALLEGRO_EVENT_QUEUE* EventQueue) :
 		m_EventQueue(EventQueue)
 	{
-		m_Display = al_create_display(m_ScreenWidth, m_ScreenHeight);
-		al_register_event_source(m_EventQueue, al_get_display_event_source(m_Display));
+		m_Display = al_create_display(m_ScreenWidth, m_ScreenHeight); //create the display
+		al_register_event_source(m_EventQueue, al_get_display_event_source(m_Display)); //register it as an event source
 	}
 
 	~Display()
@@ -35,14 +33,18 @@ public:
 		al_destroy_display(m_Display);
 	}
 
+	//Basic setters and getters 
+
 	int Get_ScreenWidth(){ return m_ScreenWidth; }
 	int Get_ScreenHeight(){ return m_ScreenHeight; }
 
-	int Event_Handler(ALLEGRO_EVENT&);
-	ALLEGRO_DISPLAY *Get_Display();
-	bool TestDisplay();
-	void SetDisplayAsTarget();
-	void Draw();
+	//Core functions
+	
+	int Event_Handler(ALLEGRO_EVENT&); //hnadles the main events
+	ALLEGRO_DISPLAY *Get_Display(); //get a pointer to the display
+	bool TestDisplay(); //Makes sure the display started correctly
+	void SetDisplayAsTarget(); //Makes the display the render target again
+	void Draw(); //Draws the display
 };
 
 #endif
