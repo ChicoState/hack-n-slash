@@ -13,7 +13,7 @@ class Camera
 {
 
 public:
-	Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue); //Constructor for the camera class
+	Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue, int InputScreenWidth, int InputScreenHeight); //Constructor for the camera class
 	//Handles all the functions for the camera that need to be called every update
 	void EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, float PlayerYPosition); 
 	void ResetTranslate(); //Resets the transform/translate position of the camera to regular screen space
@@ -30,6 +30,9 @@ private:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the player class
 	ALLEGRO_TRANSFORM CameraTransform; //The transform for the camera
+
+	int m_ScreenWidth; // the screen width of the game
+	int m_ScreenHeight; //the screen height of the game
 
 	float m_MouseXCoordinate; //mouse coordinate x on screen
 	float m_MouseYCoordinate; //mouse coordinate y on screen

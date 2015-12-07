@@ -9,9 +9,13 @@
 //!The constructor for the camera class
 //In - 
 //		ALLEGRO_EVENT_QUEUE* InputEventQueue - the overall game event queue input into the player class
-Camera::Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue) : m_EventQueue(InputEventQueue)
+//		int InputScreenWidth - the game screen width
+//		int InputScreenHeight - the game screen height
+Camera::Camera(ALLEGRO_EVENT_QUEUE* InputEventQueue, int InputScreenWidth, int InputScreenHeight) : m_EventQueue(InputEventQueue)
 {
 	//initialize member variables
+	m_ScreenWidth = InputScreenWidth;
+	m_ScreenHeight = InputScreenHeight;
 
 	m_MouseXCoordinate = 0;
 	m_MouseYCoordinate = 0;
@@ -30,15 +34,12 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 	//make member event the same as the input event
 	m_AlEvent = InputAlEvent;
 
-	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
-	{
-		//Update the position of the camera
-		UpdatePosition(PlayerXPosition, PlayerYPosition);
+	//Update the position of the camera
+	UpdatePosition(PlayerXPosition, PlayerYPosition);
 
-		//Keep track of mouse coordinates
-		m_MouseXCoordinate = m_AlEvent.mouse.x;
-		m_MouseYCoordinate = m_AlEvent.mouse.y;
-	}
+	//Keep track of mouse coordinates
+	m_MouseXCoordinate = m_AlEvent.mouse.x;
+	m_MouseYCoordinate = m_AlEvent.mouse.y;
 }
 
 
@@ -49,8 +50,8 @@ void Camera::EventHandler(ALLEGRO_EVENT& InputAlEvent, float PlayerXPosition, fl
 void Camera::UpdatePosition(float PlayerXPosition, float PlayerYPosition)
 {
 	//Update the posiotion of the camera relative to the player position and bound
-	m_XPosition = -(1280 / 2) + (PlayerXPosition);
-	m_YPosition = -(720 / 2) + (PlayerYPosition);
+	m_XPosition = -(m_ScreenWidth / 2) + (PlayerXPosition);
+	m_YPosition = -(m_ScreenHeight / 2) + (PlayerYPosition);
 
 	//Update the transform and translation of the camera
 	UpdateTransform();
