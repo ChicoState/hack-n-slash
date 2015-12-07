@@ -25,6 +25,7 @@
 //		int AnimFPS - the fps for the animated tile
 Weapon::Weapon(ALLEGRO_EVENT_QUEUE* InputEventQueue, ALLEGRO_EVENT& InputAlEvent, int InputXBound, int InputYBound, bool IsRangedWeapon, float InputAttackTime, float InputDamage)
 {
+	//set game design member variables
 	m_RangedAttackIncreaseIncrement = 0.5f;
 
 	//initialize member variables
@@ -54,7 +55,7 @@ Weapon::~Weapon()
 //!Handles allegro events for the weapon class
 void Weapon::EventHandler()
 {
-	if(m_AlEvent.type = ALLEGRO_EVENT_TIMER)
+	if(m_AlEvent.type == ALLEGRO_EVENT_TIMER)
 	{
 		//if the weapon is active watch the active timer
 		if(m_IsActive)
@@ -103,22 +104,22 @@ void Weapon::Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int 
 
 	//set draw direction
 
-	if(XDirection = 0 && YDirection == -1)
+	if(XDirection == 0 && YDirection == -1)
 	{
 		m_LastDrawnDirection = Direction(North);
 	}
 
-	else if(XDirection = 0 && YDirection == 1)
+	else if(XDirection == 0 && YDirection == 1)
 	{
 		m_LastDrawnDirection = Direction(South);
 	}
 
-	else if(XDirection = 1 && YDirection == 0)
+	else if(XDirection == 1 && YDirection == 0)
 	{
 		m_LastDrawnDirection = Direction(East);
 	}
 
-	else if(XDirection = -1 && YDirection == 0)
+	else if(XDirection == -1 && YDirection == 0)
 	{
 		m_LastDrawnDirection = Direction(West);
 	}
@@ -139,6 +140,7 @@ void Weapon::ResetWeapon()
 //increases the attack time for the weapon pertaining to projectile time
 void Weapon::IncreaseRangedAttackTime()
 {
+	//if ranged weapon increase attack time
 	if(m_IsRangedWeapon)
 	{
 		m_AttackTime += m_RangedAttackIncreaseIncrement;
@@ -234,6 +236,7 @@ int Weapon::GetHitBoxXBoundOne()
 
 	if(m_IsActive)
 	{
+		//if ranged weapon get the projectile hitbox
 		if(m_IsRangedWeapon)
 		{
 			if(m_Projectile != NULL)
@@ -247,6 +250,7 @@ int Weapon::GetHitBoxXBoundOne()
 			}
 		}
 
+		//if melee weapon get the hitbox
 		else
 		{
 			if(m_LastDrawnDirection == Direction(North))
@@ -291,6 +295,7 @@ int Weapon::GetHitBoxYBoundOne()
 
 	if(m_IsActive)
 	{
+		//if ranged weapon get the projectile hitbox
 		if(m_IsRangedWeapon)
 		{
 			if(m_Projectile != NULL)
@@ -304,6 +309,7 @@ int Weapon::GetHitBoxYBoundOne()
 			}
 		}
 
+		//if melee weapon get the hitbox
 		else
 		{
 			if(m_LastDrawnDirection == Direction(North))
@@ -348,6 +354,7 @@ int Weapon::GetHitBoxXBoundTwo()
 
 	if(m_IsActive)
 	{
+		//if ranged weapon get the projectile hitbox
 		if(m_IsRangedWeapon)
 		{
 			if(m_Projectile != NULL)
@@ -361,6 +368,7 @@ int Weapon::GetHitBoxXBoundTwo()
 			}
 		}
 
+		//if melee weapon get the hitbox
 		else
 		{
 			if(m_LastDrawnDirection == Direction(North))
@@ -405,6 +413,7 @@ int Weapon::GetHitBoxYBoundTwo()
 
 	if(m_IsActive)
 	{
+		//if ranged weapon get the projectile hitbox
 		if(m_IsRangedWeapon)
 		{
 			if(m_Projectile != NULL)
@@ -418,6 +427,7 @@ int Weapon::GetHitBoxYBoundTwo()
 			}
 		}
 
+		//if melee weapon get the hitbox
 		else
 		{
 			if(m_LastDrawnDirection == Direction(North))

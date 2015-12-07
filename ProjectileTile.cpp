@@ -31,6 +31,7 @@ ProjectileTile::ProjectileTile(int InputXPosition = 0, int InputYPosition = 0, i
 //!Overloaded event handler from Sprite class
 int ProjectileTile::Event_Handler()
 {
+	//update the sprite
 	Update();
 
 	return 0;

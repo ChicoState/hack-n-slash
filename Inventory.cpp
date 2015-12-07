@@ -34,14 +34,6 @@ void Inventory::AddWeapon(Weapon* InputWeapon)
 //		Weapon* - the specific weapon from the slot asked for
 Weapon* Inventory::GetWeaponFromSlot(int InputWeaponSlot)
 {
-	/*
-	//if there is only one weapon in the inventory no need to switch
-	if(m_WeaponInventory.size() == 1)
-	{
-		return NULL;
-	}
-	*/
-
 	//if the input inventory slot exists
 	if(InputWeaponSlot <= m_WeaponInventory.size() && InputWeaponSlot > 0)
 	{
@@ -98,12 +90,16 @@ Weapon* Inventory::GetNextCycledWeapon()
 //increases the attack time for the ranged weapons pertaining to projectile time
 void Inventory::IncreaseRangedWeaponsAttackTime()
 {
+	//for each weapon in the inventory
 	for(int count = 0; count < m_WeaponInventory.size(); count++)
 	{
+		//if the weapon exists
 		if(m_WeaponInventory[count] != NULL)
 		{
+			//if the weapon is ranged
 			if(m_WeaponInventory[count]->IsRangedWeapon())
 			{
+				//upgrade ranged weapon abilities
 				m_WeaponInventory[count]->IncreaseRangedAttackTime();
 			}
 		}

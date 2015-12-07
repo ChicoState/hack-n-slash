@@ -31,6 +31,7 @@ SwordWeaponTile::SwordWeaponTile(int InputXPosition = 0, int InputYPosition = 0,
 //!Overloaded event handler from Sprite class
 int SwordWeaponTile::Event_Handler()
 {
+	//update sprite
 	Update();
 
 	return 0;

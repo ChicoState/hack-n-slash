@@ -16,6 +16,7 @@
 Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int StartingXPosition, int StartingYPosition, int XDirection, int YDirection) 
 		:	m_ProjectileSprite(StartingXPosition, StartingYPosition, 44, 44, true, false, false, false, 6)
 {
+	//set member variables
 	m_XBound = XBound;
 	m_YBound = YBound;
 	m_ProjectileSpeed = ProjectileSpeed;
@@ -24,6 +25,7 @@ Projectile::Projectile(int XBound, int YBound, int ProjectileSpeed, int Starting
 	m_CurrentXDirection = XDirection;
 	m_CurrentYDirection = YDirection;
 
+	//initialize member variables
 	m_RestingXPosition = 0;
 	m_RestingYPosition = 0;
 }
@@ -42,6 +44,7 @@ void Projectile::Draw()
 //		int YDirection - the direction the projectile will travel on the y axis
 void Projectile::SendProjecile(int StartingXPosition, int StartingYPosition, int XDirection, int YDirection)
 {
+	//set initial position and direction
 	m_CurrentXPosition = StartingXPosition;
 	m_CurrentYPosition = StartingYPosition;
 	m_CurrentXDirection = XDirection;
@@ -86,6 +89,8 @@ void Projectile::UpdatePosition()
 //		int - the x bound one of the projectile
 int Projectile::GetHitBoxXBoundOne()
 {
+	//depending on the direction, get the hitbox direction
+
 	if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
 	{
 		return (m_CurrentXPosition - (m_XBound / 2));
@@ -117,6 +122,8 @@ int Projectile::GetHitBoxXBoundOne()
 //		int - the y bound one of the projectile
 int Projectile::GetHitBoxYBoundOne()
 {
+	//depending on the direction, get the hitbox direction
+
 	if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
 	{
 		return (m_CurrentYPosition - (m_YBound / 2));
@@ -148,6 +155,8 @@ int Projectile::GetHitBoxYBoundOne()
 //		int - the x bound two of the projectile
 int Projectile::GetHitBoxXBoundTwo()
 {
+	//depending on the direction, get the hitbox direction
+
 	if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
 	{
 		return (m_CurrentXPosition + (m_XBound / 2));
@@ -179,6 +188,8 @@ int Projectile::GetHitBoxXBoundTwo()
 //		int - the y bound two of the projectile
 int Projectile::GetHitBoxYBoundTwo()
 {
+	//depending on the direction, get the hitbox direction
+
 	if(m_CurrentXDirection == 0 && m_CurrentYDirection == -1)
 	{
 		return (m_CurrentYPosition + (m_YBound / 2));

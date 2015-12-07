@@ -14,14 +14,13 @@
 #include "Weapon.h"
 #include "Projectile.h"
 #include "FoodPickup.h"
+#include "PlayerScoreCalculator.h"
 
 #include "SwordWeapon.h"
 #include "BowWeapon.h"
 
 #include <string>
 #include <map>
-
-//#include "Utility.h"
 
 class Player
 {
@@ -78,8 +77,11 @@ public:
 	int GetWeaponHitBoxXBoundTwo(); //!Gets and returns the current weapon's second active hit box x bound
 	int GetWeaponHitBoxYBoundTwo(); //!Gets and returns the current weapon's second active hit box y bound
 	Projectile* GetWeaponProjectile(); //!Gets and returns the current weapon's projectile if it is a ranged weapon
+	int GetCurrentLevel(); //Gets and returns the current player level
 	int GetCurrentHealth(); //Gets and returns the player's current health
 	float GetWeaponDamage(); //!Gets and returns the current weapon's damage
+	int GetCurrentScore(); //!Gets and returns the current player score
+	int GetFinalTimedScore(const ALLEGRO_TIMER* InputTimer); //!Gets and returns the final player score calculated with the timer
 	void SetXPosition(float NewXPosition); //Sets the x position of the player
 	void SetYPosition(float NewYPosition); //Sets the y position of the player
 
@@ -105,7 +107,7 @@ private:
 
 	ALLEGRO_EVENT_QUEUE *m_EventQueue; //The event queue for the player class
 	ALLEGRO_EVENT m_AlEvent; //the event variable for the player class
-	ALLEGRO_FONT *font28; //font for player health
+	ALLEGRO_FONT *font28; //font for player health and level
 	ALLEGRO_FONT *font16; //font for experience and level up draw
 	ALLEGRO_EVENT_SOURCE m_PositionEventSource; //event source for emitting player position
 
@@ -116,6 +118,7 @@ private:
 	Camera *m_Camera; //member camera instance
 	Inventory m_Inventory; //Player inventory
 	Weapon* m_ActiveWeapon; //Player current active weapon holder
+	PlayerScoreCalculator m_ScoreCalculator; //Player score calculator for the player
 
 	std::string ClassTag; //tag for the player class
 	int m_XBound; //the x bound for the player
