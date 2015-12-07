@@ -1,7 +1,4 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/9/15
-//Last update by:	N/A
-//Reason for update:N/A
 
 #include <iostream>
 
@@ -12,13 +9,9 @@ int Display::Event_Handler(ALLEGRO_EVENT &ev)
 {
 	if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) //Main program window closed...exit game.
 	{
-		MainUtility.Set_GameOver(1);
+		return 1;
 	}
-	else if (ev.type == ALLEGRO_EVENT_DISPLAY_RESIZE)
-	{
-		return 0;
-	}
-
+	
 	return 0;
 }
 

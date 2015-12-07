@@ -1,3 +1,5 @@
+//Created by:	Ryan Nolan-Hieb
+
 #ifndef __TERRAIN_LAYER__
 #define __TERRAIN_LAYER__
 
@@ -39,19 +41,24 @@ public:
 		}
 	}
 
+	//Basic Getters and Setters
+
 	int Get_LayerWidth(){ return m_LayerWidth; } //return layer width in pixels
 	int Get_LayerHeight(){ return m_LayerHeight; } //return layer height in pixels
 	int Get_TileSize(){ return m_Layer[0][0].Get_TileWidth(); } //returns the size of one tile
 	int Get_PrePlayerDraw(){ return m_PrePlayerDraw; } //returns if the layer should be drawn before or after the player
 
-	TerrainTile& Get_Tile(Vec2i Pos) { return m_Layer[Pos.x()][Pos.y()]; }
-	void Set_Tile(Vec2i Pos, TerrainTile Tile) { m_Layer[Pos.x()][Pos.y()] = Tile; }
+	TerrainTile& Get_Tile(Vec2i Pos) { return m_Layer[Pos.x()][Pos.y()]; } //returns a reference to the tile at the given index position 
+	void Set_Tile(Vec2i Pos, TerrainTile Tile) { m_Layer[Pos.x()][Pos.y()] = Tile; } //Set the tile type of a tile at the given index position
 
 	std::vector<std::vector<TerrainTile>>& Get_VectorLayer() { return m_Layer; } //return the layer in vector form
 
-	void Event_Handler(ALLEGRO_EVENT&);
-	void Draw();
-	void CreateBitmap(Display*);
+	//Core Functions
+
+	void Event_Handler(ALLEGRO_EVENT&); //Handles all the events
+	void Draw(); //Draws the layer
+	void CreateBitmap(Display*); //Creates a bitmap images of all the non-animated tiles in the layer and draws using that.
+								 //I figure that must be a lot faster than drawing a bunch of individual tiles
 };
 
 #endif

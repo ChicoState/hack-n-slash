@@ -1,3 +1,5 @@
+//Created By:	Ryan Nolan-Hieb
+
 #ifndef __TERRAIN_OBJECT_MANAGER__
 #define __TERRAIN_OBJECT_MANAGER__
 
@@ -16,12 +18,11 @@
 class TerrainObject_Manager
 {
 private:
-	int m_DropChance;
+	int m_DropChance; //Chance for objects to spawn
 	
-	std::vector<PickupObject*> m_Objects;
+	std::vector<PickupObject*> m_Objects; //array of objects that currently exist
 
-	//ALLEGRO_EVENT_SOURCE; //event source for emitting player position
-	ALLEGRO_EVENT_QUEUE *m_EventQueue;
+	ALLEGRO_EVENT_QUEUE *m_EventQueue; //Pointer to the main event queue
 
 public:
 	TerrainObject_Manager(ALLEGRO_EVENT_QUEUE *EventQueue) :
@@ -30,7 +31,7 @@ public:
 	}
 	~TerrainObject_Manager()
 	{
-		for (int i = 0; i < m_Objects.size(); i++)
+		for (unsigned int i = 0; i < m_Objects.size(); i++)
 		{
 			delete m_Objects[i];
 		}
@@ -44,8 +45,8 @@ public:
 	//Useful function for reseting the Object Manager
 	void ResetObjectManager();
 
-	void Draw();
-	int Event_Handler(ALLEGRO_EVENT&);
+	void Draw(); //draw the pickup objects
+	int Event_Handler(ALLEGRO_EVENT&); //handle their events
 
 };
 

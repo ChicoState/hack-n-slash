@@ -1,18 +1,17 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/25/15
-//Last update by:	N/A
-//Reason for update:N/A
 
 #include "Sprite.h"
 
-
+//sets the current row of animtion
 void Sprite::Set_CurRow(int Row, bool ResetCurColumn)
 {
+	//simple bounds check
 	if (!m_Continuous && Row >= 0 && Row <= m_MaxFramesY)
 	{
 		m_CurRow = Row;
 	}
 
+	//reseting the column back to 0
 	if (ResetCurColumn)
 	{
 		m_CurColumn = 0;
@@ -21,6 +20,7 @@ void Sprite::Set_CurRow(int Row, bool ResetCurColumn)
 
 void Sprite::Set_ImageAlpha(int R, int G, int B)
 {
+	//set alphas on sprites
 	al_convert_mask_to_alpha(m_Image, al_map_rgb(R, G, B));
 }
 
@@ -34,7 +34,7 @@ int Sprite::Event_Handler(ALLEGRO_EVENT& EV)
 {
 	if (EV.type == ALLEGRO_EVENT_TIMER)
 	{
-		Update();
+		Update(); //updates animations
 	}
 	return 0;
 }

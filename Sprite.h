@@ -1,7 +1,4 @@
 //Created by:		Ryan Nolan-Hieb
-//Date updated:		9/25/15
-//Last update by:	N/A
-//Reason for update:N/A
 
 #ifndef __SPRITE__
 #define __SPRITE__
@@ -59,11 +56,9 @@ public:
 
 	~Sprite()
 	{
-		if (m_Image)
-		{
-			//al_destroy_bitmap(m_Image);
-		}
 	}
+
+	//Basic setters and getters
 
 	bool Get_IsAnimated(){ return m_Animated; }
 	int Get_TileWidth(){ return m_FrameWidth; }
@@ -79,11 +74,13 @@ public:
 	void Set_CurRow(int Row, bool ResetCurColumn = true);
 	void Set_ImageAlpha(int, int, int);
 
-	virtual void Draw();
+	//Core functions
 
-	virtual void Update();
+	virtual void Draw(); //Draws the sprite
 
-	virtual int Event_Handler(ALLEGRO_EVENT&);
+	virtual void Update(); //Updates the animation of a sprite if it's animtated
+
+	virtual int Event_Handler(ALLEGRO_EVENT&); //handles events
 };
 
 
