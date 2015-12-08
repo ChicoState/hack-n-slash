@@ -112,8 +112,10 @@ int main(void)
 			Terrain.Event_Handler(ev);
 		}
 
-		//TestAIGroup.EventHandler(ev);
-		//TestAIGroup.ProcessAll(ev, MainPlayer);  // Process each AI in the group
+		if (!onSurface){
+			TestAIGroup.EventHandler(ev);
+			TestAIGroup.ProcessAll(ev, MainPlayer);  // Process each AI in the group
+		}
 		MainPlayer.EventHandler(ev, MainCamera.GetMouseXWorldCoordinate(), MainCamera.GetMouseYWorldCoordinate());
 		MainCamera.EventHandler(ev, MainPlayer.GetXPosition(), MainPlayer.GetYPosition());
 		
@@ -126,8 +128,8 @@ int main(void)
 			al_stop_timer(Timer); //Pause the timer while all the new level loads
 			Dungeon.GenerateDungeon(MainDisplay);
 			TestAIGroup.RandomSetup(30, Dungeon);
-			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
-			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+			MainPlayer.SetXPosition(Terrain.GetStartPosition().x());
+			MainPlayer.SetYPosition(Terrain.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
 			al_start_timer(Timer); //resume the timer after the new level loads
 			onSurface = true;

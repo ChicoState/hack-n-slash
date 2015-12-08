@@ -333,9 +333,9 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 		Layer[i][m_mapSize - 1] = TerrainTile(DecorativeTiles, i * TileSize, (m_mapSize - 1) * TileSize, Rock, TileSize, TileSize, true, numRow, numCol);
 	}
 
-
 	TerrainLayer *Temp = new TerrainLayer(Layer);
 	Temp->CreateBitmap(&MainDisplay);
+
 	m_map->AddLayer(Temp, 1);
 	for (int i = 0; i < Layers.size(); i++){
 		Temp = new TerrainLayer(Layers[i]);
@@ -606,7 +606,8 @@ void Fractal::print(){
 void TerrainGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 {
 	m_map->Event_Handler(EV);
-	if (EV.type == TERRAINTILE_TRIGGER_EVENT){
+	if (EV.type == TERRAINTILE_TRIGGER_EVENT)
+	{
 		if ((TRIGGER)EV.user.data1 == TR_ENTERDUNGEON)
 		{
 			EV.user.type = CUSTOM_EVENT_ID(ENTER_DUNGEON);

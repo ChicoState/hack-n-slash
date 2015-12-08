@@ -126,6 +126,20 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 				}
 			}
 		}
+		else if ((TRIGGER)EV.user.data1 == TR_ENTERDUNGEON)
+		{
+			AVec2i Pos(EV.user.data2 / m_TileSize, EV.user.data3 / m_TileSize);
+			for (unsigned int i = 0; i < m_Map.size(); i++)
+			{
+				if (m_Map[i]->Get_Tile(Pos).Get_TriggerType() == TR_ENTERDUNGEON)
+				{
+					//finds the layer the tile is on then... 
+					m_Map[i]->Get_Tile(Pos).RetireTile();
+					
+					m_Map[i]->CreateBitmap(NULL); //recreates the image for that layer
+				}
+			}
+		}
 	}
 
 	if (GameProjectiles.size() > 0) //if there's projectiles on the map
