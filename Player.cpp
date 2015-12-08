@@ -182,6 +182,35 @@ void Player::EventHandler(ALLEGRO_EVENT& InputAlEvent, float InputMouseXWorldPos
 //!Draws the player character to the screen
 void Player::DrawPlayer()
 {
+	//draw the various parts of the player
+	DrawPlayerSprite();
+	DrawWeapon();
+	DrawPlayerExtras();
+
+	/*
+	//draw the hit bound points
+	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
+	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
+	al_draw_pixel(GetXSouthBoundPoint(), GetYSouthBoundPoint(), al_map_rgb(0, 0, 255));
+	al_draw_pixel(GetXWestBoundPoint(), GetYWestBoundPoint(), al_map_rgb(0, 255, 0));
+
+	al_draw_pixel(GetNorthEastXBoundPoint(), GetNorthEastYBoundPoint(), al_map_rgb(255, 0, 0));
+	al_draw_pixel(GetSouthEastXBoundPoint(), GetSouthEastYBoundPoint(), al_map_rgb(255, 255, 255));
+	al_draw_pixel(GetSouthWestXBoundPoint(), GetSouthWestYBoundPoint(), al_map_rgb(0, 0, 255));
+	al_draw_pixel(GetNorthWestXBoundPoint(), GetNorthWestYBoundPoint(), al_map_rgb(0, 255, 0));
+	*/
+
+	//draw player hit box
+	//al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 1);
+	
+
+	//draw the weapon hit box
+	//al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
+}
+
+//Draws the player sprite
+void Player::DrawPlayerSprite()
+{
 	//draw the player sprite and change depending on weapon
 	if(m_ActiveWeapon->IsRangedWeapon())
 	{
@@ -202,7 +231,11 @@ void Player::DrawPlayer()
 	{
 		m_PlayerTile.Draw((m_XPosition - m_XBound / 2), (m_YPosition - m_YBound / 2), m_ActiveWeapon->IsActive(), false, false);
 	}
+}
 
+//Draws the weapon of the player
+void Player::DrawWeapon()
+{
 	//check weapon
 	if(m_CurrentDirection == Direction(North))
 	{
@@ -223,7 +256,11 @@ void Player::DrawPlayer()
 	{
 		m_ActiveWeapon->Draw(GetXWestBoundPoint(), GetYWestBoundPoint(), -1, 0);
 	}
+}
 
+//Draws the player extras such as popus and powerup graphics
+void Player::DrawPlayerExtras()
+{
 	//draw experience up
 	if(m_DrawExperienceUp)
 	{
@@ -269,27 +306,6 @@ void Player::DrawPlayer()
 	{
 		al_draw_filled_circle(m_XPosition, m_YPosition, 40, al_map_rgba(50, 50, 0, 30));
 	}
-
-
-	/*
-	//draw the hit bound points
-	al_draw_pixel(GetXNorthBoundPoint(), GetYNorthBoundPoint(), al_map_rgb(255, 0, 0));
-	al_draw_pixel(GetXEastBoundPoint(), GetYEastBoundPoint(), al_map_rgb(255, 255, 255));
-	al_draw_pixel(GetXSouthBoundPoint(), GetYSouthBoundPoint(), al_map_rgb(0, 0, 255));
-	al_draw_pixel(GetXWestBoundPoint(), GetYWestBoundPoint(), al_map_rgb(0, 255, 0));
-
-	al_draw_pixel(GetNorthEastXBoundPoint(), GetNorthEastYBoundPoint(), al_map_rgb(255, 0, 0));
-	al_draw_pixel(GetSouthEastXBoundPoint(), GetSouthEastYBoundPoint(), al_map_rgb(255, 255, 255));
-	al_draw_pixel(GetSouthWestXBoundPoint(), GetSouthWestYBoundPoint(), al_map_rgb(0, 0, 255));
-	al_draw_pixel(GetNorthWestXBoundPoint(), GetNorthWestYBoundPoint(), al_map_rgb(0, 255, 0));
-	*/
-
-	//draw player hit box
-	//al_draw_rectangle(GetHitBoxXBoundOne(), GetHitBoxYBoundOne(), GetHitBoxXBoundTwo(), GetHitBoxYBoundTwo(), al_map_rgb(255, 250, 0), 1);
-	
-
-	//draw the weapon hit box
-	//al_draw_rectangle(GetWeaponHitBoxXBoundOne(), GetWeaponHitBoxYBoundOne(), GetWeaponHitBoxXBoundTwo(), GetWeaponHitBoxYBoundTwo(), al_map_rgb(0, 0, 0), 10);
 }
 
 //!Handles movement for the player character each update
@@ -298,8 +314,6 @@ void Player::DrawPlayer()
 //		float InputMouseYWorldPosition - the converted mouse y position into world position
 void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition)
 {
-	Weapon* TempReturnedWeapon = NULL; //used when retrieving a new weapon from the inventory
-
 	//reset the keyboard moving bool so that the mouse movement can occur on this frame if called on
 	m_KeyboardMoving = false;
 
@@ -313,6 +327,60 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 	//check and update player collision
 	CheckCollision();
 
+	//update the player moevement
+	UpdatePlayerMovement();
+
+	//if there is no movement 
+	if(!m_KeyboardMoving && !m_ActiveWeapon->IsActive())
+	{
+		if(m_CurrentDirection == Direction(North))
+		{
+			m_PlayerTile.Set_CurRow(1, true);
+		}
+
+		else if(m_CurrentDirection == Direction(South))
+		{
+			m_PlayerTile.Set_CurRow(0, true);
+		}
+
+		else if(m_CurrentDirection == Direction(East))
+		{
+			m_PlayerTile.Set_CurRow(2, true);
+		}
+
+		else if(m_CurrentDirection == Direction(West))
+		{
+			m_PlayerTile.Set_CurRow(3, true);
+		}
+	}
+
+	//Check the current keyboard input
+	UpdateKeyboardInput();
+
+	//if the player is moving update the sprite
+	if(m_KeyboardMoving || m_MouseMoving)
+	{
+		//update sprite
+		m_PlayerTile.Event_Handler();
+		
+		//emit the event source of the player position
+		m_AlEvent.user.type = CUSTOM_EVENT_ID(PLAYERPOSITION_EVENT);
+		m_AlEvent.user.data1 =  (intptr_t)m_XPosition;
+		m_AlEvent.user.data2 =  (intptr_t)m_YPosition;
+		al_emit_user_event(&m_PositionEventSource, &m_AlEvent, NULL);
+	}
+
+	//if the weapon is active continue updating sprite
+	else if(m_ActiveWeapon->IsActive())
+	{
+		//update sprite
+		m_PlayerTile.Event_Handler();
+	}
+}
+
+//Update sthe player moevement depending on inputs
+void Player::UpdatePlayerMovement()
+{
 	/*
 	//Mouse Movement
 	//if a mouse button was pressed
@@ -391,30 +459,6 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			m_KeyboardMoving = false;
 		}
 
-		//if there is no movement 
-		if(!m_KeyboardMoving && !m_ActiveWeapon->IsActive())
-		{
-			if(m_CurrentDirection == Direction(North))
-			{
-				m_PlayerTile.Set_CurRow(1, true);
-			}
-
-			else if(m_CurrentDirection == Direction(South))
-			{
-				m_PlayerTile.Set_CurRow(0, true);
-			}
-
-			else if(m_CurrentDirection == Direction(East))
-			{
-				m_PlayerTile.Set_CurRow(2, true);
-			}
-
-			else if(m_CurrentDirection == Direction(West))
-			{
-				m_PlayerTile.Set_CurRow(3, true);
-			}
-		}
-
 		/*
 		//check to see if there was keyboard movement this frame before calling mouse movement
 		if(m_KeyboardMoving)
@@ -424,6 +468,20 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 		CheckMouseMovement();
 		*/
 	}
+}
+
+//Checks and update sthe current keyboard input
+void Player::UpdateKeyboardInput()
+{
+	//Check the keyboard inputs on key up and down
+	CheckKeyboardKeyDown();
+	CheckKeyboardKeyUp();
+}
+
+//Checks for keyboard input key down
+void Player::CheckKeyboardKeyDown()
+{
+	Weapon* TempReturnedWeapon = NULL; //used when retrieving a new weapon from the inventory
 
 	//if there is a key pressed down
 	if(m_AlEvent.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -490,7 +548,11 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 			break;
 		}
 	}
+}
 
+//Checks for keyboard input key up
+void Player::CheckKeyboardKeyUp()
+{
 	//if there is a key unpressed
 	if(m_AlEvent.type == ALLEGRO_EVENT_KEY_UP)
 	{
@@ -518,26 +580,6 @@ void Player::CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorl
 				m_CanAttack = true;
 			break;
 		}
-	}
-
-	//if the player is moving update the sprite
-	if(m_KeyboardMoving || m_MouseMoving)
-	{
-		//update sprite
-		m_PlayerTile.Event_Handler();
-		
-		//emit the event source of the player position
-		m_AlEvent.user.type = CUSTOM_EVENT_ID(PLAYERPOSITION_EVENT);
-		m_AlEvent.user.data1 =  (intptr_t)m_XPosition;
-		m_AlEvent.user.data2 =  (intptr_t)m_YPosition;
-		al_emit_user_event(&m_PositionEventSource, &m_AlEvent, NULL);
-	}
-
-	//if the weapon is active continue updating sprite
-	else if(m_ActiveWeapon->IsActive())
-	{
-		//update sprite
-		m_PlayerTile.Event_Handler();
 	}
 }
 
@@ -571,6 +613,36 @@ void Player::CheckCollision()
 	//if both collision points are colliding
 	else if(m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
 	{
+		//Check for double bound collision
+		CheckDoubleBoundCollision();
+	}
+
+	//if the first or second collision point is colliding
+	else if(m_IsCollidingBoundOne && !m_IsCollidingBoundTwo)
+	{
+		//Check for single first bound collision
+		CheckSingleFirstBoundCollision();
+	}
+
+	else if(!m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
+	{
+		//Check for single second bound collision
+		CheckSingleSecondBoundCollision();
+	}
+
+	//else set direction to default
+	else
+	{
+		m_PreviousLockedDirection = Direction(None);
+	}
+}
+
+//Checks the player for double bound collision
+void Player::CheckDoubleBoundCollision()
+{
+	//if both collision points are colliding
+	if(m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
+	{
 		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
 
@@ -600,9 +672,13 @@ void Player::CheckCollision()
 			m_CanMoveLeft = false;
 		}
 	}
+}
 
+//Checks the player for single first bound collision
+void Player::CheckSingleFirstBoundCollision()
+{
 	//if the first collision point is colliding
-	else if(m_IsCollidingBoundOne && !m_IsCollidingBoundTwo)
+	if(m_IsCollidingBoundOne && !m_IsCollidingBoundTwo)
 	{		
 		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
@@ -652,8 +728,14 @@ void Player::CheckCollision()
 		}
 	}
 
+	
+}
+
+//Checks the player for single second bound collision
+void Player::CheckSingleSecondBoundCollision()
+{
 	//if the second collision point is colliding
-	else if(!m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
+	if(!m_IsCollidingBoundOne && m_IsCollidingBoundTwo)
 	{
 		//set previous direction moved
 		m_PreviousLockedDirection = m_CurrentDirection;
@@ -699,12 +781,6 @@ void Player::CheckCollision()
 			m_CanMoveDown = false;
 			m_CanMoveLeft = false;
 		}
-	}
-
-	//else set direction to default
-	else
-	{
-		m_PreviousLockedDirection = Direction(None);
 	}
 }
 

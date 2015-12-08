@@ -16,6 +16,8 @@ public:
 		bool Collidable, bool Animated, bool Continuous, bool Looped, int AnimFPS); //!Constructor for the playertile class
 	int Event_Handler(); //!Overloaded event handler from Sprite class
 	void Draw(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection, bool IsWeaponActive); //!Overloaded draw function from Sprite class
+	void DrawWeaponActive(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection, bool IsWeaponActive); //!Draws the weapon if it is active
+	void DrawWeaponInactive(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection, bool IsWeaponActive); //Draws the weapon if it is inactive
 	void DrawProjectile(int DrawXCoordinate, int DrawYCoordinate, int XDirection, int YDirection); //Draws the weapon projectile
 
 private:

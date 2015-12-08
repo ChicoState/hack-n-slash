@@ -97,8 +97,18 @@ private:
 		None
 	};
 
+	void DrawPlayerExtras(); //Draws the player extras such as popus and powerup graphics
+	void DrawPlayerSprite(); //Draws the player sprite
+	void DrawWeapon(); //Draws the weapon of the player
 	void CheckMovement(float InputMouseXWorldPosition, float InputMouseYWorldPosition); //Handles movement for the player character each update
+	void UpdatePlayerMovement(); //Update sthe player moevement depending on inputs
+	void UpdateKeyboardInput(); //Checks and update sthe current keyboard input
+	void CheckKeyboardKeyDown(); //Checks for keyboard input key down
+		void CheckKeyboardKeyUp(); //Checks for keyboard input key up
 	void CheckCollision(); //!Checks and updates the collision of the player to allow movement directions
+	void CheckDoubleBoundCollision(); //Checks the player for double bound collision
+	void CheckSingleFirstBoundCollision(); //Checks the player for single second bound collision
+	void CheckSingleSecondBoundCollision(); //Checks the player for single first bound collision
 	void CheckMouseMovement(); //Checks each frame to see if the player needs to move from a mouse click and update sthe position
 	void MoveUp(); //Moves the player negative in the y axis
 	void MoveDown(); //Moves the player positive in the y axis
