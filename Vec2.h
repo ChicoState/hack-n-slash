@@ -1,21 +1,21 @@
 //A 2d-vector class
-#ifndef __VEC2__
-#define __VEC2__
+#ifndef __AVec2__
+#define __AVec2__
 
 #include <cmath>
 
-template<typename Val> class Vec2 {
+template<typename Val> class AVec2 {
 	Val mx, my;
 public:
-	Vec2(Val xx = Val(), Val yy = Val())
+	AVec2(Val xx = Val(), Val yy = Val())
 		: mx(xx), my(yy)
 	{ }
 
-	/*     Vec2(const Vec2& v)
+	/*     AVec2(const AVec2& v)
 	*         : mx(v.mx), my(v.my)
 	*     { }
 	*
-	*     Vec2& operator=(Vec2 v)
+	*     AVec2& operator=(AVec2 v)
 	*     {
 	*         mx = v.mx;
 	*         my = v.my;
@@ -50,7 +50,7 @@ public:
 		return sqrt(magnitudeSquared());
 	}
 
-	Vec2& normalize()
+	AVec2& normalize()
 	{
 		Val m = magnitude();
 		if (m != 0.0)
@@ -61,28 +61,28 @@ public:
 		return *this;
 	}
 
-	Vec2& operator+=(const Vec2& rhs)
+	AVec2& operator+=(const AVec2& rhs)
 	{
 		mx += rhs.mx;
 		my += rhs.my;
 		return *this;
 	}
 
-	Vec2& operator-=(const Vec2& rhs)
+	AVec2& operator-=(const AVec2& rhs)
 	{
 		mx -= rhs.mx;
 		my -= rhs.my;
 		return *this;
 	}
 
-	Vec2& operator*=(const Vec2& rhs)
+	AVec2& operator*=(const AVec2& rhs)
 	{
 		mx *= rhs;
 		my *= rhs;
 		return *this;
 	}
 
-	Vec2& operator/=(const Vec2& rhs)
+	AVec2& operator/=(const AVec2& rhs)
 	{
 		mx /= rhs;
 		my /= rhs;
@@ -91,52 +91,52 @@ public:
 
 	//Vector2DAddition / Subtraction
 
-	Vec2 operator+ (const Vec2 &rhs) const
+	AVec2 operator+ (const AVec2 &rhs) const
 	{
-		return Vec2(mx + rhs.mx, my + rhs.my);
+		return AVec2(mx + rhs.mx, my + rhs.my);
 	}
 
-	Vec2 operator- (const Vec2 &rhs) const
+	AVec2 operator- (const AVec2 &rhs) const
 	{
-		return Vec2(mx - rhs.mx, my - rhs.my);
+		return AVec2(mx - rhs.mx, my - rhs.my);
 	}
 
-	Vec2 operator* (Val rhs) const
+	AVec2 operator* (Val rhs) const
 	{
-		return Vec2(mx * rhs, my * rhs);
+		return AVec2(mx * rhs, my * rhs);
 	}
 
-	Vec2 operator/ (Val rhs) const
+	AVec2 operator/ (Val rhs) const
 	{
-		return Vec2(mx / rhs, my / rhs);
+		return AVec2(mx / rhs, my / rhs);
 	}
 
 	//Vector2DDot product
-	Val dotproduct(const Vec2 &rhs)
+	Val dotproduct(const AVec2 &rhs)
 	{
 		return mx*rhs.mx + my*rhs.my;
 	}
 
 	//Vector2DSign operators
 
-	Vec2 operator- () const
+	AVec2 operator- () const
 	{
-		return Vec2(-mx, -my);
+		return AVec2(-mx, -my);
 	}
 
-	Vec2 operator+ () const
+	AVec2 operator+ () const
 	{
-		return Vec2(+mx, +my);
+		return AVec2(+mx, +my);
 	}
 
 	//Vector2DComparison
 
-	bool operator== (const Vec2 &rhs) const
+	bool operator== (const AVec2 &rhs) const
 	{
 		return (mx == rhs.mx) && (my == rhs.my);
 	}
 
-	bool operator!= (const Vec2 &rhs) const
+	bool operator!= (const AVec2 &rhs) const
 	{
 		return !(*this == rhs);
 	}
@@ -144,7 +144,7 @@ public:
 
 //Vector2DScalar product
 template<typename Val>
-inline Vec2<Val> operator*(Val lhs, Vec2<Val> rhs)
+inline AVec2<Val> operator*(Val lhs, AVec2<Val> rhs)
 {
 	return rhs * lhs;
 }
@@ -152,7 +152,7 @@ inline Vec2<Val> operator*(Val lhs, Vec2<Val> rhs)
 //Vector2DAbsolute value / magnitude
 
 template<typename Val>
-inline Val abs(const Vec2<Val> &v)
+inline Val abs(const AVec2<Val> &v)
 {
 	return v.magnitude();
 }
@@ -160,9 +160,9 @@ inline Val abs(const Vec2<Val> &v)
 
 //A couple of handy typedefs
 
-typedef Vec2<float> Vec2f;
-typedef Vec2<double> Vec2d;
+typedef AVec2<float> AVec2f;
+typedef AVec2<double> AVec2d;
 
-typedef Vec2<int> Vec2i;
+typedef AVec2<int> AVec2i;
 
 #endif
