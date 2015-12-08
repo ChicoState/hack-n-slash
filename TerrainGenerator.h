@@ -94,15 +94,19 @@ class TerrainGenerator{
 public:
 	TerrainGenerator(ALLEGRO_EVENT_QUEUE *EventQueue, Player *MainPlayer) : m_EventQueue(EventQueue), m_MainPlayer(MainPlayer)
 	{
-		m_curBiome = new Biome(1);
-		m_curFractal = new Fractal();
+		//m_curBiome = new Biome(1);
+		//m_curFractal = new Fractal();
 		m_mapSize = 64;
 		m_tileSize = 64;
 		time(&start);
 		numWaterTiles = 0;
 		numWaterFrames = 5;
+
+		al_init_user_event_source(&m_EnterDungeonEvent);
+		al_register_event_source(m_EventQueue, &m_EnterDungeonEvent);
 	};
-	//~TerrainGenerator();
+	~TerrainGenerator(){ delete m_map; };
+
 	void generateTerrain(Display &MainDisplay);
 	void buildNoiseMap();
 	void interpretMap();
@@ -116,17 +120,25 @@ public:
 	void overlayImage(const cv::Mat &background, const cv::Mat &foreground,
 		cv::Mat &output, cv::Point2i location);
 	void setStartPosition();
+
 	TerrainMap* Get_Map(){ return m_map; }
 	AVec2f GetStartPosition() { return AVec2f(m_StartPosition.x() * m_tileSize, m_StartPosition.y() * m_tileSize); }
+
 	void placeTrees(int i, int j, std::vector<std::vector<TerrainTile>> &Layer, std::vector<TerrainLayer> &Layers, ALLEGRO_BITMAP *DecorativeTiles);
 	//void generateAnimated(ImageCells &waterSpriteSheet, Mat img, int curRow); //commented out due to Rect conflict with allegro, need workaround
 	void setWaterTiles(std::vector<AVec2i> waterTiles);
+
 private:
+	ALLEGRO_EVENT_QUEUE *m_EventQueue;
+	ALLEGRO_EVENT_SOURCE m_EnterDungeonEvent;
+
 	ALLEGRO_BITMAP *m_DecorativeTiles;
 	ALLEGRO_BITMAP *m_WaterTiles;
+
 	utils::NoiseMap m_heightMap;
 	noise::module::Perlin m_perlinModule;
 	TerrainMap *m_map;
+	//TerrainTile m_entryTile;
 	int m_mapSize;
 	int m_tileSize;
 	int numWaterTiles;
@@ -137,11 +149,11 @@ private:
 
 	AVec2f m_StartPosition;
 	Player *m_MainPlayer;
-	ALLEGRO_EVENT_QUEUE *m_EventQueue;
 
 	Biome *m_curBiome;
 	Fractal *m_curFractal;
 	SpriteGenerator *m_spriteGenerator;
+
 };
 
 #endif

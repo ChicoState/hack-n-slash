@@ -30,6 +30,9 @@ void TerrainTile::Draw()
 		{
 			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(50, 46, 45));
 		}
+		else if (m_TileType == DungeonEntrance){
+			al_draw_filled_rectangle(m_PosX, m_PosY, m_PosX + m_FrameWidth, m_PosY + m_FrameHeight, al_map_rgb(255, 255, 255));
+		}
 	}
 	else if (m_Animated == true)
 	{
@@ -112,6 +115,15 @@ int TerrainTile::Event_Handler(ALLEGRO_EVENT &EV)
 			//emit the event source that the Dungeon has been completed
 			EV.user.type = CUSTOM_EVENT_ID(DUNGEON_COMPLETE_EVENT);
 			al_emit_user_event(&m_TerrainTriggerEvent, &EV, NULL);
+		}
+	}
+	else if (m_TriggerType == TR_ENTERDUNGEON && EV.type == PLAYERPOSITION_EVENT)
+	{
+		int PlayerX = EV.user.data1;
+		int PlayerY = EV.user.data2;
+		if (CheckCollision(AVec2f(PlayerX, PlayerY)))
+		{
+			EmitEvent(EV);
 		}
 	}
 

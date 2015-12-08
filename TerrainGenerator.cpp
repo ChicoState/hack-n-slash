@@ -252,7 +252,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 			{
 				if (perlinTrees.GetValue(i, j) > 0.94f && perlinTrees.GetValue(i, j) <= 0.96f)
 				{
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false);
+					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 0, 0, true, TR_ENTERDUNGEON, m_EventQueue);
 				}
 				else if (perlinTrees.GetValue(i, j) >= 0.3f && perlinTrees.GetValue(i, j) <= 0.9f)
 				{
@@ -263,7 +263,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 			{
 				if (perlinTrees.GetValue(i, j) > 0.0f && perlinTrees.GetValue(i, j) <= 0.009f)
 				{
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false);
+					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 0, 0, true, TR_ENTERDUNGEON, m_EventQueue);
 				}
 				else if (perlinTrees.GetValue(i, j) > -0.4f && perlinTrees.GetValue(i, j) <= -0.37f)
 				{
@@ -606,8 +606,15 @@ void Fractal::print(){
 void TerrainGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 {
 	m_map->Event_Handler(EV);
-
-	
+	if (EV.type == TERRAINTILE_TRIGGER_EVENT){
+		if ((TRIGGER)EV.user.data1 == TR_ENTERDUNGEON)
+		{
+			EV.user.type = CUSTOM_EVENT_ID(ENTER_DUNGEON);
+			//m_entryTile = m_map->Get_Layer(0)->Get_Tile(AVec2i(EV.user.data1, EV.user.data2));
+			al_emit_user_event(&m_EnterDungeonEvent, &EV, NULL);
+			std::cout << "HIT DUNGEON!" << std::endl;
+		}
+	}
 }
 
 void TerrainGenerator::Draw(bool PrePlayerDraw)

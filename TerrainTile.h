@@ -9,7 +9,7 @@
 enum TILE{ Blank = -1, Floor, Wall, Door, OpenDoor, ClosedDoor, Grass, Dirt, Water, Fog, Shrub, Rock, Tree, DungeonEntrance };
 
 //Terrain Tile trigger types. These are different events a tile can fire off
-enum TRIGGER{TR_NONE = -1, TR_SPIKE, TR_BOSS, TR_LOOT, TR_RETURN, TR_FOG};
+enum TRIGGER{TR_NONE = -1, TR_SPIKE, TR_BOSS, TR_LOOT, TR_RETURN, TR_FOG, TR_ENTERDUNGEON};
 
 //A single Tile that makes up the terrain.
 class TerrainTile : public Sprite

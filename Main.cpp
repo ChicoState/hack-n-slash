@@ -33,6 +33,7 @@ int main(void)
 	bool StartScreen = true; //start screen while loop bool
 	bool QuitGame = false;
 	int NumberOfAI = 30;
+	bool onSurface = true;
 
 	//Allegro variables---------------------------------
 	ALLEGRO_EVENT_QUEUE *Event_Queue = NULL;
@@ -60,8 +61,11 @@ int main(void)
 	DungeonGenerator Dungeon(Event_Queue, &MainPlayer);
 	Dungeon.GenerateDungeon(MainDisplay);
 
-	MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
-	MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+	TerrainGenerator Terrain(Event_Queue, &MainPlayer);
+	Terrain.generateTerrain(MainDisplay);
+
+	MainPlayer.SetXPosition(Terrain.GetStartPosition().x());
+	MainPlayer.SetYPosition(Terrain.GetStartPosition().y());
 
 	TestAIGroup.RandomSetup(NumberOfAI, Dungeon);  // Generates AI with random attributes in the group. Their spawn points will also be set randomly.
 	
@@ -100,10 +104,16 @@ int main(void)
 
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(Event_Queue, &ev);
-		
-		Dungeon.Event_Handler(ev);
-		TestAIGroup.EventHandler(ev);
-		TestAIGroup.ProcessAll(ev, MainPlayer);  // Process each AI in the group
+
+		if (!onSurface){
+			Dungeon.Event_Handler(ev);
+		}
+		else{
+			Terrain.Event_Handler(ev);
+		}
+
+		//TestAIGroup.EventHandler(ev);
+		//TestAIGroup.ProcessAll(ev, MainPlayer);  // Process each AI in the group
 		MainPlayer.EventHandler(ev, MainCamera.GetMouseXWorldCoordinate(), MainCamera.GetMouseYWorldCoordinate());
 		MainCamera.EventHandler(ev, MainPlayer.GetXPosition(), MainPlayer.GetYPosition());
 		
@@ -120,6 +130,13 @@ int main(void)
 			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
 			al_start_timer(Timer); //resume the timer after the new level loads
+			onSurface = true;
+		}
+		if (ev.type == ENTER_DUNGEON)
+		{
+			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
+			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+			onSurface = false;
 		}
 
 		// Collide with AI
@@ -131,12 +148,20 @@ int main(void)
 		// Hit the AI
 		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundOne(), MainPlayer.GetWeaponHitBoxYBoundOne(), MainPlayer.GetWeaponDamage());
 		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundTwo(), MainPlayer.GetWeaponHitBoxYBoundTwo(), MainPlayer.GetWeaponDamage());
-
-		if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne())))
-			MainPlayer.MovementCollidingBoundOne();
-		if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo())))
-			MainPlayer.MovementCollidingBoundTwo();
-
+		if (!onSurface)
+		{
+			if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne())))
+				MainPlayer.MovementCollidingBoundOne();
+			if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo())))
+				MainPlayer.MovementCollidingBoundTwo();
+		}
+		else
+		{
+			if (Terrain.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne())))
+				MainPlayer.MovementCollidingBoundOne();
+			if (Terrain.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo())))
+				MainPlayer.MovementCollidingBoundTwo();
+		}
 
 		if (MainPlayer.IsDead())
 		{
@@ -172,7 +197,6 @@ int main(void)
 				}
 			}
 
-			
 			MainPlayer.ResetPlayer();
 			Dungeon.Set_DungeonLevel(1);
 			Dungeon.GenerateDungeon(MainDisplay);
@@ -186,10 +210,23 @@ int main(void)
 		//Code Dealing with drawing to the screen goes within this if statement
 		if (al_is_event_queue_empty(Event_Queue))
 		{
-			Dungeon.Draw(1); //Draw the bottom layers of the dungeon
+			if (onSurface)
+			{
+				Terrain.Draw(1); //Draw the bottom layers of the dungeon
+			}
+			else{
+				Dungeon.Draw(1);
+			}
 			MainPlayer.DrawPlayer(); //Draw the player
 			TestAIGroup.DrawAll();  // Draw all AI.
-			Dungeon.Draw(0); //Draw the top layers of the dungeon
+			if (onSurface)
+			{
+				Terrain.Draw(0); //Draw the top layers of the dungeon
+			}
+			else
+			{
+				Dungeon.Draw(0);
+			}
 
 			MainGUILayer.DrawPlayerInformation(MainCamera, MainPlayer.GetCurrentLevel(), MainPlayer.GetCurrentHealth());
 			MainGUILayer.DrawScoreInformation(MainCamera, MainPlayer.GetCurrentScore());
