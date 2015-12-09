@@ -2,7 +2,7 @@
 // File: AI.cpp
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 12/6/2015
+// Date: 12/8/2015
 //
 #include "AI.h"
 
@@ -39,6 +39,16 @@ bool InVector(int x, int y, std::vector<PathNode*> vect)
 			return true;
 	}
 	return false;
+}
+//
+// The function that deallocates all PathNodes pointed to by the pointers in the given vector.
+//
+// @Param vect - Vector with pointers to PathNodes to delete
+//
+void DeallocateAll(std::vector<PathNode*> &vect)
+{
+	for (std::vector<PathNode*>::iterator it = vect.begin(); it != vect.end(); it++)
+		delete *it;
 }
 //
 // The AI Constructor
@@ -82,6 +92,17 @@ AI::AI(ALLEGRO_EVENT_QUEUE *ev_queue, ALLEGRO_BITMAP *SpriteImage, AI_TYPE t, in
 	}
 	else
 		ai_projectile = NULL;
+}
+//
+// The function that puts all pointers in a given vector into the garbage vector so the PathNodes
+// can easily be deleted later.
+//
+// @Param vect - Vector with PathNode pointers to put in garbage
+//
+void AI::ThrowAway(std::vector<PathNode*> &vect)
+{
+	for (std::vector<PathNode*>::iterator it = vect.begin(); it != vect.end(); it++)
+		garbage.push_back(*it);
 }
 //
 // The function that checks to see if any of the AI's x bound points are within the player's
@@ -195,7 +216,7 @@ void AI::SetSpawn(DungeonGenerator &dungeon)
 	std::list<Rect> m_Rooms = dungeon.Get_Rooms();
 
 	Rect TempRoom(D_WIDTH, D_HEIGHT, 1, 1);
-	Vec2f PlayerStart = dungeon.GetStartPosition() / T_SIZE;
+	AVec2f PlayerStart = dungeon.GetStartPosition() / T_SIZE;
 
 	// Get all rooms except the one with the player's starting position
 	for (std::list<Rect>::iterator it = m_Rooms.begin(); it != m_Rooms.end(); it++)
@@ -307,7 +328,7 @@ void AI::MoveIntoRange(Player &p)
 void AI::MoveUp()
 {
 	ai_direction = N;
-	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXNorthBoundPoint(), GetYNorthBoundPoint())))
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(GetXNorthBoundPoint(), GetYNorthBoundPoint())))
 	{
 		ai_y -= speed;
 		ai_tile.Set_CurRow(3, false);
@@ -320,7 +341,7 @@ void AI::MoveUp()
 void AI::MoveDown()
 {
 	ai_direction = S;
-	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXSouthBoundPoint(), GetYSouthBoundPoint())))
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(GetXSouthBoundPoint(), GetYSouthBoundPoint())))
 	{
 		ai_y += speed;
 		ai_tile.Set_CurRow(0, false);
@@ -333,7 +354,7 @@ void AI::MoveDown()
 void AI::MoveLeft()
 {
 	ai_direction = W;
-	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXWestBoundPoint(), GetYWestBoundPoint())))
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(GetXWestBoundPoint(), GetYWestBoundPoint())))
 	{
 		ai_x -= speed;
 		ai_tile.Set_CurRow(1, false);
@@ -346,12 +367,82 @@ void AI::MoveLeft()
 void AI::MoveRight()
 {
 	ai_direction = E;
-	if (!ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(GetXEastBoundPoint(), GetYEastBoundPoint())))
+	if (!ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(GetXEastBoundPoint(), GetYEastBoundPoint())))
 	{
 		ai_x += speed;
 		ai_tile.Set_CurRow(2, false);
 		ai_tile.Event_Handler();
 	}
+}
+//
+// This function makes the AI check the tiles to the left of it for the player.
+//
+// @Return - True if the AI sees the player, false otherwise
+// @Param dai_x - The AI's x position relative to the dungeon
+// @Param dai_y - The AI's y position relative to the dungeon
+// @Param p_x - The player's x position relative to the dungeon
+// @Param p_y - The player's y position relative to the dungeon
+//
+bool AI::SearchLeft(int dai_x, int dai_y, int p_x, int p_y)
+{
+	for (int i = dai_x; i > (dai_x - sight); i--)
+	{
+		// The AI can't see through walls
+		if (ai_dungeon->Get_Tile(AVec2i(i, dai_y)) == Wall)
+			break;
+		// Search up
+		for (int j = dai_y; j > (dai_y - sight); j--)
+		{
+			if (i == p_x && j == p_y)
+				return true;
+			else if (ai_dungeon->Get_Tile(AVec2i(i, j)) == Wall)
+				break;
+		}
+		// Search down
+		for (int j = dai_y; j < (dai_y + sight); j++)
+		{
+			if (i == p_x && j == p_y)
+				return true;
+			else if (ai_dungeon->Get_Tile(AVec2i(i, j)) == Wall)
+				break;
+		}
+	}
+	return false;
+}
+//
+// This function makes the AI check the tiles to the right of it for the player.
+//
+// @Return - True if the AI sees the player, false otherwise
+// @Param dai_x - The AI's x position relative to the dungeon
+// @Param dai_y - The AI's y position relative to the dungeon
+// @Param p_x - The player's x position relative to the dungeon
+// @Param p_y - The player's y position relative to the dungeon
+//
+bool AI::SearchRight(int dai_x, int dai_y, int p_x, int p_y)
+{
+	for (int i = dai_x; i < (dai_x + sight); i++)
+	{
+		// The AI can't see through walls
+		if (ai_dungeon->Get_Tile(AVec2i(i, dai_y)) == Wall)
+			break;
+		// Search up
+		for (int j = dai_y; j >(dai_y - sight); j--)
+		{
+			if (i == p_x && j == p_y)
+				return true;
+			else if (ai_dungeon->Get_Tile(AVec2i(i, j)) == Wall)
+				break;
+		}
+		// Search down
+		for (int j = dai_y; j < (dai_y + sight); j++)
+		{
+			if (i == p_x && j == p_y)
+				return true;
+			else if (ai_dungeon->Get_Tile(AVec2i(i, j)) == Wall)
+				break;
+		}
+	}
+	return false;
 }
 //
 // This function checks to see if the AI can see the player. It searches
@@ -366,52 +457,11 @@ bool AI::SeePlayer(Player &p)
 	int dai_y = ai_y / T_SIZE;            // AI y position relative to the dungeon
 	int p_x = p.GetXPosition() / T_SIZE;  // Player x position relative to the dungeon
 	int p_y = p.GetYPosition() / T_SIZE;  // Player y position relative to the dungeon
-	// Search left
-	for (int i = dai_x; i > (dai_x - sight); i--)
-	{
-		// The AI can't see through walls
-		if (ai_dungeon->Get_Tile(Vec2i(i, dai_y)) == Wall)
-			break;
-		// Search up
-		for (int j = dai_y; j > (dai_y - sight); j--)
-		{
-			if (i == p_x && j == p_y)
-				return true;
-			else if (ai_dungeon->Get_Tile(Vec2i(i, j)) == Wall)
-				break;
-		}
-		// Search down
-		for (int j = dai_y; j < (dai_y + sight); j++)
-		{
-			if (i == p_x && j == p_y)
-				return true;
-			else if (ai_dungeon->Get_Tile(Vec2i(i, j)) == Wall)
-				break;
-		}
-	}
-	// Search right
-	for (int i = dai_x; i < (dai_x + sight); i++)
-	{
-		if (ai_dungeon->Get_Tile(Vec2i(i, dai_y)) == Wall)
-			break;
-		// Search up
-		for (int j = dai_y; j > (dai_y - sight); j--)
-		{
-			if (i == p_x && j == p_y)
-				return true;
-			else if (ai_dungeon->Get_Tile(Vec2i(i, j)) == Wall)
-				break;
-		}
-		// Search down
-		for (int j = dai_y; j < (dai_y + sight); j++)
-		{
-			if (i == p_x && j == p_y)
-				return true;
-			else if (ai_dungeon->Get_Tile(Vec2i(i, j)) == Wall)
-				break;
-		}
-	}
-	return false;
+
+	if (SearchLeft(dai_x, dai_y, p_x, p_y) || SearchRight(dai_x, dai_y, p_x, p_y))
+		return true;
+	else
+		return false;
 }
 //
 // This function checks to see if the AI is in a position where the player is in
@@ -464,7 +514,6 @@ void AI::FindPath(int t_x, int t_y)
 	std::vector<PathNode*>::reverse_iterator p_it;
 	PathNode* cur_node = NULL;
 	int f_lowest;
-	int g_tentative;
 
 	const int D_WIDTH = 51;         // Dungeon width
 	const int D_HEIGHT = 31;        // Dungeon height
@@ -519,40 +568,13 @@ void AI::FindPath(int t_x, int t_y)
 		open_vector.erase(--(p_it.base()));
 		closed_vector.push_back(cur_node);
 		// Look at each neighbor tile
-		for (int i = cur_node->X() - 1; i <= cur_node->X() + 1; i++)
-		{
-			for (int j = cur_node->Y() - 1; j <= cur_node->Y() + 1; j++)
-			{
-				// Ignore the ones that are either closed or are unwalkable
-				if (InVector(i, j, closed_vector) || ai_dungeon->Get_Tile(Vec2i(i, j)) == Wall)
-					continue;
-				// Don't check diagonally
-				else if (i == cur_node->X() - 1 && j == cur_node->Y() - 1)
-					continue;
-				else if (i == cur_node->X() - 1 && j == cur_node->Y() + 1)
-					continue;
-				else if (i == cur_node->X() + 1 && j == cur_node->Y() - 1)
-					continue;
-				else if (i == cur_node->X() + 1 && j == cur_node->Y() + 1)
-					continue;
-				g_tentative = g_score[cur_node->X()][cur_node->Y()] + (abs(i - cur_node->X()) + abs(j - cur_node->Y()));
-				if (!InVector(i, j, open_vector) || g_tentative < g_score[i][j])
-				{
-					g_score[i][j] = g_tentative;
-					f_score[i][j] = g_tentative + (abs(t_x - i) + abs(t_y - j));
-					if (!InVector(i, j, open_vector))
-						open_vector.push_back(new PathNode(i, j, f_score[i][j], cur_node));
-				}
-			}
-		}
+		SearchNeighbors(cur_node, t_x, t_y, f_score, g_score, open_vector, closed_vector);
 	}
 	if (!path_found)
 	{
 		// If the AI fails to find a path to the target coordinates, just delete all nodes allocated.
-		for (std::vector<PathNode*>::iterator it = open_vector.begin(); it != open_vector.end(); it++)
-			delete *it;
-		for (std::vector<PathNode*>::iterator it = closed_vector.begin(); it != closed_vector.end(); it++)
-			delete *it;
+		DeallocateAll(open_vector);
+		DeallocateAll(closed_vector);
 		std::cout << "The AI has failed to find a path...\n";
 	}
 	else
@@ -564,11 +586,53 @@ void AI::FindPath(int t_x, int t_y)
 			cur_node = cur_node->Pa();
 		}
 		// Put all PathNode pointers into the garbage vector so that all allocated PathNodes can be deleted later
-		for (std::vector<PathNode*>::iterator it = open_vector.begin(); it != open_vector.end(); it++)
-			garbage.push_back(*it);
-		for (std::vector<PathNode*>::iterator it = closed_vector.begin(); it != closed_vector.end(); it++)
-			garbage.push_back(*it);
+		ThrowAway(open_vector);
+		ThrowAway(closed_vector);
 		std::cout << "The AI has formed a path to target...\n";
+	}
+}
+//
+// This function makes a PathNode search the neighboring tiles for the
+// shortest path to target.
+//
+// @Param cur_node - Pointer to the current PathNode in question
+// @Param t_x - Target x coordinate (relative to the dungeon)
+// @Param t_y - Target y coordinate (relative to the dungeon)
+// @Param f_score - Contains information about the F score of each tile
+// @Param g_score - Contains information about the G score of each tile
+// @Param open_vector - Open vector for the pathfinding algorithm
+// @Param closed_vector - Closed vector for the pathfinding algorithm
+//
+void AI::SearchNeighbors(PathNode *cur_node, int t_x, int t_y, int f_score[][31], int g_score[][31],
+	std::vector<PathNode*> &open_vector, std::vector<PathNode*> &closed_vector)
+{
+	int g_tentative = 0;
+
+	for (int i = cur_node->X() - 1; i <= cur_node->X() + 1; i++)
+	{
+		for (int j = cur_node->Y() - 1; j <= cur_node->Y() + 1; j++)
+		{
+			// Ignore the ones that are either closed or are unwalkable
+			if (InVector(i, j, closed_vector) || ai_dungeon->Get_Tile(AVec2i(i, j)) == Wall)
+				continue;
+			// Don't check diagonally
+			else if (i == cur_node->X() - 1 && j == cur_node->Y() - 1)
+				continue;
+			else if (i == cur_node->X() - 1 && j == cur_node->Y() + 1)
+				continue;
+			else if (i == cur_node->X() + 1 && j == cur_node->Y() - 1)
+				continue;
+			else if (i == cur_node->X() + 1 && j == cur_node->Y() + 1)
+				continue;
+			g_tentative = g_score[cur_node->X()][cur_node->Y()] + (abs(i - cur_node->X()) + abs(j - cur_node->Y()));
+			if (!InVector(i, j, open_vector) || g_tentative < g_score[i][j])
+			{
+				g_score[i][j] = g_tentative;
+				f_score[i][j] = g_tentative + (abs(t_x - i) + abs(t_y - j));
+				if (!InVector(i, j, open_vector))
+					open_vector.push_back(new PathNode(i, j, f_score[i][j], cur_node));
+			}
+		}
 	}
 }
 //
@@ -577,8 +641,7 @@ void AI::FindPath(int t_x, int t_y)
 //
 void AI::CleanPath()
 {
-	for (std::vector<PathNode*>::iterator it = garbage.begin(); it != garbage.end(); it++)
-		delete *it;
+	DeallocateAll(garbage);
 	garbage.clear();
 	path.clear();
 }
@@ -767,11 +830,6 @@ void AI::Draw()
 	// Draw the AI's projectile
 	if (ai_projectile && proj_active)
 		ai_projectile->Draw();
-
-    // For debugging purposes, draw magenta circles showing the path the AI created to a target position
-	// The circles are located at the center of each tile
-	for (std::vector<PathNode*>::reverse_iterator it = path.rbegin(); it != path.rend(); it++)
-		al_draw_filled_circle((*it)->X() * T_SIZE + (T_SIZE / 2), (*it)->Y() * T_SIZE + (T_SIZE / 2), 5, al_map_rgb(255, 0, 255));
 }
 //
 // This function draws the melee AI's weapon sprite (a fireball) in a particular direction.
@@ -821,63 +879,10 @@ void AI::ProcessAI(ALLEGRO_EVENT &ev, Player &player)
 			std::cout << "The AI sees you...\n";
 		}
 	}
-	// In this state, the AI will chase the player. The melee AI will move toward
-	// the player and then switch its state to ATTCK when it collides with the player.
-	// The ranger AI will move into a position where it can shoot the player, and then
-	// change its state to ATTACK. When it loses sight of the player, it will form
-	// a path to the coordinates where the player was last seen and then change
-	// its state to SEEK.
 	else if (state == CHASE)
-	{
-		if (!SeePlayer(player))
-		{
-			state = SEEK;
-			FindPath(l_x / T_SIZE, l_y / T_SIZE);
-			std::cout << "The AI lost sight of you, and is now heading towards your last known location...\n";
-			return;
-		}
-		// Record the player's current position while chasing
-		l_x = player.GetXPosition();
-		l_y = player.GetYPosition();
-		if (type == MELEE || type == BOSS_MELEE)
-		{
-			if (CollideWithPlayer(player))
-			{
-				state = ATTACK;
-				std::cout << "The Melee AI is attacking you...\n";
-			}
-			MoveTowardTarget(l_x, l_y);
-		}
-		else if (type == RANGER || type == BOSS_RANGER)
-		{
-			if (InRange(player))
-			{
-				state = ATTACK;
-				std::cout << "The Ranger AI is attacking you...\n";
-			}
-			MoveIntoRange(player);
-		}
-	}
-	// In this state, the AI will move along the path it formed after chasing the player.
-	// When it happens to see the player while in this state, the AI will clear the path
-	// and then switch its state back to CHASE. When the AI reaches the end of the path without
-	// seeing the player, it will change its state to IDLE.
+		AIChase(player);
 	else if (state == SEEK)
-	{
-		if (SeePlayer(player))
-		{
-			CleanPath();
-			state = CHASE;
-			std::cout << "The AI found you...\n";
-		}
-		else if (!path.empty())
-			MoveAlongPath();
-		else
-		{
-			state = IDLE;
-			std::cout << "The AI is now IDLE again...\n";
-		}
-	}
+		AISeek(player);
 	// This state is where the AI will execute the helper functions for attacking the player.
 	// The state will get changed in those functions.
 	else if (state == ATTACK)
@@ -933,6 +938,74 @@ void AI::ProcessBossBuff()
 	special_tick_delay++;
 }
 //
+// This function makes the AI in the SEEK state follow a path made in FindPath
+// to find the player.
+//
+// @Param p - The player the AI will deal with
+//
+void AI::AISeek(Player &p)
+{
+	// In this state, the AI will move along the path it formed after chasing the player.
+	// When it happens to see the player while in this state, the AI will clear the path
+	// and then switch its state back to CHASE. When the AI reaches the end of the path without
+	// seeing the player, it will change its state to IDLE.
+	if (SeePlayer(p))
+	{
+		CleanPath();
+		state = CHASE;
+		std::cout << "The AI found you...\n";
+	}
+	else if (!path.empty())
+		MoveAlongPath();
+	else
+	{
+		state = IDLE;
+		std::cout << "The AI is now IDLE again...\n";
+	}
+}
+//
+// This function makes the AI chase the player while in CHASE state.
+//
+// @Param p - The player the AI will deal with
+//
+void AI::AIChase(Player &p)
+{
+	// In this state, the AI will chase the player. The melee AI will move toward
+	// the player and then switch its state to ATTACK when it collides with the player.
+	// The ranger AI will move into a position where it can shoot the player, and then
+	// change its state to ATTACK. When it loses sight of the player, it will form
+	// a path to the coordinates where the player was last seen and then change
+	// its state to SEEK.
+	if (!SeePlayer(p))
+	{
+		state = SEEK;
+		FindPath(l_x / T_SIZE, l_y / T_SIZE);
+		std::cout << "The AI lost sight of you, and is now heading towards your last known location...\n";
+		return;
+	}
+	// Record the player's current position while chasing
+	l_x = p.GetXPosition();
+	l_y = p.GetYPosition();
+	if (type == MELEE || type == BOSS_MELEE)
+	{
+		if (CollideWithPlayer(p))
+		{
+			state = ATTACK;
+			std::cout << "The Melee AI is attacking you...\n";
+		}
+		MoveTowardTarget(l_x, l_y);
+	}
+	else if (type == RANGER || type == BOSS_RANGER)
+	{
+		if (InRange(p) || CollideWithPlayer(p))
+		{
+			state = ATTACK;
+			std::cout << "The Ranger AI is attacking you...\n";
+		}
+		MoveIntoRange(p);
+	}
+}
+//
 // This function processes the projectile if the the projectile is active.
 //
 // @Param p - The player the projectile will deal with
@@ -945,8 +1018,8 @@ void AI::ProcessProjectile(Player &p)
 	ai_projectile->UpdatePosition();
 	
 	// Stop the projectile if it hits an obstacle
-	if (ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(ai_projectile->GetHitBoxXBoundOne(), ai_projectile->GetHitBoxYBoundOne()))
-		|| ai_dungeon->Get_Map()->CheckMapCollision(Vec2f(ai_projectile->GetHitBoxXBoundTwo(), ai_projectile->GetHitBoxYBoundTwo())))
+	if (ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(ai_projectile->GetHitBoxXBoundOne(), ai_projectile->GetHitBoxYBoundOne()))
+		|| ai_dungeon->Get_Map()->CheckMapCollision(AVec2f(ai_projectile->GetHitBoxXBoundTwo(), ai_projectile->GetHitBoxYBoundTwo())))
 		proj_active = false;
 	// Deal damage and stop the projectile if it hits the player
 	else if (ProjectileCollideWithPlayer(p))
@@ -991,7 +1064,7 @@ void AI::MeleeAttack(Player &p)
 //
 void AI::RangerAttack(Player &p)
 {
-	if (!InRange(p))
+	if (!InRange(p) && !CollideWithPlayer(p))
 	{
 		state = CHASE;
 		std::cout << "The Ranger AI is getting in range again...\n";

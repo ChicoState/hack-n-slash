@@ -2,7 +2,7 @@
 // File: AI.h
 // Author: James Beller
 // Group: Hack-'n-Slash
-// Date: 12/6/2015
+// Date: 12/8/2015
 //
 #ifndef __AI_H__
 #define __AI_H__
@@ -87,6 +87,7 @@ private:
 	//
 	// Private functions
 	//
+	void ThrowAway(std::vector<PathNode*> &);      // Put PathNode pointers in a vector into the garbage vector
 	bool InBoundX(float, float);                   // Check to see if an x bound point is within 2 given values
 	bool InBoundY(float, float);                   // Check to see if a y bound point is within 2 given values
 	bool ProjectileInBoundX(float, float);         // Check to see if the projectile's x bound is within 2 given values
@@ -104,9 +105,17 @@ private:
 	bool CollideWithPlayer(Player &p);             // Check to see if it the AI collides with the player
 	bool ProjectileCollideWithPlayer(Player &);    // Check to see if the projectile collides with the player
 	void Shoot();                                  // Makes the AI shoot a projectile
+	// Helper function for FindPath
+	void SearchNeighbors(PathNode*, int, int, int[][31], int[][31],
+		std::vector<PathNode*> &, std::vector<PathNode*> &);  // Search the neighbors of a tile
 	// Helper function for Draw
 	void DrawMelee();                              // Draw the melee weapon sprite
+	// Helper functions for SeePlayer
+	bool SearchLeft(int, int, int, int);           // Search left for the player
+	bool SearchRight(int, int, int, int);          // Search right for the player
 	// Helper functions for ProcessAI
+	void AIChase(Player &);
+	void AISeek(Player &);
 	void ProcessProjectile(Player &);              // Process the projectile (if it is active)
 	void MeleeAttack(Player &);                    // Melee AI calls this function in ATTACK mode
 	void RangerAttack(Player &);                   // Ranger AI calls this function in ATTACK mode

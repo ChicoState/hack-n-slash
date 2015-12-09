@@ -50,7 +50,7 @@ void AI_Group::EventHandler(ALLEGRO_EVENT &ev)
 		SpawnBoss(ev.user.data1, ev.user.data2);
 	// Spawn a pickup when an AI is killed
 	else if (ev.type == AI_KILLED_EVENT || ev.type == BOSS_KILLED_EVENT)
-		drops.SpawnObjectRandom(Vec2i(ev.user.data1, ev.user.data2), 25);
+		drops.SpawnObjectRandom(AVec2i(ev.user.data1, ev.user.data2), 25);
 }
 //
 // This function checks to see if the given AI overlaps with anyone else in the group.
@@ -76,7 +76,7 @@ bool AI_Group::Overlap(AI* ai)
 //
 bool AI_Group::OverlapWithPlayerStart(AI* ai)
 {
-	Vec2f pos = ai->GetActiveDungeon()->GetStartPosition();
+	AVec2f pos = ai->GetActiveDungeon()->GetStartPosition();
 
 	if (ai->GetXPosition() == pos.x() && ai->GetYPosition() == pos.y())
 		return true;
