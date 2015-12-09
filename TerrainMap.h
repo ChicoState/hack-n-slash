@@ -72,6 +72,7 @@ private:
 	void ClearFog(Vec2i, int); //recursive algorithm for removing all fog from a room once the player enters it
 	void CreatePickupObjects(Vec2i); //tells the object manager to spawn an object
 	void CheckProjectiles(std::vector<Projectile*>&); //checks projectiles to see if they're hitting any parts of the dungeon
+	int GetLayerFromType(Vec2i, TRIGGER); //Given a position index and a trigger type, returns the layer that tile is on
 };
 
 #endif

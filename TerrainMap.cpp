@@ -88,7 +88,7 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 			int TileHP = m_InfoLayer[Pos.x() / m_TileSize][Pos.y() / m_TileSize]->Get_TileHP();
 			if (TileHP < 1000)
 			{
-				//if it did and the tild can be damaged make it take damage
+				//if it did and the tile can be damaged make it take damage
 				m_InfoLayer[Pos.x() / m_TileSize][Pos.y() / m_TileSize]->Set_TileHP(TileHP - m_MainPlayer->GetWeaponDamage());
 			}
 		}
@@ -99,32 +99,21 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 		{
 			Vec2i Pos(EV.user.data2, EV.user.data3);
 
-			for (unsigned int i = 0; i < m_Map.size(); i++)
-			{
-				if (m_Map[i]->Get_Tile(Pos).Get_TriggerType() == TR_LOOT)
-				{
-					//finds the layer the tile is on then... 
-					m_InfoLayer[Pos.x()][Pos.y()] = NULL; //gets rid of the pointer in the info layer
-					m_Map[i]->CreateBitmap(NULL); //tells that layer to update it's image
-					CreatePickupObjects(Pos); //creates the pickup object
-					break; //get out since we're done now
-				}					
-			}
+			int LayerIndex = GetLayerFromType(Pos, TR_LOOT); //get the layer that contains the Loot
 
+			m_InfoLayer[Pos.x()][Pos.y()] = NULL; //gets rid of the pointer in the info layer
+			m_Map[LayerIndex]->CreateBitmap(NULL); //tells that layer to update it's image
+			CreatePickupObjects(Pos); //creates the pickup object
 		}
 		else if ((TRIGGER)EV.user.data1 == TR_FOG) //the player ran into fog
 		{
 			Vec2i Pos(EV.user.data2 / m_TileSize, EV.user.data3 / m_TileSize);
+			
+			int LayerIndex = GetLayerFromType(Pos, TR_FOG); //get the layer that contains the fog
 
-			for (unsigned int i = 0; i < m_Map.size(); i++)
-			{
-				if (m_Map[i]->Get_Tile(Pos).Get_TriggerType() == TR_FOG)
-				{
-					//finds the layer the tile is on then... 
-					ClearFog(Pos, i); //gets rid of the fog in that room
-					m_Map[i]->CreateBitmap(NULL); //recreates the image for that layer
-				}
-			}
+			//finds the layer the tile is on then... 
+			ClearFog(Pos, LayerIndex); //gets rid of the fog in that room
+			m_Map[LayerIndex]->CreateBitmap(NULL); //recreates the image for that layer
 		}
 	}
 
@@ -133,6 +122,20 @@ void TerrainMap::Event_Handler(ALLEGRO_EVENT &EV)
 		CheckProjectiles(GameProjectiles); //check to make sure they aren't colliding with anything
 	}
 }
+
+int TerrainMap::GetLayerFromType(Vec2i Pos, TRIGGER TriggerType)
+{
+	for (unsigned int i = 0; i < m_Map.size(); i++)
+	{
+		if (m_Map[i]->Get_Tile(Pos).Get_TriggerType() == TriggerType)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 
 void TerrainMap::CheckProjectiles(std::vector<Projectile*>& GameProjectiles)
 {

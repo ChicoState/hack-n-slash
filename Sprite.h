@@ -7,13 +7,15 @@
 #include "Vec2.h"
 #include <string>
 
+
+
 class Sprite
 {
 private:
 	
 
 protected:
-	ALLEGRO_BITMAP *m_Image; //The image should be created/generated elsewhere. This class will handle the deletion of said bitmap
+	ALLEGRO_BITMAP *m_Image; //the sprite sheet image
 
 	int m_PosX; //world location in X where the tile is located
 	int m_PosY; //world location in Y where the tile is located
