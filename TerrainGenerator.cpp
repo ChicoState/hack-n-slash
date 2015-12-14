@@ -8,10 +8,10 @@
 #include <fstream>
 #include <math.h>
 
-
 #include "TerrainGenerator.h"
 #include "ImageCells.h"
 
+//This is the main function to call to generate the terrain
 void TerrainGenerator::generateTerrain(Display &MainDisplay){
 	//interpretMap(m_curFractal->generateFractal(m_curBiome));
 	//m_curFractal->print();
@@ -20,17 +20,18 @@ void TerrainGenerator::generateTerrain(Display &MainDisplay){
 	//testPrint();
 	generateTextureMap();
 	generateForests(MainDisplay);
-	
 	setStartPosition();
 }
 
+//A function to show the functionality of the ImageCells class in a clear manner.  Teaching by example :)
 void TerrainGenerator::testPrint()
 {
 	ImageCells cells(25, 25, 25, 25); // it creates a ImageCells class having 4 rows and 3 cols, cell witdh = 70 cell height = 90 you can change these values according your needs
 
-
 	Mat img = Mat(25, 25, CV_8UC3, Scalar(0, 0, 255)); // a test mat to use with cells.setCell important note is : img witdh&height must be same to cell witdh&height
+
 	srand(time(NULL));
+
 	for (int i = 0; i < cells.cols(); i++)
 		for (int j = 0; j < cells.rows(); j++)
 		{
@@ -47,37 +48,44 @@ void TerrainGenerator::testPrint()
 			waitKey();
 		}
 }
+
+//currently commented out due to restrictions of the Allegro_Bitmap class
+//Meant to generate A sprite sheet of "animated" water by applying blur effects to each frame
 /*
 void TerrainGenerator::generateAnimated(ImageCells &waterSpriteSheet, Mat img, int curRow)
 {
-	for (int i = 1; i < numWaterFrames; i++)
-	{
-		medianBlur(img, img, 1 + (2 * i));
-		waterSpriteSheet.setCell(i, curRow, img);
-	}
+for (int i = 1; i < numWaterFrames; i++)
+{
+medianBlur(img, img, 1 + (2 * i));
+waterSpriteSheet.setCell(i, curRow, img);
+}
 }
 */
+
+//This is the main function that will generate the landscape bitmap
 void TerrainGenerator::generateTextureMap()
 {
 	int size = 64; //129 129
 	ImageCells cells(m_mapSize, m_mapSize, size, size); // it creates a ImageCells class having 4 rows and 3 cols, cell witdh = 70 cell height = 90 you can change these values according your needs
-	ImageCells waterSpriteSheet(numWaterTiles, numWaterFrames, size, size);
+	ImageCells waterSpriteSheet(5, numWaterFrames * 2, size, size);
 	Mat imgSize = Mat(size, size, CV_8UC3, Scalar(0, 0, 255)); // a test mat to use with cells.setCell important note is : img witdh&height must be same to cell witdh&height
-	Mat img; //loads from TerriainGenerator/TerrainGenerator folder
+	Mat img;
 	int textureNum = 5;
 	m_spriteGenerator->generateWaterTexture(textureNum);
 	m_spriteGenerator->generateGrassTexture(textureNum);
 	m_spriteGenerator->generateDirtTexture(textureNum);
 	srand(time(NULL));
-	std::vector<AVec2i> waterTiles;
+	std::vector<AVec2i> waterTiles; //Vector to keep track of water tiles (only collidable tiles in the base texture map)
 	int curRow = 0;
 	for (int i = 0; i < m_mapSize; i++)
 	{
 		for (int j = 0; j < m_mapSize; j++)
 		{
 			AVec2i Pos(i, j);
+
+			//If tile is water
 			if (m_map->Get_Layer(0)->Get_Tile(Pos).Get_TileType() == Water)
-			{	
+			{
 				int texNum = rand() % textureNum + 1;
 				std::string input = "water";
 				input += std::to_string(texNum);
@@ -86,17 +94,44 @@ void TerrainGenerator::generateTextureMap()
 				if (!img.empty())
 				{
 					cv::resize(img, img, imgSize.size());
+
+					//Image to be added to the base texture image that is loaded
 					Mat imgAdd = Mat(size, size, CV_8UC3, Scalar(0, (1.0f - fabs(m_heightMap.GetValue(i, j))) * 255.0f, 0));
+
 					//cv::addWeighted(clone, 0.8, imgAdd, 0.2, clone);
+
+					//Adds the raw Mat img with only RGB to the base texture
 					cv::addWeighted(img, 0.5, imgAdd, 0.5, 0, img);
 					waterTiles.push_back(Pos);
-					waterSpriteSheet.setCell(0, curRow, img);
+					
+					//Another example of water sprite animated generation through the use of filters
+					//Commented out due to limitations
 					//generateAnimated(waterSpriteSheet, img, curRow);
+					/*
+					if (curRow < 5){
+						waterSpriteSheet.setCell(0, curRow, img);
+						waterSpriteSheet.setCell(9, curRow, img);
+					for (int i = 1; i < numWaterFrames; i++)
+					{
+						int erosion_size = 0;
+						int erosion_type = MORPH_RECT;
+						Mat element = getStructuringElement(erosion_type,
+							Size(i * erosion_size + 1, i * erosion_size + 1),
+							Point(erosion_size, erosion_size));
+						medianBlur(img, img, 1 + (2 * i));
+						erode(img, img, element);
+						
+						waterSpriteSheet.setCell(i, curRow, img);
+						waterSpriteSheet.setCell(((numWaterFrames * 2 - 1)) - i, curRow, img);
+					}
 					curRow++;
+					}
+					*/
 				}
+				//Set the image cell to the output image
 				cells.setCell(i, j, img);
 			}
-			
+			//If tile is grass
 			else if (m_map->Get_Layer(0)->Get_Tile(Pos).Get_TileType() == Grass)
 			{
 				int texNum = rand() % textureNum + 1;
@@ -113,13 +148,15 @@ void TerrainGenerator::generateTextureMap()
 				}
 				cells.setCell(i, j, img);
 			}
+
+			//If tile is dirt
 			else if (m_map->Get_Layer(0)->Get_Tile(Pos).Get_TileType() == Dirt)
 			{
 				int texNum = rand() % textureNum + 1;
 				std::string input = "dirt";
 				input += std::to_string(texNum);
 				input += ".bmp";
-				
+
 				img = imread(input, CV_LOAD_IMAGE_COLOR);
 				if (!img.empty())
 				{
@@ -130,18 +167,18 @@ void TerrainGenerator::generateTextureMap()
 				}
 				cells.setCell(i, j, img);
 			}
-			
-			 // here you see how to use  setCell
+
+			// here you see how to use  setCell
 			//randu(img, 30 * i, 160 * j); // to show purpose changes img
 			//imshow("cells.image", cells.image);
 
 
 			/*for (int i = 0; i < cells.cols(); i++)
-				for (int j = 0; j < cells.rows(); j++)
-				{
-				imshow("cells", cells.getCell(i, j)); // here you see how to use  getCell
-				waitKey();
-				}*/
+			for (int j = 0; j < cells.rows(); j++)
+			{
+			imshow("cells", cells.getCell(i, j)); // here you see how to use  getCell
+			waitKey();
+			}*/
 
 
 		}
@@ -149,26 +186,18 @@ void TerrainGenerator::generateTextureMap()
 	vector<int> compression_params;
 	compression_params.push_back(0);
 	compression_params.push_back(0);
+	//Writes the complete terrain bitmap image from ImageCells to a jpg
 	imwrite("terrain1.jpg", cells.image, compression_params);
+	//Sets the terrain image of layer 0 to the outputted jpg
 	m_map->Get_Layer(0)->SetTerrainImage();
-	imwrite("watersprites.jpg", waterSpriteSheet.image, compression_params);
-	/*
-	int numFrames = 4;
-	for (int i = 0; i < 5; i++){
-		for (int j = 0; j < waterTiles.size(); j++){
-			Mat temp = cells.getCell(waterTiles[j].x(), waterTiles[j].y());
-			medianBlur(temp, temp, 1 + (2 * i));
-			cells.setCell(waterTiles[j].x(), waterTiles[j].y(), temp);
-		}
-		std::string output = "terrain";
-		output += std::to_string(i + 2);
-		output += ".jpg";
-		imwrite(output, cells.image, compression_params);
-	}
-	*/
-	//setWaterTiles(waterTiles);
+	
+
+	//imwrite("watersprites.jpg", waterSpriteSheet.image, compression_params);
 }
 
+//Builds the noise map for the terrain
+//There is a lot going on here, so it is best to refer to libnoise documentation to understand
+//http://libnoise.sourceforge.net/tutorials/index.html
 void TerrainGenerator::buildNoiseMap(){
 	utils::NoiseMapBuilderPlane heightMapBuilder;
 	heightMapBuilder.SetSourceModule(m_perlinModule);
@@ -208,10 +237,11 @@ void TerrainGenerator::draw(){
 			//m_map[i][j].Draw();
 		}
 	}
-	
+
 	//m_curFractal->drawGrayscale();
 }
 
+//generates data necessary to begin placement of forests and details
 void TerrainGenerator::generateForests(Display &MainDisplay)
 {
 	utils::NoiseMap perlinTrees;
@@ -230,6 +260,8 @@ void TerrainGenerator::generateForests(Display &MainDisplay)
 	analyzeForests(perlinTrees, MainDisplay);
 }
 
+//This function takes in a second noise map that is compared to the base map's
+//if certain conditions are met from comparing the two, certain objects are placed
 void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &MainDisplay){
 	std::vector<std::vector<TerrainTile>> Layer;
 	int TileSize = 64;
@@ -252,7 +284,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 			{
 				if (perlinTrees.GetValue(i, j) > 0.94f && perlinTrees.GetValue(i, j) <= 0.96f)
 				{
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 0, 0, true, TR_ENTERDUNGEON, m_EventQueue);
+					Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 9, 6, true, TR_ENTERDUNGEON, m_EventQueue);
 				}
 				else if (perlinTrees.GetValue(i, j) >= 0.3f && perlinTrees.GetValue(i, j) <= 0.9f)
 				{
@@ -263,7 +295,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 			{
 				if (perlinTrees.GetValue(i, j) > 0.0f && perlinTrees.GetValue(i, j) <= 0.009f)
 				{
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 0, 0, true, TR_ENTERDUNGEON, m_EventQueue);
+					Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, DungeonEntrance, TileSize, TileSize, false, 9, 6, true, TR_ENTERDUNGEON, m_EventQueue);
 				}
 				else if (perlinTrees.GetValue(i, j) > -0.4f && perlinTrees.GetValue(i, j) <= -0.37f)
 				{
@@ -314,7 +346,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 	imwrite("TerrainDecorations.png", cells.image, compression_params);
 
 
-	
+
 	cv::Mat foreground = imread("TerrainDecorations.png", CV_LOAD_IMAGE_UNCHANGED);
 	cv::Mat background = imread("output.jpg", CV_LOAD_IMAGE_COLOR);
 	cv::Mat result;
@@ -344,6 +376,7 @@ void TerrainGenerator::analyzeForests(utils::NoiseMap perlinTrees, Display &Main
 	}
 }
 
+//Call to set the players start position, currently sets to highest point on the terrain
 void TerrainGenerator::setStartPosition()
 {
 	float highestPoint = -100.0f;
@@ -357,9 +390,10 @@ void TerrainGenerator::setStartPosition()
 			}
 		}
 	}
-	m_StartPosition = AVec2f(x, y);
+	m_StartPosition = AVec2i(x, y);
 }
 
+//Function to be used to allow overlaying a image with another
 void TerrainGenerator::overlayImage(const cv::Mat &background, const cv::Mat &foreground,
 	cv::Mat &output, cv::Point2i location)
 {
@@ -423,6 +457,7 @@ void TerrainGenerator::setWaterTiles(std::vector<AVec2i> waterTiles)
 
 }
 
+//Initial interpretation and setting of tile types based on the heightmap values generated in buildNoiseMap
 void TerrainGenerator::interpretMap(){
 	std::vector<std::vector<TerrainTile> > Layer;
 	float waterCutoff = -0.4f;
@@ -447,21 +482,21 @@ void TerrainGenerator::interpretMap(){
 			else if (m_heightMap.GetValue(i, j) >= 0.1f){
 				/*int random = rand() % 40;
 				if (random == 4){
-					interpretedData[i][j] = 2;
-					m_map[i][j] = TerrainTile(i * TileSize, j * TileSize, Dirt, TileSize, TileSize, false);
-					m_map[i][j].setRGB(0.0f, 0.0f, 0.0f);
-					continue;
+				interpretedData[i][j] = 2;
+				m_map[i][j] = TerrainTile(i * TileSize, j * TileSize, Dirt, TileSize, TileSize, false);
+				m_map[i][j].setRGB(0.0f, 0.0f, 0.0f);
+				continue;
 				}
 				else{*/
-					interpretedData[i][j] = 3;
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, Grass, TileSize, TileSize, false);
+				interpretedData[i][j] = 3;
+				Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, Grass, TileSize, TileSize, false);
 				//}
 			}
-			
+
 			else{
-					interpretedData[i][j] = 2;
-					Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, Dirt, TileSize, TileSize, false);
-					
+				interpretedData[i][j] = 2;
+				Layer[i][j] = TerrainTile(NULL, i * TileSize, j * TileSize, Dirt, TileSize, TileSize, false);
+
 			}
 			mapFile << interpretedData[i][j];
 		}
@@ -473,7 +508,7 @@ void TerrainGenerator::interpretMap(){
 	m_map = new TerrainMap(m_EventQueue, Temp, m_MainPlayer);
 
 }
-
+//Call to draw grayscale map of fractal
 void Fractal::drawGrayscale()
 {
 
@@ -486,6 +521,7 @@ void Fractal::drawGrayscale()
 
 }
 
+//Generates a fractal
 float** Fractal::generateFractal(Biome *curBiome){
 	initializeHeightmap();
 	setInitialConditions(curBiome);
@@ -495,6 +531,7 @@ float** Fractal::generateFractal(Biome *curBiome){
 	return m_heightMap;
 }
 
+//Sets initial conditions for fractal (tweak for different results)
 void Fractal::setInitialConditions(Biome *curBiome){
 	//this will contain the initial conditions for each of the primary biomes
 	//I will add a conditional to declare additional constants other than the four corner points
@@ -509,6 +546,7 @@ void Fractal::setInitialConditions(Biome *curBiome){
 	average = 0.0f;
 }
 
+//Initializes array for fractal heightmap
 void Fractal::initializeHeightmap(){
 	for (int i = 0; i < m_size; i++){
 		m_heightMap[i] = new float[m_size];
@@ -521,17 +559,21 @@ void Fractal::initializeHeightmap(){
 
 }
 
+//Diamond of the diamond square algorithm
+//https://en.wikipedia.org/wiki/Diamond-square_algorithm
 void Fractal::diamond(int size, int X, int Y, float range){
 	if (size <= 1){
 		return;
 	}
 	srand(time(NULL));
 	//srand(2);
-		m_heightMap[Y + size / 2][X + size / 2] = (m_heightMap[Y][X] + m_heightMap[Y + size][X] + m_heightMap[Y][X + size] + m_heightMap[Y + size][X + size]) / 4 + (static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / range)));
+	m_heightMap[Y + size / 2][X + size / 2] = (m_heightMap[Y][X] + m_heightMap[Y + size][X] + m_heightMap[Y][X + size] + m_heightMap[Y + size][X + size]) / 4 + (static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / range)));
 	square(size, X, Y, range);
 
 }
 
+//Square of the diamond square algorithm
+//https://en.wikipedia.org/wiki/Diamond-square_algorithm
 void Fractal::square(int size, int X, int Y, float range){
 	//top
 	if (size <= 1){
@@ -575,6 +617,7 @@ void Fractal::square(int size, int X, int Y, float range){
 
 }
 
+//Finds the average height of the fractal's heightmap
 void Fractal::calculateAverage()
 {
 	average = 0;
@@ -592,6 +635,7 @@ void Fractal::calculateAverage()
 	average /= (m_size * m_size);
 }
 
+//Prints fractal's values to a text file
 void Fractal::print(){
 	std::ofstream mapFile;
 	mapFile.open("rawHeight.txt");
@@ -603,6 +647,7 @@ void Fractal::print(){
 	}
 }
 
+//Event handler for Terrain events
 void TerrainGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 {
 	m_map->Event_Handler(EV);
@@ -612,15 +657,17 @@ void TerrainGenerator::Event_Handler(ALLEGRO_EVENT &EV)
 		{
 			EV.user.type = CUSTOM_EVENT_ID(ENTER_DUNGEON);
 			//m_entryTile = m_map->Get_Layer(0)->Get_Tile(AVec2i(EV.user.data1, EV.user.data2));
+			//m_StartPosition = AVec2i(EV.user.data1, EV.user.data2);
 			al_emit_user_event(&m_EnterDungeonEvent, &EV, NULL);
-			std::cout << "HIT DUNGEON!" << std::endl;
+
 		}
 	}
 }
 
+//Call to draw terrain
 void TerrainGenerator::Draw(bool PrePlayerDraw)
 {
-	
+
 
 	m_map->Draw(PrePlayerDraw);
 
@@ -628,6 +675,7 @@ void TerrainGenerator::Draw(bool PrePlayerDraw)
 	//al_draw_filled_circle(m_BossPortal.x() * cm_TileSize, m_BossPortal.y() * cm_TileSize, 5, al_map_rgb(255, 0, 0));
 }
 
+//Places trees and details for grass tiles, called from within the analyzeForests function
 void TerrainGenerator::placeTrees(int i, int j, std::vector<std::vector<TerrainTile>> &Layer, std::vector<TerrainLayer> &Layers, ALLEGRO_BITMAP *DecorativeTiles)
 {
 	//std::string input = "Tree.png";
@@ -637,877 +685,122 @@ void TerrainGenerator::placeTrees(int i, int j, std::vector<std::vector<TerrainT
 	//cv::resize(img, img, imgSize.size());
 	int TileSize = 64;
 	int tree = Random(0, 10);
+	int width, height, numRow, numCol;
 	if (tree == 0)
 	{
 		int randomTree = Random(0, 4);
-
-		if (randomTree == 0 || randomTree == 1)
+		if (randomTree < 4)
 		{
-			int numRow;
-			int numCol;
+
 			if (randomTree == 0)
 			{
-				numRow = 2;
-				numCol = 5;
-			}
-			if (randomTree == 1)
-			{
-				numRow = 6;
-				numCol = 11;
-
-			}
-			Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Tree, TileSize, TileSize, true, numRow, numCol);
-			if (i - 1 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i - 1, j)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i - 1, j)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else
-				{
-					Layers[0].Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-				}
-			}
-			if (i + 1 < m_mapSize)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i + 1, j)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i + 1, j)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else
-				{
-					Layers[0].Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-				}
-			}
-			if (j - 1 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 1)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 1)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 1)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 1)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 1)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 1)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-					}
-				}
-			}
-			if (j - 2 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 2)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 2)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-					}
-				}
-				if (i - 2 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 2, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 2, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 2, j - 2), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 2));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 2, j - 2), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 2, j - 2), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 2));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
-					}
-				}
-				if (i + 2 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 2, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 2, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 2, j - 2), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 2));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 2, j - 2), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i + 2, j - 2), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 2));
-					}
-				}
-			}
-			if (j - 3 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 3)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 3)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 3), TerrainTile(DecorativeTiles, i * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 3));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 3), TerrainTile(DecorativeTiles, i * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 3));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else
-				{
-					Layers[0].Set_Tile(AVec2i(i, j - 3), TerrainTile(DecorativeTiles, i * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 3));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 3)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 3)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 3), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 3));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 3), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 3));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 3), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 3));
-					}
-				}
-				if (i - 2 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 2, j - 3)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 2, j - 3)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 2, j - 3), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 3));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 2, j - 3), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 3));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 2, j - 3), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 3));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 3)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 3)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 3), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 3));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 3), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 3));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 3), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 3));
-					}
-				}
-				if (i + 2 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 2, j - 3)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 2, j - 3)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 2, j - 3), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 3));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 2, j - 3), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 3));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 2, j - 3), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 3) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 3));
-					}
-				}
-			}
-			if (j - 4 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 4)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 4)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 4), TerrainTile(DecorativeTiles, i * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 4));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 4), TerrainTile(DecorativeTiles, i * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 4));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 4), TerrainTile(DecorativeTiles, i * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 4));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 4)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 4)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 4), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 4));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 4), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 4));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 4), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 4));
-					}
-				}
-				if (i - 2 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 2, j - 4)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 2, j - 4)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 2, j - 4), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 4));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 2, j - 4), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 4));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 2, j - 4), TerrainTile(DecorativeTiles, (i - 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow - 2, numCol - 4));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 4)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 4)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 4), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 4));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 4), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 4));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 4), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 4));
-					}
-				}
-				if (i + 2 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 2, j - 4)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 2, j - 4)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 2, j - 4), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 4));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 2, j - 4), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 4));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 2, j - 4), TerrainTile(DecorativeTiles, (i + 2) * TileSize, (j - 4) * TileSize, Tree, TileSize, TileSize, false, numRow + 2, numCol - 4));
-					}
-				}
-			}
-			if (j - 5 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 5)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 5)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 5), TerrainTile(DecorativeTiles, i * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 5));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 5), TerrainTile(DecorativeTiles, i * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 5));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 5), TerrainTile(DecorativeTiles, i * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 5));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 5)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 5)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 5), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 5));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 5), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 5));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 5), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 5));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 5)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 5)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 5), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 5));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 5), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 5));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 5), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 5) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 5));
-					}
-				}
-			}
-
-		}
-		else if (randomTree == 2 || randomTree == 3)
-		{
-			int numRow;
-			int numCol;
-			if (randomTree == 2){
-				numRow = 6;
 				numCol = 2;
+				numRow = 5;
+				width = 3;
+				height = 6;
 			}
-			else{
-				numRow = 6;
-				numCol = 5;
-			}
-			Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Tree, TileSize, TileSize, true, numRow, numCol);
-			if (i - 1 >= 0)
+			else if (randomTree == 1)
 			{
-				if (Layers[0].Get_Tile(AVec2i(i - 1, j)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i - 1, j)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else
-				{
-					Layers[0].Set_Tile(AVec2i(i - 1, j), TerrainTile(DecorativeTiles, (i - 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol));
-				}
+				numCol = 6;
+				numRow = 11;
+				width = 3;
+				height = 6;
 			}
-			if (i + 1 < m_mapSize)
+			else if (randomTree == 2)
 			{
-				if (Layers[0].Get_Tile(AVec2i(i + 1, j)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i + 1, j)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else
-				{
-					Layers[0].Set_Tile(AVec2i(i + 1, j), TerrainTile(DecorativeTiles, (i + 1) * TileSize, j * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol));
-				}
+				numCol = 6;
+				numRow = 2;
+				width = 2;
+				height = 3;
 			}
-			if (j - 1 >= 0)
+			else if (randomTree == 3)
 			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 1)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 1)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-							break;
-						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
-
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 1), TerrainTile(DecorativeTiles, i * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 1));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 1)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 1)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 1), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 1));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 1)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 1)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 1), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 1) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 1));
-					}
-				}
+				numCol = 6;
+				numRow = 5;
+				width = 2;
+				height = 3;
 			}
-			if (j - 2 >= 0)
-			{
-				if (Layers[0].Get_Tile(AVec2i(i, j - 2)).Get_TileType() != Blank){
-					for (int n = 0; n < Layers.size(); n++)
-					{
-						if (Layers[n].Get_Tile(AVec2i(i, j - 2)).Get_TileType() == Blank)
-						{
-							Layers[n].Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-							break;
+			for (int row = 0; row < height; row++){
+				for (int col = 0; col < width; col++){
+					if (j - row >= 0){
+						if (row == 0 && col == 0){
+							Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Tree, TileSize, TileSize, true, numCol, numRow);
 						}
-						else if (n == Layers.size() - 1)
-						{
-							std::vector<std::vector<TerrainTile>> TempLayer;
-							TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-							TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-							TempLayerP->Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-							Layers.push_back(*TempLayerP);
-							break;
-						}
-					}
+						else{
+							if (i - col >= 0)
+							{
+								if (Layers[0].Get_Tile(AVec2i(i - col, j - row)).Get_TileType() != Blank){
+									for (int n = 0; n < Layers.size(); n++)
+									{
+										if (Layers[n].Get_Tile(AVec2i(i - col, j - row)).Get_TileType() == Blank)
+										{
+											Layers[n].Set_Tile(AVec2i(i - col, j - row), TerrainTile(DecorativeTiles, (i - col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol - col, numRow - row));
+											break;
+										}
+										else if (n == Layers.size() - 1)
+										{
+											std::vector<std::vector<TerrainTile>> TempLayer;
+											TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
+											TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
+											TempLayerP->Set_Tile(AVec2i(i - col, j - row), TerrainTile(DecorativeTiles, (i - col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol - col, numRow - row));
+											Layers.push_back(*TempLayerP);
+											break;
+										}
+									}
 
-				}
-				else{
-					Layers[0].Set_Tile(AVec2i(i, j - 2), TerrainTile(DecorativeTiles, i * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow, numCol - 2));
-				}
-				if (i - 1 >= 0)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i - 1, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i - 1, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-								break;
+								}
+								else{
+									Layers[0].Set_Tile(AVec2i(i - col, j - row), TerrainTile(DecorativeTiles, (i - col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol - col, numRow - row));
+								}
 							}
-							else if (n == Layers.size() - 1)
+							if (i + col < m_mapSize && col != 0)
 							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
+								if (Layers[0].Get_Tile(AVec2i(i + col, j - row)).Get_TileType() != Blank){
+									for (int n = 0; n < Layers.size(); n++)
+									{
+										if (Layers[n].Get_Tile(AVec2i(i + col, j - row)).Get_TileType() == Blank)
+										{
+											Layers[n].Set_Tile(AVec2i(i + col, j - row), TerrainTile(DecorativeTiles, (i + col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol + col, numRow - row));
+											break;
+										}
+										else if (n == Layers.size() - 1)
+										{
+											std::vector<std::vector<TerrainTile>> TempLayer;
+											TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
+											TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
+											TempLayerP->Set_Tile(AVec2i(i - col, j - row), TerrainTile(DecorativeTiles, (i + col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol + col, numRow - row));
+											Layers.push_back(*TempLayerP);
+											break;
+										}
+									}
+
+								}
+								else{
+									Layers[0].Set_Tile(AVec2i(i + col, j - row), TerrainTile(DecorativeTiles, (i + col) * TileSize, (j - row) * TileSize, Tree, TileSize, TileSize, false, numCol + col, numRow - row));
+								}
 							}
 						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i - 1, j - 2), TerrainTile(DecorativeTiles, (i - 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow - 1, numCol - 2));
-					}
-				}
-				if (i + 1 < m_mapSize)
-				{
-					if (Layers[0].Get_Tile(AVec2i(i + 1, j - 2)).Get_TileType() != Blank){
-						for (int n = 0; n < Layers.size(); n++)
-						{
-							if (Layers[n].Get_Tile(AVec2i(i + 1, j - 2)).Get_TileType() == Blank)
-							{
-								Layers[n].Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
-								break;
-							}
-							else if (n == Layers.size() - 1)
-							{
-								std::vector<std::vector<TerrainTile>> TempLayer;
-								TempLayer.resize(m_mapSize, std::vector<TerrainTile>(m_mapSize, TerrainTile(NULL, 0, 0, Blank, TileSize, TileSize)));
-								TerrainLayer *TempLayerP = new TerrainLayer(TempLayer, false);
-								TempLayerP->Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
-								Layers.push_back(*TempLayerP);
-								break;
-							}
-						}
-
-					}
-					else
-					{
-						Layers[0].Set_Tile(AVec2i(i + 1, j - 2), TerrainTile(DecorativeTiles, (i + 1) * TileSize, (j - 2) * TileSize, Tree, TileSize, TileSize, false, numRow + 1, numCol - 2));
 					}
 				}
 			}
 		}
-
 	}
-	else
-	{
-		int rock = Random(0, 20);
-		if (rock == 1)
-		{
-			int numRow = Random(14, 16);
-			int numCol = 0;
-			Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Rock, TileSize, TileSize, true, numRow, numCol);
-		}
 		else
 		{
-			int numRow = Random(10, 14);
-			int numCol = Random(0, 4);
-			Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Shrub, TileSize, TileSize, false, numRow, numCol);
+			int rock = Random(0, 20);
+			if (rock == 1)
+			{
+				int numRow = Random(14, 16);
+				int numCol = 0;
+				Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Rock, TileSize, TileSize, true, numRow, numCol);
+			}
+			else
+			{
+				int numRow = Random(10, 14);
+				int numCol = Random(0, 4);
+				Layer[i][j] = TerrainTile(DecorativeTiles, i * TileSize, j * TileSize, Shrub, TileSize, TileSize, false, numRow, numCol);
+			}
 		}
-	}
+	
 	//cells.setCell(i, j, img);
 }

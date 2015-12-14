@@ -147,7 +147,7 @@ private:
 	double timeSinceLastUpdate;
 	time_t start, end;
 
-	AVec2f m_StartPosition;
+	AVec2i m_StartPosition;
 	Player *m_MainPlayer;
 
 	Biome *m_curBiome;
