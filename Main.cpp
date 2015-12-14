@@ -66,8 +66,6 @@ int main(void)
 
 	MainPlayer.SetXPosition(Terrain.GetStartPosition().x());
 	MainPlayer.SetYPosition(Terrain.GetStartPosition().y());
-
-	TestAIGroup.RandomSetup(NumberOfAI, Dungeon);  // Generates AI with random attributes in the group. Their spawn points will also be set randomly.
 	
 	al_register_event_source(Event_Queue, al_get_timer_event_source(Timer));
 	al_register_event_source(Event_Queue, al_get_keyboard_event_source());
@@ -127,7 +125,7 @@ int main(void)
 		{
 			al_stop_timer(Timer); //Pause the timer while all the new level loads
 			Dungeon.GenerateDungeon(MainDisplay);
-			TestAIGroup.RandomSetup(30, Dungeon);
+			TestAIGroup.GroupClear();
 			MainPlayer.SetXPosition(Terrain.GetStartPosition().x());
 			MainPlayer.SetYPosition(Terrain.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
@@ -138,24 +136,25 @@ int main(void)
 		{
 			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
+			TestAIGroup.RandomSetup(NumberOfAI += Random(2, 5), Dungeon);
 			onSurface = false;
 		}
 
-		// Collide with AI
-		if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne()))
-			MainPlayer.MovementCollidingBoundOne();
-		if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo()))
-			MainPlayer.MovementCollidingBoundTwo();
-		
-		// Hit the AI
-		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundOne(), MainPlayer.GetWeaponHitBoxYBoundOne(), MainPlayer.GetWeaponDamage());
-		TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundTwo(), MainPlayer.GetWeaponHitBoxYBoundTwo(), MainPlayer.GetWeaponDamage());
 		if (!onSurface)
 		{
 			if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne())))
 				MainPlayer.MovementCollidingBoundOne();
 			if (Dungeon.Get_Map()->CheckMapCollision(AVec2f(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo())))
 				MainPlayer.MovementCollidingBoundTwo();
+			// Collide with AI
+			if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundOne(), MainPlayer.GetCollisionYBoundOne()))
+				MainPlayer.MovementCollidingBoundOne();
+			if (TestAIGroup.CollideWithAI(MainPlayer.GetCollisionXBoundTwo(), MainPlayer.GetCollisionYBoundTwo()))
+				MainPlayer.MovementCollidingBoundTwo();
+
+			// Hit the AI
+			TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundOne(), MainPlayer.GetWeaponHitBoxYBoundOne(), MainPlayer.GetWeaponDamage());
+			TestAIGroup.HitAI(MainPlayer.GetWeaponHitBoxXBoundTwo(), MainPlayer.GetWeaponHitBoxYBoundTwo(), MainPlayer.GetWeaponDamage());
 		}
 		else
 		{
@@ -202,7 +201,6 @@ int main(void)
 			MainPlayer.ResetPlayer();
 			Dungeon.Set_DungeonLevel(1);
 			Dungeon.GenerateDungeon(MainDisplay);
-			TestAIGroup.RandomSetup(NumberOfAI += Random(2,5), Dungeon);
 			MainPlayer.SetXPosition(Dungeon.GetStartPosition().x());
 			MainPlayer.SetYPosition(Dungeon.GetStartPosition().y());
 			MainPlayer.ScaleGameUp(Dungeon.Get_DungeonLevel());
@@ -220,7 +218,8 @@ int main(void)
 				Dungeon.Draw(1);
 			}
 			MainPlayer.DrawPlayer(); //Draw the player
-			TestAIGroup.DrawAll();  // Draw all AI.
+			if (!onSurface)
+				TestAIGroup.DrawAll();  // Draw all AI in the dungeon
 			if (onSurface)
 			{
 				Terrain.Draw(0); //Draw the top layers of the dungeon

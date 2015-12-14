@@ -1,5 +1,5 @@
-#ifndef __WATER_GENERATOR__
-#define __WATER_GENERATOR__
+#ifndef __SPRITE_GENERATOR__
+#define __SPRITE_GENERATOR__
 
 #include <noise.h>
 
@@ -11,7 +11,7 @@ class SpriteGenerator{
 public:
 	SpriteGenerator();
 	// Height of the texture.
-	static const int TEXTURE_HEIGHT = 16;
+	static const int TEXTURE_HEIGHT = 64;
 
 	void generateWaterTexture(int textureNum);
 	void generateGrassTexture(int textureNum);
