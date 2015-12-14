@@ -26,9 +26,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/stitching.hpp>
 
-//Biome class only contains information needed for the generation of the fractal height map
-//as well as information for how to place "noise" within the environment
-
+//Biome class is not currently in use, but leaving here for potential future use with the Fractal class
 class Biome{
 public:
 	enum biomeType{
@@ -62,7 +60,7 @@ private:
 	biomeType m_type;
 
 };
-
+//Fractal class is not currently in use, but leaving here for potential future use, as the algorithms coded have various uses
 class Fractal{
 public:
 	Fractal(){
@@ -90,6 +88,7 @@ private:
 	float average;
 };
 
+//This is the main class that is currently being used for terrain generation
 class TerrainGenerator{
 public:
 	TerrainGenerator(ALLEGRO_EVENT_QUEUE *EventQueue, Player *MainPlayer) : m_EventQueue(EventQueue), m_MainPlayer(MainPlayer)
@@ -98,7 +97,6 @@ public:
 		//m_curFractal = new Fractal();
 		m_mapSize = 64;
 		m_tileSize = 64;
-		time(&start);
 		numWaterTiles = 0;
 		numWaterFrames = 5;
 
@@ -107,52 +105,49 @@ public:
 	};
 	~TerrainGenerator(){ delete m_map; };
 
-	void generateTerrain(Display &MainDisplay);
-	void buildNoiseMap();
-	void interpretMap();
-	void generateForests(Display &MainDisplay);
-	void analyzeForests(utils::NoiseMap perlinTrees, Display &MainDisplay);
-	void draw();
-	void generateTextureMap();
-	void testPrint();
-	void Event_Handler(ALLEGRO_EVENT &EV);
-	void Draw(bool PrePlayerDraw);
+	void generateTerrain(Display &MainDisplay); //Call this from main to generate terrain
+	void buildNoiseMap(); //Builds noise map for base terrain generation
+	void interpretMap(); //Interprets noise map for base terrain generation
+	void generateForests(Display &MainDisplay); //Creates noise map to be interpreted for detail placement
+	void analyzeForests(utils::NoiseMap perlinTrees, Display &MainDisplay); //Interprets the detail noise map generated in generateForests
+	void draw(); //Draws the fractal (currently not in use)
+	void generateTextureMap(); //Main call to generate base textures and create bitmap of terrain
+	void testPrint(); //Function to show how the ImageCells class works by example
+	void Event_Handler(ALLEGRO_EVENT &EV); //Handles terrain events
+	void Draw(bool PrePlayerDraw); //Draws the terrain
 	void overlayImage(const cv::Mat &background, const cv::Mat &foreground,
-		cv::Mat &output, cv::Point2i location);
-	void setStartPosition();
+		cv::Mat &output, cv::Point2i location); //Use to overlay an image with another
+	void setStartPosition(); //Sets player start position to highest point on terrain
 
-	TerrainMap* Get_Map(){ return m_map; }
-	AVec2f GetStartPosition() { return AVec2f(m_StartPosition.x() * m_tileSize, m_StartPosition.y() * m_tileSize); }
+	TerrainMap* Get_Map(){ return m_map; }  //Returns the TerrainMap
+	AVec2f GetStartPosition() { return AVec2f(m_StartPosition.x() * m_tileSize, m_StartPosition.y() * m_tileSize); } //Returns the current start position
 
-	void placeTrees(int i, int j, std::vector<std::vector<TerrainTile>> &Layer, std::vector<TerrainLayer> &Layers, ALLEGRO_BITMAP *DecorativeTiles);
+	void placeTrees(int i, int j, std::vector<std::vector<TerrainTile>> &Layer, std::vector<TerrainLayer> &Layers, ALLEGRO_BITMAP *DecorativeTiles); //Places the details of terrain
 	//void generateAnimated(ImageCells &waterSpriteSheet, Mat img, int curRow); //commented out due to Rect conflict with allegro, need workaround
-	void setWaterTiles(std::vector<AVec2i> waterTiles);
+	void setWaterTiles(std::vector<AVec2i> waterTiles); //Not currently in use, to be used when animated water is implemented
 
 private:
 	ALLEGRO_EVENT_QUEUE *m_EventQueue;
 	ALLEGRO_EVENT_SOURCE m_EnterDungeonEvent;
 
-	ALLEGRO_BITMAP *m_DecorativeTiles;
-	ALLEGRO_BITMAP *m_WaterTiles;
+	ALLEGRO_BITMAP *m_DecorativeTiles; //Forest tile sprite sheet
+	ALLEGRO_BITMAP *m_WaterTiles;	//Animated water tile sprite sheet
 
-	utils::NoiseMap m_heightMap;
-	noise::module::Perlin m_perlinModule;
-	TerrainMap *m_map;
+	utils::NoiseMap m_heightMap; //Base noise map
+	noise::module::Perlin m_perlinModule;  //Base perlin module for noise map generation
+	TerrainMap *m_map;  //Terrain map which contains all layers, tiles, etc.
 	//TerrainTile m_entryTile;
-	int m_mapSize;
-	int m_tileSize;
-	int numWaterTiles;
-	int numWaterFrames;
+	int m_mapSize;  //Size of map (grid)
+	int m_tileSize; //Size of tiles
+	int numWaterTiles;  //Water tile count (set after generation)
+	int numWaterFrames;  //Num of frames for water tiles to be animated
 
-	double timeSinceLastUpdate;
-	time_t start, end;
+	AVec2i m_StartPosition; //Start position of player
+	Player *m_MainPlayer; //Reference to player object
+	SpriteGenerator *m_spriteGenerator; //Sprite generator used for base terrain tile generation
 
-	AVec2i m_StartPosition;
-	Player *m_MainPlayer;
-
-	Biome *m_curBiome;
-	Fractal *m_curFractal;
-	SpriteGenerator *m_spriteGenerator;
+	Biome *m_curBiome; //Current biome (not in use)
+	Fractal *m_curFractal; //Curent fractal (not in use)
 
 };
 
